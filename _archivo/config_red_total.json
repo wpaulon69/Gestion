@@ -1,0 +1,431 @@
+{
+    "metadatos": {
+        "fecha_auditoria": "17/04/2026 10:44:29",
+        "fecha": "17/04/2026 10:44:29",
+        "responsable": "Departamento de Inform\u00e1tica SAMCo"
+    },
+    "camaras": [
+        {
+            "camara": "Camara Hall Central",
+            "ip": "10.175.6.210",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:28:23",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camHallCentral"
+            }
+        },
+        {
+            "camara": "Camara Estacionamiento Norte",
+            "ip": "10.175.6.216",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:43:41",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camEstacionamiento"
+            }
+        },
+        {
+            "camara": "Camara Porton Entrada",
+            "ip": "10.175.6.211",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:36:44",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camPortonPral"
+            }
+        },
+        {
+            "camara": "Camara Consultorios Externos",
+            "ip": "10.175.6.217",
+            "estado_grabacion": {
+                "grabando": false,
+                "ultima_modificacion": "2026-04-17 10:21:39",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camConsultorioExt"
+            }
+        },
+        {
+            "camara": "Camara Odonto Rx",
+            "ip": "10.175.6.212",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:43:36",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camOdontoRX"
+            }
+        },
+        {
+            "camara": "Camara SUM",
+            "ip": "10.175.6.215",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:37:57",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camSUM"
+            }
+        },
+        {
+            "camara": "Camara Taller",
+            "ip": "10.175.6.214",
+            "estado_grabacion": {
+                "grabando": true,
+                "ultima_modificacion": "2026-04-17 10:38:42",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camTaller"
+            }
+        },
+        {
+            "camara": "Camara Laboratorio",
+            "ip": "10.175.6.213",
+            "estado_grabacion": {
+                "grabando": false,
+                "ultima_modificacion": "2026-04-14 08:03:39",
+                "existe_carpeta": true,
+                "carpeta_en_nas": "camLaboratorio"
+            }
+        }
+    ],
+    "estado_alertas": {
+        "alertas_activas": 15,
+        "detalle": [
+            {
+                "evento": "High memory utilization (>90% for 5m)",
+                "severidad": "3"
+            },
+            {
+                "evento": "Zabbix agent is not available (or nodata for 30m)",
+                "severidad": "3"
+            },
+            {
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "evento": "No SNMP data collection",
+                "severidad": "2"
+            },
+            {
+                "evento": "Interface gigabitEthernet 1/0/10: Link down",
+                "severidad": "3"
+            },
+            {
+                "evento": "Interface enp4s0: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "evento": "Interface enp4s0: Link down",
+                "severidad": "3"
+            },
+            {
+                "evento": "Interface bond0: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "evento": "Interface gigabitEthernet 1/0/13: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "evento": "Interface gigabitEthernet 1/0/18: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "evento": "Zabbix agent is not available (for 3m)",
+                "severidad": "3"
+            },
+            {
+                "evento": "Interface gigabitEthernet 1/0/19: Link down",
+                "severidad": "3"
+            },
+            {
+                "evento": "Interface gigabitEthernet 1/0/15: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            }
+        ]
+    },
+    "infraestructura_switches": [
+        {
+            "nombre": "10.175.6.220-Rack-arriba-se-reemplaza",
+            "modelo": "SG3428",
+            "ip": "10.175.6.220",
+            "clientes": 0,
+            "cpu": "0%",
+            "status": "DOWN"
+        },
+        {
+            "nombre": "10.175.6.186-rack-medio",
+            "modelo": "SG3428",
+            "ip": "10.175.6.186",
+            "clientes": 164,
+            "cpu": "25%",
+            "status": "OK"
+        },
+        {
+            "nombre": "10.175.6.235-Carlitos",
+            "modelo": "SG3428",
+            "ip": "10.175.6.235",
+            "clientes": 12,
+            "cpu": "23%",
+            "status": "OK"
+        },
+        {
+            "nombre": "10.175.6.234-Pepe",
+            "modelo": "TL-SG3428",
+            "ip": "10.175.6.234",
+            "clientes": 110,
+            "cpu": "25%",
+            "status": "OK"
+        },
+        {
+            "nombre": "10.175.6.190-rack-pediatria",
+            "modelo": "T1600G-28TS",
+            "ip": "10.175.6.190",
+            "clientes": 0,
+            "cpu": "4%",
+            "status": "OK"
+        },
+        {
+            "nombre": "68-FF-7B-E6-F0-89",
+            "modelo": "T1600G-28TS",
+            "ip": "170.175.6.67",
+            "clientes": 0,
+            "cpu": "0%",
+            "status": "DOWN"
+        }
+    ],
+    "dispositivos_wifi": [
+        {
+            "nombre": "Router Laboratorio",
+            "ip": "10.175.6.191",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router 107",
+            "ip": "10.175.6.167",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Residencia",
+            "ip": "10.175.6.198",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Clinica",
+            "ip": "10.175.6.194",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Consultorios externos",
+            "ip": "10.175.6.193",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Maternidad",
+            "ip": "10.175.6.206",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Kinesiologia",
+            "ip": "10.175.6.185",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Pediatria",
+            "ip": "10.175.6.188",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Taller",
+            "ip": "10.175.6.187",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Farmacia",
+            "ip": "10.175.7.190",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Guardia",
+            "ip": "10.175.6.204",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router SUM",
+            "ip": "10.175.6.205",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router prueba",
+            "ip": "192.168.30.99",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0047 - Esperanza - La Orilla",
+            "ip": "10.248.5.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0031 - Esperanza - Los Troncos",
+            "ip": "10.248.3.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0035 - Esperanza - Barrio Unidos",
+            "ip": "10.248.4.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0028 - Esperanza - Vecinal Barrio Norte",
+            "ip": "10.248.3.97",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0141 - Sunchales - CS Nro 2 Mariano Moreno",
+            "ip": "10.248.17.128",
+            "tipo": "Huawei CAPS",
+            "estado": "Offline"
+        },
+        {
+            "nombre": "router_CS_0066 - Humboldt- Colonia Nueva",
+            "ip": "10.248.8.33",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0078 - Humboldt - Samco Humboldt",
+            "ip": "10.248.9.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0151 - Nuevo Torino",
+            "ip": "10.248.18.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0150 - Progreso",
+            "ip": "10.248.18.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0163 - Sarmiento",
+            "ip": "10.248.20.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0074 - Pilar",
+            "ip": "10.248.9.33",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0143 - Felicia - Samco Felicia",
+            "ip": "10.248.17.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0162 - Santo Domingo",
+            "ip": "10.248.20.33",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0054 - Sunchales - Samco Sunchales",
+            "ip": "10.248.6.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0142",
+            "ip": "10.248.17.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Offline"
+        },
+        {
+            "nombre": "router_CS_0068 - Franck - Telmo Albrecht",
+            "ip": "10.248.8.97",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0091 - Las Tunas",
+            "ip": "10.248.11.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0107 - La Pelada",
+            "ip": "10.248.13.64",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0246 - Maria Luisa",
+            "ip": "10.248.30.160",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0134 - Esperanza - Prueba",
+            "ip": "10.248.16.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        }
+    ],
+    "relojes_personal": [
+        {
+            "nombre": "Reloj - Samco Esperanza",
+            "ip": "10.175.7.11",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - La Orilla",
+            "ip": "10.248.5.203",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Unidos",
+            "ip": "10.248.4.70",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Barrio Norte",
+            "ip": "10.248.3.120",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Los Troncos",
+            "ip": "10.248.3.220",
+            "estado": "Online"
+        }
+    ]
+}

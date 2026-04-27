@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMCo Esperanza - Auditoría de Red</title>
+    
+    <script>
+        // Prevenir flash blanco
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'progress': 'progress 300s linear forwards',
+                    },
+                    keyframes: {
+                        progress: { '0%': { width: '100%' }, '100%': { width: '0%' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style type="text/tailwindcss">
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; @apply bg-sub text-title dark:bg-slate-950 dark:text-slate-200 transition-colors duration-300; }
+        
+        @layer components {
+            .glass-card {
+                @apply bg-white/90 backdrop-blur-md border border-slate-200/80 dark:bg-slate-900/90 dark:border-slate-800;
+            }
+            .card-hover { @apply transition-all duration-300 hover:shadow-xl dark:hover:shadow-indigo-500/10 hover:-translate-y-1; }
+            .status-pill { @apply px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm; }
+            .badge-ok { @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400; }
+            .badge-err { @apply bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400; }
+            .badge-warn { @apply bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400; }
+            .badge-info { @apply bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400; }
+            .text-title { @apply text-slate-900 dark:text-white; }
+            .text-sub { @apply text-slate-500 dark:text-slate-400; }
+            .border-sub { @apply border-slate-200 dark:border-slate-800; }
+            .bg-sub { @apply bg-slate-50 dark:bg-slate-900; }
+        }
+
+        .status-dot { @apply h-2.5 w-2.5 rounded-full; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-slate-200 dark:bg-slate-700 rounded-lg; }
+
+        .glitch-active { @apply ring-4 ring-rose-500/50 relative overflow-hidden; }
+        .glitch-active::after { content: ''; position: absolute; inset: 0; background: rgba(244,63,94,0.05); animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; pointer-events: none; }
+    </style>
+
+</head>
+<body class="p-4 lg:p-10">
+
+    <!-- Header -->
+    <header class="max-w-[1600px] mx-auto mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div class="flex items-center gap-5">
+            <div class="bg-indigo-600 p-4 rounded-2xl shadow-2xl shadow-indigo-200 transform rotate-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-4xl font-extrabold text-title tracking-tight">Auditoría Unificada</h1>
+                <p class="text-sub font-medium flex items-center gap-2">
+                    <span id="responsable-tag">SAMCo Esperanza</span> 
+                    <span class="h-1.5 w-1.5 bg-slate-200 rounded-full"></span>
+                    <span id="update-full-date" class="bg-slate-100 px-3 py-0.5 rounded-full text-xs">Cargando datos...</span>
+                </p>
+            </div>
+        </div>
+        
+        
+        <div class="flex items-center gap-6 relative">
+            <button id="theme-toggle" class="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm text-sub dark:text-sub hover:text-indigo-500 transition-colors border border-slate-200 dark:border-slate-700">
+                <!-- Sun Icon -->
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                <!-- Moon Icon -->
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+            </button>
+
+            <button onclick="showHelp()" class="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm text-sub dark:text-sub hover:text-indigo-500 transition-colors border border-slate-200 dark:border-slate-700 group relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Ayuda Técnica</span>
+            </button>
+
+            
+            <div class="text-right px-6 border-r border-slate-200 dark:border-slate-800">
+                <p class="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest mb-1">Última Actualización</p>
+                <p id="update-time" class="text-2xl font-mono font-black text-title tracking-tighter">--:--:--</p>
+            </div>
+            
+            <div class="flex flex-col gap-2 relative">
+                <button id="btn-sincronizar" class="group bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 transition-all shadow-lg overflow-hidden z-10 relative">
+                    <svg id="sync-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:rotate-180 transition-transform duration-700" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="sync-text" class="font-bold whitespace-nowrap">Sincronizar</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-2 relative">
+                <div id="auto-refresh-tag" class="text-[9px] font-bold text-sub uppercase text-center hidden absolute -bottom-4 w-full">Auto-Refresh: ON</div>
+            </div>
+        </div>
+
+    </header>
+
+    <main class="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+        <!-- MIDDLE COLUMN: MAIN CONTENT -->
+        <div class="xl:col-span-8 space-y-8">
+            
+            <!-- Quick Stats -->
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-card p-4 rounded-3xl card-hover bg-gradient-to-br from-indigo-500 to-indigo-700 text-white border-none flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold opacity-80 uppercase tracking-widest leading-none">Cámaras</p>
+                        <div class="bg-white/20 p-1.5 rounded-xl"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2" /></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="cam-stat" class="text-3xl font-extrabold italic leading-none">--</span><span class="text-[10px] opacity-80 pb-1">Grabando</span></div>
+                </div>
+                
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Conectividad Local</p>
+                        <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.5 9.5 0 0114.142 0M2.828 9.172a13.5 13.5 0 0118.344 0" stroke-width="2" /></svg></div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col">
+                            <span id="client-pc-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
+                            <span class="text-[8px] text-sub font-black uppercase mt-1">PC-LAN</span>
+                        </div>
+                        <div class="flex flex-col text-right">
+                            <span id="client-wifi-stat" class="text-2xl font-extrabold text-indigo-500 leading-none">--</span>
+                            <span class="text-[8px] text-indigo-400 font-black uppercase mt-1">Usuarios WiFi</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Relojes</p>
+                        <div class="bg-amber-50 p-1.5 rounded-xl text-amber-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" /></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="clock-stat" class="text-3xl font-extrabold text-title leading-none">--</span></div>
+                </div>
+
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Alertas</p>
+                        <div class="bg-rose-50 p-1.5 rounded-xl text-rose-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" /></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="alert-stat" class="text-3xl font-extrabold text-rose-600 leading-none">--</span><span id="alert-summary-badge" class="status-pill badge-ok ml-2 mb-1">Clean</span></div>
+                </div>
+
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Switches</p>
+                        <div class="bg-blue-50 p-1.5 rounded-xl text-blue-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="switch-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span></div>
+                </div>
+                
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">CAPS & Routers</p>
+                        <div class="bg-cyan-50 p-1.5 rounded-xl text-cyan-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="router-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span class="text-[10px] text-cyan-500 font-bold pb-1">Online</span></div>
+                </div>
+                
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Backups PBS</p>
+                        <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="pbs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="pbs-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+                </div>
+                
+                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall</p>
+                        <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
+                    </div>
+                    <div class="flex items-end gap-2"><span id="fw-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span class="text-[10px] text-emerald-500 font-bold pb-1">UP</span></div>
+                </div>
+            </div>
+
+
+            <!-- Cameras Grid -->
+            <section class="glass-card rounded-[2.5rem] p-8">
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="text-2xl font-black text-title flex items-center gap-3 italic">
+                        Videovigilancia
+                        <button onclick="showHelp('camaras')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                    </h2>
+                    <a href="http://10.175.6.12/zabbix/" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-indigo-600 border border-transparent hover:border-indigo-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir Zabbix <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+                    <div class="flex gap-6 text-[10px] font-extrabold uppercase tracking-tighter">
+                        <span class="flex items-center gap-2"><span class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span> Grabando</span>
+                        <span class="flex items-center gap-2"><span class="h-2 w-2 bg-indigo-500 rounded-full"></span> Conecta</span>
+                        <span class="flex items-center gap-2 text-sub"><span class="h-2 w-2 bg-slate-200 rounded-full"></span> Offline / No graba</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="cams-grid">
+                    <!-- Dynamic -->
+                </div>
+            </section>
+
+            <!-- OPNsense Interfaces -->
+            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-emerald-500">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-xl font-extrabold text-title flex items-center gap-3">
+                    <svg class="h-6 w-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" /></svg>
+                    Interfaces Firewall (OPNsense)
+                    <button onclick="showHelp('networking')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                </h2>
+                    <div class="flex gap-4">
+                        <div class="text-right">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Traffic WAN (UP/DL)</p>
+                            <p id="wan-traffic-stats" class="text-xs font-mono font-black text-emerald-600">-- / -- Mbps</p>
+                        </div>
+                        <a href="https://10.175.6.203" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-emerald-100 text-emerald-600 border border-transparent hover:border-emerald-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir OPNsense <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+                    </div>
+                </div>
+                <div id="opnsense-interfaces-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Dynamic -->
+                </div>
+            </section>
+
+
+
+            <!-- Backups PBS -->
+            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-indigo-500">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-xl font-black text-title flex items-center gap-3">
+                            <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" stroke-width="2" /></svg>
+                            Backups & Storage (PBS)
+                            <button onclick="showHelp('pbs')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                        </h2>
+                        <p class="text-[10px] font-bold text-sub uppercase tracking-widest mt-1" id="pbs-last-sync">Última tarea exitosa: S/D</p>
+                    </div>
+                    <div class="flex items-center">
+                    <div id="pbs-status-badge" class="status-pill badge-ok">OK</div>
+                    <a href="https://10.175.6.2:8007" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-indigo-600 border border-transparent hover:border-indigo-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors ml-4">Abrir PBS <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+                </div>
+                </div>
+                
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="pbs-datastores-grid">
+                    <!-- Dynamic Datastores -->
+                </div>
+                
+                <!-- Historial de Backups (Nuevo) -->
+                <div class="mt-8 border-t border-sub pt-6">
+                    <h3 class="text-xs font-black text-sub uppercase tracking-widest mb-4">Estado de Ejecuciones (Backup Jobs)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="bg-indigo-50/50 rounded-2xl p-5 border border-indigo-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-black text-indigo-500">Diarios (Últimos 7 días)</span>
+                                <span class="text-[9px] font-bold text-indigo-500 uppercase">Copia-3Tb</span>
+                            </div>
+                            <div id="pbs-diarios-grid" class="flex gap-2">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-black text-emerald-500">Semanal (Último)</span>
+                                <span class="text-[9px] font-bold text-emerald-500 uppercase">WD-1Tb</span>
+                            </div>
+                            <div id="pbs-semanal-grid" class="flex gap-2">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div id="pbs-errors-container" class="mt-6 hidden">
+                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3 border-b border-rose-100 pb-2">Otras Tareas Fallidas Recientes</p>
+                    <div id="pbs-errors-list" class="space-y-2"></div>
+                </div>
+
+            </section>
+
+            <!-- Virtualización Proxmox -->
+            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-orange-500">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-xl font-black text-title flex items-center gap-3">
+                            <svg class="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" stroke-width="2" /></svg>
+                            Virtualización (Proxmox VE)
+                            <button onclick="showHelp('virtualizacion')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                        </h2>
+                    </div>
+                    <a href="https://10.175.6.20:8006" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-orange-100 text-orange-600 border border-transparent hover:border-orange-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir Proxmox <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+                </div>
+                
+                <div id="pve-nodes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Dynamic Nodes -->
+                </div>
+
+                <div class="border-t border-sub pt-6">
+                    <h3 class="text-xs font-black text-sub uppercase tracking-widest mb-4">Máquinas Virtuales & Contenedores</h3>
+                    <div id="pve-vms-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Dynamic VMs -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- NAS Health Section (New) -->
+            <section class="glass-card rounded-[2.5rem] p-6 border-l-8 border-l-amber-500">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-title flex items-center gap-3">
+                            <svg class="h-6 w-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm0 4h16m-11 5h1m4 0h1" stroke-width="2" /></svg>
+                            Almacenamiento
+                        </h2>
+                        <p class="text-[10px] font-bold text-sub uppercase tracking-widest mt-1">NAS Grabaciones</p>
+                    </div>
+                    <div id="nas-status-badge" class="status-pill badge-ok">OK</div>
+                </div>
+                
+                <div id="nas-volumes-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Dynamic Volumes -->
+                </div>
+            </section>
+
+            <!-- Switches Table -->
+            <section class="glass-card rounded-[2.5rem] p-0 overflow-hidden">
+                <div class="p-8 border-b border-sub flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-black text-title tracking-tight flex items-center gap-2">
+                            Core Infrastructure
+                            <button onclick="showHelp('core')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                        </h2>
+
+                        <p class="text-[10px] font-bold text-sub uppercase tracking-[0.2em] mt-1">Managed Switches • TP-Link Omada</p>
+                    </div>
+                    <a href="https://10.175.7.3:8043" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-indigo-600 border border-transparent hover:border-indigo-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir Omada <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-sub/50 text-[10px] uppercase text-sub font-extrabold">
+                            <tr>
+                                <th class="px-8 py-5 tracking-widest">Dispositivo</th>
+                                <th class="px-8 py-5 tracking-widest">Estado / IP</th>
+                                <th class="px-8 py-5 tracking-widest text-center">Clientes</th>
+                                <th class="px-8 py-5 tracking-widest">Métricas & Firmware</th>
+                            </tr>
+                        </thead>
+                        <tbody id="switch-table" class="divide-y divide-slate-100/50">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT SIDEBAR: OTHER DEVICES & ALERTS -->
+        <div class="xl:col-span-4 space-y-8">
+            
+            <!-- Remote Endpoints (WiFi & Relojes) -->
+            <section class="glass-card rounded-[2.5rem] p-8">
+                <h2 class="text-xl font-black text-title mb-6">Dispositivos Conectados</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Routers & Access Points</h3>
+                        <div id="wifi-routers-list" class="space-y-2"></div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Huawei CAPS (Sucursales)</h3>
+                        <div id="huawei-caps-list" class="space-y-2"></div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Relojes de Personal</h3>
+                        <div id="relojes-list" class="grid grid-cols-2 gap-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Event Stream -->
+            <section class="glass-card rounded-[2.5rem] p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-rose-400 italic font-mono tracking-tighter flex items-center gap-2">
+                        Alertas Zabbix
+                        <button onclick="showHelp('alertas')" class="p-1 hover:bg-slate-800 rounded text-slate-600 hover:text-rose-400 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
+                    </h2>
+                    <div class="flex gap-2">
+                        <span class="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2 mb-6" id="alerts-filters">
+                    <button data-filter="all" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold transition-colors ring-1 ring-white/20 active-filter">Todos</button>
+                    <button data-filter="critical" class="px-3 py-1 bg-white/5 hover:bg-rose-500/20 text-white rounded-lg text-[10px] font-bold transition-colors">Critical</button>
+                    <button data-filter="warn" class="px-3 py-1 bg-white/5 hover:bg-amber-500/20 text-white rounded-lg text-[10px] font-bold transition-colors">Warning</button>
+                </div>
+                
+                <div id="alerts-container" class="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar font-mono text-[11px]">
+                    <p class="text-slate-600 italic py-10 opacity-50">Esperando stream de datos...</p>
+                </div>
+            </section>
+
+            <!-- User Dist Chart -->
+            <section class="glass-card rounded-[2.5rem] p-8 text-center">
+                <h2 class="text-xl font-black text-title mb-8 tracking-tight">Carga de Usuarios WiFi</h2>
+                <div class="h-[250px] relative">
+                    <canvas id="loadChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        let loadChart = null;
+        let autoUpdateInterval = null;
+
+        document.getElementById('fileInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            try {
+                updateDashboard(JSON.parse(text));
+                clearInterval(autoUpdateInterval);
+                document.getElementById('auto-refresh-tag').classList.add('hidden');
+            } catch (err) { alert("Error al leer JSON"); }
+        });
+
+        async function tryAutoLoad() {
+            try {
+                // Si estamos en file:// o en otro puerto, forzamos la ruta al servidor
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080/' : '';
+                // Añadimos timestamp para evitar caché
+                const response = await fetch(baseUrl + 'output/reporte_completo.json?t=' + Date.now());
+                if (response.ok) {
+                    const data = await response.json();
+
+                    updateDashboard(data);
+                    document.getElementById('auto-refresh-tag').classList.remove('hidden');
+                    restartProgressBar();
+                    return true;
+                }
+            } catch (e) { console.log("Auto-load no disponible"); }
+            return false;
+        }
+
+        async function runAudit() {
+            const btn = document.getElementById('btn-sincronizar');
+            const icon = document.getElementById('sync-icon');
+            const text = document.getElementById('sync-text');
+            
+            if (btn.disabled) return;
+
+            // UI State: Loading
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            icon.classList.add('animate-spin');
+            text.innerText = 'Sincronizando...';
+
+            try {
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
+                const response = await fetch(baseUrl + '/api/run-audit', { method: 'POST' });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Esperar un segundo para que el archivo JSON se asiente en disco
+                    setTimeout(async () => {
+                        await tryAutoLoad();
+                        text.innerText = '¡Completado!';
+                        setTimeout(() => { text.innerText = 'Sincronizar'; }, 3000);
+                    }, 1000);
+                } else {
+                    alert('Error en auditoría: ' + (result.error || 'Ver consola backend'));
+                    text.innerText = 'Error';
+                }
+            } catch (err) {
+                console.error(err);
+                alert('No se pudo conectar con el servidor backend (Puerto 8080). ¿Está servidor.py corriendo?');
+                text.innerText = 'Server Offline';
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                icon.classList.remove('animate-spin');
+            }
+        }
+
+        document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
+
+        async function openNASFolder(path) {
+            if (!path || path === "N/A") return;
+            try {
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
+                await fetch(baseUrl + '/api/open-folder?path=' + encodeURIComponent(path));
+            } catch (err) {
+                console.error("Error al abrir carpeta:", err);
+            }
+        }
+
+        function updateDashboard(data) {
+            const meta = data.metadatos || {};
+            document.getElementById('update-full-date').innerText = meta.fecha_auditoria || meta.fecha || 'Hoy';
+            document.getElementById('update-time').innerText = (meta.fecha_auditoria || meta.fecha || '').split(' ')[1] || '--:--:--';
+            document.getElementById('responsable-tag').innerText = meta.responsable || 'SAMCo Esperanza';
+
+            // 1. CAMARAS
+            const camsGrid = document.getElementById('cams-grid');
+            camsGrid.innerHTML = '';
+            const cams = data.camaras || [];
+            let grabbingCount = 0;
+
+            cams.forEach(c => {
+                const grab = c.estado_grabacion || {};
+                const isGrabbing = grab.grabando === true;
+                const isOnline = c.estado === "Online";
+                // Lógica unificada: Solo a color si está Online Y Grabando
+                const isAlive = isOnline && isGrabbing;
+                
+                if (isAlive) grabbingCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-3xl glass-card transition-all duration-500 flex flex-col gap-3 relative overflow-hidden ${isAlive ? 'border-emerald-200 shadow-lg shadow-emerald-50' : 'opacity-70 grayscale-[0.5]'}`;
+                
+                // Formatear ruta local
+                const folderPath = (grab.ruta_completa_nas || "").replace(/\\/g, "\\\\");
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="max-w-[70%]">
+                            <h4 class="font-extrabold text-title text-[13px] leading-tight mb-1">${c.camara}</h4>
+                            <div class="flex gap-2 items-center">
+                                <p class="text-[10px] font-mono font-bold text-sub">${c.ip}</p>
+                                <a href="http://${c.ip}" target="_blank" title="Abrir interfaz Web" class="p-1 bg-slate-100 hover:bg-indigo-100 text-indigo-500 rounded-md transition-colors">
+                                    <svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="3"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openNASFolder('${folderPath}')" title="Ver Grabaciones" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-all">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-width="2"/></svg>
+                            </button>
+                            <div class="flex flex-col items-center gap-1">
+
+                                <span class="status-dot ${isOnline ? 'bg-indigo-500' : 'bg-rose-500 animate-pulse'}"></span>
+                                <span class="text-[8px] font-black uppercase text-sub">${c.estado || 'S/D'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-sub/50 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-tighter ${isGrabbing ? 'text-emerald-600' : 'text-rose-400'}">
+                                ${isGrabbing ? 'RECORDING • LIVE' : 'STOPPED'}
+                            </span>
+                            <span class="text-[9px] font-mono font-bold text-sub">${(grab.ultima_modificacion || '').split(' ')[1] || 'Offline'}</span>
+                        </div>
+                        <div class="text-[8px] font-mono text-slate-300 truncate" title="${grab.archivo_actual}">${grab.archivo_actual || '---'}</div>
+                    </div>
+                `;
+                camsGrid.appendChild(card);
+            });
+
+            document.getElementById('cam-stat').innerText = `${grabbingCount}/${cams.length}`;
+
+            // 2. OPNsense
+            const opnGrid = document.getElementById('opnsense-interfaces-grid');
+            opnGrid.innerHTML = '';
+            const interfaces = data.opnsense?.interfaces || [];
+            if (interfaces.length > 0) {
+                interfaces.forEach(i => {
+                    const isUp = i.status === "up";
+                    const item = document.createElement('div');
+                    item.className = "p-4 bg-sub/50 rounded-2xl border border-sub flex items-center justify-between";
+                    item.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="p-2 rounded-xl ${isUp ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="3"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-title tracking-tight">${i.nombre}</p>
+                                <p class="text-[9px] font-mono font-bold text-sub">${i.ip}</p>
+                            </div>
+                        </div>
+                        <span class="status-pill ${isUp ? 'badge-ok' : 'badge-err'}">${i.status}</span>
+                    `;
+                    opnGrid.appendChild(item);
+                });
+            } else {
+                opnGrid.innerHTML = `<p class="text-sub text-xs italic py-4">Sin datos de interfaces.</p>`;
+            }
+
+            // 2.1 Tráfico WAN
+            const wanStats = data.trafico_wan || {rx: 0, tx: 0};
+            const rxMbps = (wanStats.rx / 1000000).toFixed(2);
+            const txMbps = (wanStats.tx / 1000000).toFixed(2);
+            document.getElementById('wan-traffic-stats').innerText = `${txMbps} Mbps / ${rxMbps} Mbps`;
+
+            // 2.2 NAS Health - Solo mostrar críticos/comprimidos
+            const nasGrid = document.getElementById('nas-volumes-grid');
+            nasGrid.innerHTML = '';
+            const nasVolumes = data.nas_health || [];
+            
+            // Filtrar: solo grabaciones (>0% y no sistema)
+            const grabaciones = nasVolumes.filter(v => {
+                const n = v.nombre.toLowerCase();
+                const isCamara = n.startsWith('cam');
+                const isNotZero = v.porcentaje > 0;
+                return isCamara && isNotZero;
+            });
+            const otros = nasVolumes.filter(v => {
+                const n = v.nombre.toLowerCase();
+                return !n.startsWith('cam') && v.porcentaje > 0;
+            });
+            
+            // Mostrar solo grabaciones (máx 4) y resumir el resto
+            const mostar = grabaciones.slice(0, 4);
+            let nasCriticalCount = 0;
+            let maxOccupancy = 0;
+
+            mostar.forEach(v => {
+                const isCritical = v.porcentaje > 90;
+                if (isCritical) nasCriticalCount++;
+                if (v.porcentaje > maxOccupancy) maxOccupancy = v.porcentaje;
+                
+                const vol = document.createElement('div');
+                vol.className = `p-4 rounded-2xl border transition-all flex flex-col gap-2 ${isCritical ? 'border-rose-200 bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100'}`;
+                vol.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black uppercase text-sub tracking-widest">${v.nombre}</span>
+                        <span class="text-sm font-black ${isCritical ? 'text-rose-500' : 'text-title'}">${v.porcentaje}%</span>
+                    </div>
+                    <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="h-full ${isCritical ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${v.porcentaje}%"></div>
+                    </div>
+                `;
+                nasGrid.appendChild(vol);
+            });
+
+            // Si hay más volúmenes, mostrar resumen compacto
+            if (otros.length > 0) {
+                const otrosMax = Math.max(...otros.map(o => o.porcentaje));
+                if (otrosMax > maxOccupancy) maxOccupancy = otrosMax;
+                if (otrosMax > 90) nasCriticalCount++;
+                
+                const resumen = document.createElement('div');
+                resumen.className = `p-4 rounded-2xl border bg-slate-50 dark:bg-slate-800/50 border-slate-100`;
+                resumen.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black uppercase text-sub">+ ${otros.length} volúmenes</span>
+                        <span class="text-sm font-black ${otrosMax > 90 ? 'text-rose-500' : 'text-title'}">máx ${otrosMax}%</span>
+                    </div>
+                    <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="h-full ${otrosMax > 90 ? 'bg-rose-500' : 'bg-slate-300'}" style="width: ${otrosMax}%"></div>
+                    </div>
+                `;
+                nasGrid.appendChild(resumen);
+            }
+
+            
+            const nasBadge = document.getElementById('nas-status-badge');
+            if (nasCriticalCount > 0) {
+                nasBadge.className = 'status-pill badge-err';
+                nasBadge.innerText = `${nasCriticalCount} ALERTA`;
+            } else {
+                nasBadge.className = 'status-pill badge-ok';
+                nasBadge.innerText = 'OK';
+            }
+
+
+            // 3. SWITCHES
+            const swTable = document.getElementById('switch-table');
+            swTable.innerHTML = '';
+            const switches = data.infraestructura_switches || [];
+            let totalClients = 0;
+            let okSw = 0;
+
+            
+            switches.forEach((s, idx) => {
+                const isOK = s.status === "OK";
+                if (isOK) okSw++;
+                totalClients += parseInt(s.clientes) || 0;
+                
+                // Fila principal
+                const row = document.createElement('tr');
+                row.className = "hover:bg-sub/50 transition-colors cursor-pointer group";
+                row.onclick = () => {
+                    const extra = document.getElementById(`sw-extra-${idx}`);
+                    extra.classList.toggle('hidden');
+                };
+                row.innerHTML = `
+                    <td class="px-8 py-4">
+                        <div class="font-extrabold text-title text-sm tracking-tight group-hover:text-indigo-500 transition-colors flex items-center gap-2">
+                           <svg class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                           ${s.nombre}
+                        </div>
+                    </td>
+                    <td class="px-8 py-4">
+                        <span class="status-pill ${isOK ? 'badge-ok' : 'badge-err'}">${s.status}</span>
+                        <div class="text-[10px] text-indigo-500 font-mono mt-1 font-black">${s.ip}</div>
+                    </td>
+                    <td class="px-8 py-4 text-center">
+                        <span class="text-xl font-black text-title italic">${s.clientes}</span>
+                    </td>
+                    <td class="px-8 py-4">
+                        <div class="w-full max-w-[80px] bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden" title="CPU: ${s.cpu}">
+                            <div class="bg-indigo-600 h-full" style="width: ${s.cpu}"></div>
+                        </div>
+                    </td>
+                `;
+                swTable.appendChild(row);
+                
+                // Fila Extra Acordeon (oculta inicialmente)
+                const extraRow = document.createElement('tr');
+                extraRow.id = `sw-extra-${idx}`;
+                extraRow.className = "hidden bg-slate-50/30 dark:bg-slate-900/30";
+                extraRow.innerHTML = `
+                    <td colspan="4" class="px-8 flex py-4 text-[10px] items-start gap-10 border-t border-slate-100/50 dark:border-slate-800/50">
+                        <div><p class="font-black text-sub uppercase mb-1">Modelo</p><p class="text-title">${s.modelo || 'TPLink Managed'}</p><p class="font-mono text-sub opacity-50 mt-1">${s.mac || '--'}</p></div>
+                        <div><p class="font-black text-sub uppercase mb-1">Hardware</p><p class="text-title">Memoria: ${s.mem || '--'}</p><p class="text-title">CPU: ${s.cpu}</p></div>
+                        <div><p class="font-black text-sub uppercase mb-1">Sistema</p><p class="text-title">Uptime: ${s.uptime || 'S/D'}</p><p class="font-mono bg-sub px-1 py-0.5 rounded text-sub">${s.firmware || 'V.N/A'}</p></div>
+                        ${s.upgrade_disponible ? '<div class="text-amber-500 font-black animate-pulse flex items-center border border-amber-500/20 bg-amber-500/10 px-3 py-1 rounded-xl">UPGRADE RECOMMENDED</div>' : ''}
+                    </td>
+                `;
+                swTable.appendChild(extraRow);
+            });
+            
+            const resumenRes = data.resumen_clientes || {pc: 0, wifi: 0, total: 0};
+            document.getElementById('client-pc-stat').innerText = resumenRes.pc;
+            document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
+
+
+            // 4. WIFI & ENDPOINTS
+            const wifiList = document.getElementById('wifi-routers-list');
+            const capsList = document.getElementById('huawei-caps-list');
+            wifiList.innerHTML = '';
+            capsList.innerHTML = '';
+            const wifiDisps = data.dispositivos_wifi || [];
+            // Ordenar: caídos primero
+            const sortedWifi = [...wifiDisps].sort((a, b) => {
+                const aOff = a.estado !== "Online" ? 0 : 1;
+                const bOff = b.estado !== "Online" ? 0 : 1;
+                return aOff - bOff;
+            });
+            sortedWifi.forEach(d => {
+                const isOnline = d.estado === "Online";
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3.5 rounded-2xl transition-all border ${isOnline ? 'bg-sub border-sub hover:border-indigo-100' : 'bg-rose-50 border-rose-200'}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="h-9 w-9 rounded-xl flex items-center justify-center ${isOnline ? 'bg-white shadow-sm text-indigo-500' : 'bg-rose-100 text-rose-500'}">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9" stroke-width="2.5"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-black ${isOnline ? 'text-title' : 'text-rose-700'} tracking-tight">${d.nombre}</p>
+                            <p class="text-[9px] ${isOnline ? 'text-sub' : 'text-rose-400'} font-mono font-bold">${d.ip}</p>
+                        </div>
+                    </div>
+                    ${!isOnline ? '<span class="status-pill badge-err">OFFLINE</span>' : ''}
+                `;
+                if (d.tipo === "Huawei CAPS") capsList.appendChild(row);
+                else wifiList.appendChild(row);
+            });
+
+            // 5. RELOJES
+            const relojesList = document.getElementById('relojes-list');
+            relojesList.innerHTML = '';
+            const relojes = data.relojes_personal || [];
+            let clocksOnline = 0;
+            
+            relojes.forEach(r => {
+                const isOnline = r.estado === "Online";
+                if (isOnline) clocksOnline++;
+                const div = document.createElement('div');
+                div.className = `p-4 flex flex-col gap-3 rounded-2xl border transition-all ${isOnline ? 'bg-amber-50/30 border-amber-100' : 'bg-sub border-transparent opacity-50 grayscale'}`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="p-2 rounded-xl ${isOnline ? 'bg-amber-500 text-white' : 'bg-slate-200 text-sub'}">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" /></svg>
+                        </div>
+                        <span class="status-dot ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}"></span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-title leading-tight mb-1 text-center">${r.nombre.replace('Reloj - ', '')}</p>
+                        <p class="text-[9px] font-mono font-bold text-sub text-center">${r.ip}</p>
+                    </div>
+                `;
+                relojesList.appendChild(div);
+            });
+            document.getElementById('clock-stat').innerText = `${clocksOnline}/${relojes.length}`;
+
+            // 6. BACKUPS PBS
+            const pbs = data.pbs || {};
+            const pbsDsGrid = document.getElementById('pbs-datastores-grid');
+            const pbsErrorsCont = document.getElementById('pbs-errors-container');
+            const pbsErrorsList = document.getElementById('pbs-errors-list');
+            const pbsSync = document.getElementById('pbs-last-sync');
+            const pbsStatus = document.getElementById('pbs-status-badge');
+            
+            pbsDsGrid.innerHTML = '';
+            pbsErrorsList.innerHTML = '';
+            
+            let pbsHasErrors = false;
+            
+            if (pbs.error || pbs.error_datastores) {
+                pbsStatus.className = "status-pill badge-err";
+                pbsStatus.innerText = "ERROR API";
+                pbsHasErrors = true;
+                pbsDsGrid.innerHTML = `<p class="text-xs text-rose-500 italic px-4 py-2 bg-rose-50 rounded-xl col-span-2">No se pudo conectar a PBS o permisos insuficientes (${pbs.error || pbs.error_datastores}).</p>`;
+            } else {
+                // Datastores
+                const datastores = pbs.datastores || [];
+                if (datastores.length === 0) {
+                     pbsDsGrid.innerHTML = `<p class="text-xs text-sub italic px-4 py-2 col-span-2">Sin datastores visibles.</p>`;
+                }
+                datastores.forEach(ds => {
+                    const uso = ds.uso_porcentaje || 0;
+                    const isFull = uso > 85;
+                    if(isFull) pbsHasErrors = true;
+                    
+                    const div = document.createElement('div');
+                    div.className = "bg-sub border border-sub rounded-2xl p-5 relative overflow-hidden";
+                    div.innerHTML = `
+                        <div class="flex justify-between items-end mb-3">
+                            <div>
+                                <h4 class="text-sm font-black text-title tracking-tight">${ds.nombre}</h4>
+                                <p class="text-[10px] font-mono font-bold text-sub">${ds.usado_gb}GB / ${ds.total_gb}GB</p>
+                            </div>
+                            <span class="text-lg font-black italic ${isFull ? 'text-rose-500' : 'text-indigo-500'}">${uso}%</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full ${isFull ? 'bg-rose-500' : 'bg-indigo-500'}" style="width: ${uso}%"></div>
+                        </div>
+                    `;
+                    pbsDsGrid.appendChild(div);
+                });
+                
+                
+                // Historial de Backups (Diarios / Semanales)
+                const hist = pbs.historial_backups || {};
+                const diagrid = document.getElementById('pbs-diarios-grid');
+                const semgrid = document.getElementById('pbs-semanal-grid');
+                
+                diagrid.innerHTML = '';
+                semgrid.innerHTML = '';
+                
+                const boxClass = (estado) => estado === 'OK' 
+                    ? 'flex-1 h-8 bg-emerald-400 rounded-lg shadow-sm border border-emerald-500/20 cursor-help transition-all hover:-translate-y-1' 
+                    : 'flex-1 h-8 bg-rose-500 rounded-lg shadow-sm border border-rose-600/20 cursor-help transition-all hover:-translate-y-1 animate-pulse';
+                
+                const diarios = hist.diarios_ultimos_7d || [];
+                // Lo invertimos para q el más actual quede a la derecha
+                [...diarios].reverse().forEach(d => {
+                    const b = document.createElement('div');
+                    b.className = boxClass(d.estado);
+                    b.title = `${d.fecha} - ${d.estado}`;
+                    diagrid.appendChild(b);
+                    if(d.estado !== 'OK') pbsHasErrors = true;
+                });
+                
+                if(diarios.length === 0) diagrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial diario</span>';
+
+                const sem = hist.semanal_ultimo;
+                if(sem) {
+                    const bs = document.createElement('div');
+                    // Lo hacemos cuadrar con el estilo pero más ancho (ocupa todo)
+                    bs.className = "w-full h-8 rounded-lg shadow-sm cursor-help flex items-center justify-center text-[10px] font-black text-white " + (sem.estado === 'OK' ? "bg-emerald-400 border border-emerald-500/20" : "bg-rose-500 border border-rose-600/20 animate-pulse");
+                    bs.innerText = sem.estado === 'OK' ? `EJECUTADO OK (${sem.fecha})` : `FALLÓ (${sem.fecha})`;
+                    semgrid.appendChild(bs);
+                    if(sem.estado !== 'OK') pbsHasErrors = true;
+                } else {
+                    semgrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial semanal</span>';
+                }
+
+                // Errores adicionales (tareas sueltas fallidas)
+
+                const errores = pbs.tareas_fallidas || [];
+                if (errores.length > 0) {
+                    pbsHasErrors = true;
+                    pbsErrorsCont.classList.remove('hidden');
+                    errores.forEach(e => {
+                        const d = new Date(e.timestamp * 1000).toLocaleString('es-AR');
+                        const row = document.createElement('div');
+                        row.className = "text-[10px] font-mono bg-rose-50 text-rose-700 px-3 py-2 rounded-xl flex gap-3";
+                        row.innerHTML = `<span class="font-black">[${d}]</span> <span>[${e.tipo}]</span> <span class="truncate opacity-80">${e.error}</span>`;
+                        pbsErrorsList.appendChild(row);
+                    });
+                } else {
+                    pbsErrorsCont.classList.add('hidden');
+                }
+                
+                // Consolidar estado final
+                if(pbsHasErrors && datastores.length > 0) {
+                    pbsStatus.className = "status-pill badge-err animate-pulse";
+                    pbsStatus.innerText = "ACTION REQ";
+                }
+            }
+
+            // 7. PROXMOX VE (PVE)
+            const pve = data.pve || {};
+            const pveNodesGrid = document.getElementById('pve-nodes-grid');
+            const pveVmsGrid = document.getElementById('pve-vms-grid');
+            
+            pveNodesGrid.innerHTML = '';
+            pveVmsGrid.innerHTML = '';
+            
+            if (pve.error) {
+                pveNodesGrid.innerHTML = `<p class="text-xs text-rose-500 italic px-4 py-2 bg-rose-50 rounded-xl col-span-2">Error API PVE: ${pve.error}</p>`;
+            } else {
+                const nodos = pve.nodos || [];
+                nodos.forEach(n => {
+                    const diskFull = n.disco_root_pct > 90;
+                    const nodeBox = document.createElement('div');
+                    nodeBox.className = `p-5 rounded-3xl border transition-all ${diskFull ? 'bg-rose-50 border-rose-200 animate-pulse' : 'bg-sub border-sub'}`;
+                    nodeBox.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-black text-title uppercase tracking-tighter">${n.nombre}</h4>
+                                <p class="text-[9px] font-mono font-bold text-sub">Uptime: ${Math.floor(n.uptime / 86400)}d ${Math.floor((n.uptime % 86400) / 3600)}h</p>
+                            </div>
+                            <span class="status-dot ${n.status === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-[10px] font-bold mb-1">
+                                    <span class="text-sub">CPU / RAM</span>
+                                    <span class="text-title">${n.cpu_uso}% | ${n.ram_usada_gb}GB</span>
+                                </div>
+                                <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden flex">
+                                    <div class="h-full bg-indigo-500" style="width: ${n.cpu_uso}%"></div>
+                                    <div class="h-full bg-indigo-300 opacity-50" style="width: ${n.ram_pct}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] font-bold mb-1">
+                                    <span class="${diskFull ? 'text-rose-600 font-black' : 'text-sub'}">DISCO ROOT (/)</span>
+                                    <span class="${diskFull ? 'text-rose-600 font-extrabold' : 'text-title'}">${n.disco_root_pct}%</span>
+                                </div>
+                                <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="h-full ${diskFull ? 'bg-rose-600' : 'bg-orange-500'}" style="width: ${n.disco_root_pct}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    pveNodesGrid.appendChild(nodeBox);
+                });
+
+                const vms = pve.vms || [];
+                vms.forEach(v => {
+                    const isRunning = v.estado === 'running';
+                    const isLXC = v.tipo === 'lxc';
+                    const vmBox = document.createElement('div');
+                    
+                    // Ajuste de colores para compatibilidad con dark mode
+                    vmBox.className = `p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                        isRunning 
+                        ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm' 
+                        : 'bg-slate-50 dark:bg-slate-900/50 border-transparent opacity-60 grayscale'
+                    }`;
+
+                    vmBox.innerHTML = `
+                        <div class="flex items-center gap-4 overflow-hidden">
+                            <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                isRunning 
+                                ? (isLXC ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400') 
+                                : 'bg-slate-200 text-slate-400'
+                            }">
+                                ${isLXC 
+                                    ? '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" stroke-width="2" /></svg>'
+                                    : '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" stroke-width="2" /></svg>'
+                                }
+                            </div>
+                            <div class="truncate">
+                                <p class="text-sm font-black text-title leading-tight mb-0.5 truncate">${v.nombre}</p>
+                                <div class="flex items-center gap-2 text-[10px] font-mono text-sub font-bold">
+                                    <span class="bg-sub dark:bg-slate-700 px-1.5 py-0.5 rounded text-[9px]">ID: ${v.vmid}</span>
+                                    <span class="opacity-70">${v.ram_gb}GB</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full ${isRunning ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}"></span>
+                        </div>
+                    `;
+                    pveVmsGrid.appendChild(vmBox);
+                });
+            }
+
+            // 8. ALERTAS TERMINAL
+            const alertsCont = document.getElementById('alerts-container');
+            alertsCont.innerHTML = '';
+            const alerts = data.estado_alertas?.detalle || [];
+            document.getElementById('alert-stat').innerText = alerts.length;
+            const badge = document.getElementById('alert-summary-badge');
+            
+            if(alerts.length > 0) {
+                badge.className = "status-pill badge-err ml-2";
+                badge.innerText = `${alerts.length} Issues`;
+            } else {
+                badge.className = "status-pill badge-ok ml-2";
+                badge.innerText = "Clean";
+            }
+
+            alerts.forEach(a => {
+                
+                const sev = parseInt(a.severidad);
+                const color = sev >= 4 ? 'text-rose-400' : (sev >= 3 ? 'text-amber-400' : 'text-indigo-400');
+                const lvlclass = sev >= 4 ? 'zbx-crit' : (sev >= 3 ? 'zbx-warn' : 'zbx-info');
+                const line = document.createElement('div');
+                line.className = `alert-line py-2 border-b border-white/5 hover:bg-white/5 transition-colors cursor-default ${lvlclass}`;
+                line.innerHTML = `<span class="${color} font-black">[LEVEL_${sev}]</span> <span class="text-slate-200">${a.evento}</span>`;
+                alertsCont.appendChild(line);
+            });
+
+            
+            // TOP STATS OPNsense
+            let upFw = 0;
+            if(interfaces.length > 0) {
+                interfaces.forEach(i => { if(i.status === "up") upFw++; });
+            }
+            document.getElementById('fw-top-stat').innerText = `${upFw}/${interfaces.length}`;
+            
+            document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.length}`;
+            
+            // TOP STATS Routers & CAPS
+            let onWifi = 0;
+            wifiDisps.forEach(d => { if(d.estado === "Online") onWifi++; });
+            document.getElementById('router-top-stat').innerText = `${onWifi}/${wifiDisps.length}`;
+            
+            // TOP STATS PBS
+            const topPbsVal = document.getElementById('pbs-top-stat');
+            const topPbsBdg = document.getElementById('pbs-top-badge');
+            if(pbsHasErrors) {
+                topPbsVal.innerText = "ERR";
+                topPbsVal.className = "text-3xl font-extrabold text-rose-600 leading-none";
+                topPbsBdg.className = "status-pill badge-err ml-2 mb-1 animate-pulse";
+                topPbsBdg.innerText = "ACTION";
+            } else {
+                topPbsVal.innerText = "OK";
+                topPbsVal.className = "text-3xl font-extrabold text-title leading-none";
+                topPbsBdg.className = "status-pill badge-ok ml-2 mb-1";
+                topPbsBdg.innerText = "SECURE";
+            }
+
+            if(switches.length > 0) renderChart(switches);
+        
+
+        // Global Glitch/Crisis Evaluation
+        const mainEl = document.querySelector('header > div:first-child > div:first-child');
+        if(pbsHasErrors || switches.some(s => s.status !== "OK")) {
+            mainEl.classList.add('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
+            mainEl.classList.remove('bg-indigo-600', 'shadow-indigo-200');
+            document.body.classList.add('border-t-4', 'border-rose-500');
+        } else {
+            mainEl.classList.remove('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
+            mainEl.classList.add('bg-indigo-600', 'shadow-indigo-200');
+            document.body.classList.remove('border-t-4', 'border-rose-500');
+        }
+
+    } // end updateDashboard function
+
+    // Filtros Zabbix
+    document.querySelectorAll('#alerts-filters button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // reset styles
+            document.querySelectorAll('#alerts-filters button').forEach(b => {
+               b.classList.remove('ring-1', 'ring-white/20', 'bg-white/10');
+               b.classList.add('bg-white/5');
+            });
+            e.target.classList.add('ring-1', 'ring-white/20', 'bg-white/10');
+            e.target.classList.remove('bg-white/5');
+            
+            const filter = e.target.getAttribute('data-filter');
+            const lines = document.querySelectorAll('.alert-line');
+            lines.forEach(l => {
+                if(filter === 'all') l.style.display = 'block';
+                else if(filter === 'critical') l.style.display = l.classList.contains('zbx-crit') ? 'block' : 'none';
+                else if(filter === 'warn') l.style.display = (l.classList.contains('zbx-warn') || l.classList.contains('zbx-crit')) ? 'block' : 'none';
+            });
+        });
+    });
+
+    // Dark Mode Toggle Logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const darkIcon = document.getElementById('theme-toggle-dark-icon');
+    const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        lightIcon.classList.remove('hidden');
+    } else {
+        darkIcon.classList.remove('hidden');
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        darkIcon.classList.toggle('hidden');
+        lightIcon.classList.toggle('hidden');
+
+        if (localStorage.theme === 'light') {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        }
+    });
+
+    function restartProgressBar() {
+        const pbar = document.getElementById('auto-progress');
+        pbar.classList.remove('hidden');
+        pbar.classList.remove('animate-progress');
+        void pbar.offsetWidth; // trigger reflow
+        pbar.classList.add('animate-progress');
+    }
+
+
+    function renderChart(switches) {
+            const ctx = document.getElementById('loadChart').getContext('2d');
+            if (loadChart) loadChart.destroy();
+            const filtered = switches.filter(s => parseInt(s.clientes) > 0);
+            loadChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: filtered.map(s => s.nombre.split('-')[0]),
+                    datasets: [{
+                        data: filtered.map(s => s.clientes),
+                        backgroundColor: ['#4f46e5', '#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff'],
+                        borderWidth: 0,
+                        hoverOffset: 20
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 25, boxWidth: 8, font: { family: 'Plus Jakarta Sans', size: 9, weight: '800' }, color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        // Initialize Auto-load
+        tryAutoLoad().then(success => {
+            if (success) {
+                autoUpdateInterval = setInterval(tryAutoLoad, 300000); // 5 mins
+            }
+        });
+    </script>
+    <div id="help-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div class="p-8 border-b border-sub flex justify-between items-center bg-indigo-600 text-white">
+                <div>
+                    <h2 class="text-2xl font-black tracking-tight" id="help-title">Centro de Ayuda Técnica</h2>
+                    <p class="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Manual de Referencia del Dashboard</p>
+                </div>
+                <button onclick="toggleHelp()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-6" id="help-content">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="p-6 border-t border-sub flex justify-center bg-sub">
+                <button onclick="toggleHelp()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const helpDocs = {
+            general: {
+                title: "Guía de Uso General",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Este Dashboard es una herramienta de <b>Auditoría en Tiempo Real</b> que consolida datos de múltiples fuentes de infraestructura.</p>
+                        <div class='bg-indigo-50 p-4 rounded-2xl border border-indigo-100'>
+                            <h4 class='font-black text-indigo-600 uppercase text-[10px] mb-2'>Cómo actualizar datos</h4>
+                            <p>Usa el botón <b>Sincronizar</b> para ejecutar el script de auditoría en el servidor. El proceso tarda ~15 segundos. También puedes cargar un archivo JSON manualmente.</p>
+                        </div>
+                    </div>
+                `
+            },
+            camaras: {
+                title: "Videovigilancia & Grabación",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Esta sección realiza un <b>chequeo cruzado</b> para garantizar la seguridad física.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Estado (Ping):</b> Se obtiene de Zabbix. Indica si la cámara está encendida y conectada a la red.</li>
+                            <li><b>Grabación (NAS):</b> El script escanea el almacenamiento del NAS (TrueNAS) buscando archivos de video recientes.</li>
+                            <li><b>Lógica de Alerta:</b> Una cámara solo se ve "Viva" si tiene Ping Y está grabando. Si el video tiene más de 20 min de antigüedad, el sistema marca "STOPPED".</li>
+                        </ul>
+                    </div>
+                `
+            },
+            networking: {
+                title: "Networking & Firewall",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Monitoreo del core de red y tráfico de salida.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Interfaces:</b> Se consultan vía API directa a OPNsense. Muestra el estado (UP/DOWN) y la IP de cada puerto.</li>
+                            <li><b>Tráfico WAN:</b> Se obtiene de Zabbix (Items de interfaces). Muestra el consumo real en Mbps de la conexión a Internet.</li>
+                        </ul>
+                    </div>
+                `
+            },
+            pbs: {
+                title: "Backups (Proxmox Backup Server)",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Control de integridad de los respaldos de servidores.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Datastores:</b> Muestra el espacio usado y disponible en los discos de backup.</li>
+                            <li><b>Historial:</b> El panel "Diarios" muestra cuadros de colores. <b>Verde:</b> Éxito, <b>Rojo:</b> Fallo o tarea no ejecutada.</li>
+                        </ul>
+                    </div>
+                `
+            },
+            virtualizacion: {
+                title: "Virtualización (Proxmox VE)",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Estado de los servidores físicos (Nodos) y máquinas virtuales.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Nodos:</b> Muestra CPU, RAM y ocupación del disco duro root de cada servidor físico.</li>
+                            <li><b>Alarmas de Disco:</b> Si el disco local del nodo supera el 90%, el borde se pondrá rojo.</li>
+                            <li><b>VMs:</b> Listado de servidores lógicos y su consumo actual obtenido vía la API de Proxmox.</li>
+                        </ul>
+                    </div>
+                `
+            },
+            nas: {
+                title: "Salud del NAS (Almacenamiento)",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Monitoreo de ocupación de los discos donde se guardan grabaciones y backups.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Fuente:</b> Items de Zabbix del host 10.175.6.10.</li>
+                            <li><b>Relevancia:</b> Si un volumen de cámaras se llena, las cámaras dejan de grabar. El sistema alerta en rojo cuando se supera el 90% de uso.</li>
+                        </ul>
+                    </div>
+                `
+            },
+            core: {
+                title: "Core Infrastructure (Omada)",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Estado de los Switches de distribución y acceso del SAMCo.</p>
+                        <ul class='list-disc pl-5 space-y-2'>
+                            <li><b>Segmentación de Red:</b> El sistema analiza cada cliente conectado y lo clasifica por su dirección IP.
+                                <ul class='list-disc pl-5 mt-2 opacity-80'>
+                                    <li><b>Red 10.x:</b> Usuarios-PC y puestos de trabajo fijos.</li>
+                                    <li><b>Redes 170.x / 192.x:</b> Usuarios de la red WiFi.</li>
+                                </ul>
+                            </li>
+                            <li><b>Fuente:</b> Se obtiene vía API del controlador Omada mediante una consulta de clientes conectados en tiempo real.</li>
+                            <li><b>Métricas de Switch:</b> Muestra el consumo de CPU, RAM y temperatura/estado de cada equipo físico del backbone.</li>
+                        </ul>
+                    </div>
+                `
+            },
+            alertas: {
+
+                title: "Alertas de Zabbix (Event Stream)",
+                body: `
+                    <div class='space-y-4 text-sm'>
+                        <p>Flujo de problemas activos detectados por Zabbix.</p>
+                        <p>Se filtran los problemas más recientes. "Critical" suelen ser caídas de servicios base o hosts, "Warning" son métricas fuera de umbral.</p>
+                    </div>
+                `
+            }
+        };
+
+        function showHelp(section = 'general') {
+            const doc = helpDocs[section] || helpDocs.general;
+            document.getElementById('help-title').innerText = doc.title;
+            document.getElementById('help-content').innerHTML = doc.body;
+            document.getElementById('help-modal').classList.remove('hidden');
+            document.getElementById('help-modal').classList.add('flex');
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('help-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

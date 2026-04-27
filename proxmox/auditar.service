@@ -1,0 +1,14 @@
+[Unit]
+Description=SAMCo Auditoria Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/auditar
+ExecStart=/opt/auditar/gestion_env/bin/python /opt/auditar/proxmox/dashboard_server.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

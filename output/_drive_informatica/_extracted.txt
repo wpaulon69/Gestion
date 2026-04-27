@@ -1,0 +1,1540 @@
+﻿=== Documento sin t├¡tulo.docx ===
+DOCUMENTO 1: INFRAESTRUCTURA DE SERVIDORES Y HARDWARE DETALLADO
+1. Nodo delli5-03 (Proxmox Principal de Gesti├│n)
+Este nodo destaca por su almacenamiento de estado s├│lido, ideal para IOPS elevados.
+Procesador: Intel i5 (basado en nombre de host).
+Almacenamiento F├¡sico:
+sda (1.9 TB): KINGSTON SKC600. Configurado como Pool ZFS: ZFS-SSD.
+nvme0n1 (953.9 GB): SK hynix PC711 NVMe.
+Discos Virtuales (ZVol):
+zd0 (100G), zd16 (700G), zd32 (200G), zd48 (40G), zd64 (100G).
+VMs en ejecuci├│n (Estado: Running):
+VM 119 (OCS): Sistema de inventario.
+2. Nodo hpdl360 (Host de Producci├│n Cr├¡tica - SAMCO SAMCO)
+Contrario a lo que se pensaba, este es el nodo que sostiene la carga operativa principal del hospital.
+Almacenamiento F├¡sico:
+sda (7.3 TB): RAID por hardware (LVM-Thin). Capacidad masiva para datos.
+VMs en ejecuci├│n (Estado: Running):
+VM 103 (MySql-Server): La base de datos de producci├│n (Diagnose).
+VM 106 (OMVServer): File Server principal (OpenMediaVault).
+VM 120 (Win11): Estaci├│n de trabajo virtualizada.
+3. Nodo dellr610-1 (Contingencia y Redundancia)
+Preparado para alta disponibilidad de red.
+Hardware: Dual Xeon (plataforma R610).
+Configuraci├│n de Red: Bond0 (balance-alb) unificando eno1, eno2, eno3 y eno4.
+Almacenamiento:
+sda (1.7 TB): Pool ZFS-SSD.
+sdb (2.7 TB): Almacenamiento LVM para backups locales.
+Estado de VMs:
+VM 103 (R├®plica): Apagada, lista para failover.
+VM 105 (Servidor Aplicaciones): Running.
+VM 116 (Backup-Samba): Running.
+4. Nodo IBMx3400 (Proxmox Backup Server - PBS)
+El guardi├ín de la integridad de los datos.
+Almacenamiento F├¡sico y Pools:
+sda (465.8 GB): ST500LM021 (Disco de sistema/OS).
+sdb (931.5 GB): WDC WD10JPVX. Configurado como Pool ZFS: WD-1Tb.
+sdc, sdd, sde (3 x 931.5 GB): Mix de WDC, Seagate y Toshiba. Configurados en RAIDZ1 (Pool: Copia-3Tb).
+Salud del Storage: ├Ültimo scrub de ZFS realizado el 8 de marzo de 2026 (0 errores).
+VM 103 (MySql-Server / Diagnose)
+Esta m├íquina tiene un esquema de Alta Disponibilidad por R├®plica de ZFS, no solo un backup convencional.
+M├®todo: ZFS Replication.
+D├¡a: Todos los d├¡as.
+Frecuencia/Hora: Se replica cada 2 horas (00:00, 02:00, 04:00, etc.).
+Origen/Destino: Se env├¡a desde el nodo hpdl360 hacia el cl├║ster. Esto se ve en el log de pveschedule donde la tarea de replicaci├│n para el ID 103 aparece activa con ese intervalo.
+VM 106 (FileServer / OMV)
+Esta m├íquina, al ser un servidor de archivos (Samba/OpenMediaVault) con un volumen de datos mucho mayor, tiene una pol├¡tica distinta:
+M├®todo: Backup (vzdump) hacia el almacenamiento externo.
+D├¡a: S├íbados.
+Hora: 23:00 hs.
+Explicaci├│n: En el documento, la VM 106 reside en el almacenamiento de 7.3TB del HP. Debido a que el volumen de datos de un FileServer es masivo, el backup se desplaza al fin de semana para no saturar la red de 1Gbps del hospital durante los d├¡as de semana.
+1. Estrategia de Backups (Basada en Proxmox Backup Server - PBS)
+El nodo dedicado pbs es el coraz├│n de esta pol├¡tica y utiliza una estructura de almacenamiento optimizada:
+Almacenamiento Centralizado: Utilizas un pool ZFS llamado Copia-3Tb configurado en RAIDZ1. Esto significa que tienes tolerancia a la falla de un disco f├¡sico sin perder datos de los respaldos.
+Hardware de Respaldo: El pool se sustenta sobre tres discos de 1TB (WDC y ST1000DM010). Existe adem├ís un disco independiente WD-1Tb (wwn-0x50014ee00475490a) que funciona como un pool ZFS separado, probablemente para backups de alta prioridad o rotaci├│n manual.
+Integridad de Datos: Realizas verificaciones de integridad peri├│dicas (scrubs). Seg├║n el log, el ├║ltimo termin├│ sin errores el 8 de marzo de 2026.
+Eficiencia: Al usar PBS, la pol├¡tica se basa en la deduplicaci├│n a nivel de bloque. Esto permite que las 21 instancias (VMs y LXCs) se respalden de forma incremental, guardando solo los cambios y ahorrando espacio en el pool de 3TB.
+2. Estrategia de R├®plicas (Alta Disponibilidad Local)
+En el documento "proxmox samco", la pol├¡tica de r├®plicas es distinta a la de backup, ya que busca la continuidad del servicio ante la ca├¡da de un nodo:
+Replicaci├│n de Almacenamiento: Utilizas la funci├│n nativa de Proxmox para replicar vol├║menes ZFS entre nodos. Por ejemplo, la VM 103 (MySql-Server) que reside en el nodo hpdl360 tiene configurada una r├®plica hacia otros nodos del cl├║ster.
+Frecuencia: La programaci├│n detectada para servicios cr├¡ticos es de cada 2 horas. Esto garantiza que, si el servidor HP falla, el servidor Dell de destino tenga una copia de la base de datos con un desfasaje m├íximo de 120 minutos.
+Transporte: Las r├®plicas se mueven a trav├®s de la red de gesti├│n (10.175.6.x), utilizando los enlaces agregados (bond0) para asegurar que el tr├ífico de replicaci├│n no sature el acceso de los usuarios.
+3. Resumen de Protecci├│n por Tipo de Recurso
+Bases de Datos (VM 103, CT 115): Tienen doble protecci├│n; r├®plicas frecuentes entre nodos del cl├║ster para disponibilidad inmediata y backups diarios en el PBS para recuperaci├│n hist├│rica.
+Estaciones de Trabajo (W10, Win11): Dependen principalmente del PBS. Al ser m├íquinas con poca variaci├│n de datos cr├¡ticos, la deduplicaci├│n del pool Copia-3Tb es extremadamente efectiva.
+Servidores de Archivos (OMVServer): Residen en el nodo con m├ís disco (hpdl360 con 7.3TB) y su pol├¡tica se apoya en la robustez del sistema de archivos local, adem├ís de los backups externos.
+
+=== pbs samco.docx ===
+echo "--- MODELO Y DISCOS FISICOS ---" && lsblk -do NAME,SIZE,MODEL,ROTA && \
+echo "--- PARTICIONES Y FILSYSTEM ---" && lsblk -f && \
+echo "--- ESTADO DE ZFS (Si aplica) ---" && zpool status 2>/dev/null || echo "No usa ZFS" && \
+echo "--- ESTADO DE LVM (Si aplica) ---" && vgs && lvs
+--- MODELO Y DISCOS FISICOS ---
+NAME   SIZE MODEL                    ROTA
+sda  465.8G ST500LM021-1KJ152           1
+sdb  931.5G WDC WD10JPVX-60JC3T1        1
+sdc  931.5G WDC WD10EZEX-08M2NA0        1
+sdd  931.5G ST1000DM010-2EP102          1
+sde  931.5G TOSHIBA DT01ACA100          1
+sr0   1024M TSSTcorpDVD-ROM TS-H353C    1
+--- PARTICIONES Y FILSYSTEM ---
+NAME         FSTYPE      FSVER    LABEL     UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+sda                                                                                               
+Ôö£ÔöÇsda1                                                                                            
+Ôö£ÔöÇsda2       vfat        FAT32              A4EE-49DC                                             
+ÔööÔöÇsda3       LVM2_member LVM2 001           ZN36qg-B9Qw-4s7a-nsuG-eKCu-b6ws-qkXB98                
+  Ôö£ÔöÇpbs-swap swap        1                  70dc0387-7020-4885-94ba-77e829d88179                  [SWAP]
+  ÔööÔöÇpbs-root ext4        1.0                0b837e21-f751-43c3-a5f3-2e14b2f248db    407.7G     1% /
+sdb                                                                                               
+Ôö£ÔöÇsdb1       zfs_member  5000     WD-1Tb    16836529253333183967                                  
+ÔööÔöÇsdb9                                                                                            
+sdc                                                                                               
+Ôö£ÔöÇsdc1       zfs_member  5000     Copia-3Tb 18176847826167182566                                  
+ÔööÔöÇsdc9                                                                                            
+sdd                                                                                               
+Ôö£ÔöÇsdd1       zfs_member  5000     Copia-3Tb 18176847826167182566                                  
+ÔööÔöÇsdd9                                                                                            
+sde                                                                                               
+Ôö£ÔöÇsde1       zfs_member  5000     Copia-3Tb 18176847826167182566                                  
+ÔööÔöÇsde9                                                                                            
+sr0                                                                                               
+--- ESTADO DE ZFS (Si aplica) ---
+  pool: Copia-3Tb
+ state: ONLINE
+  scan: scrub repaired 0B in 00:41:37 with 0 errors on Sun Mar  8 01:05:38 2026
+config:
+        NAME                        STATE     READ WRITE CKSUM
+        Copia-3Tb                   ONLINE       0     0     0
+          raidz1-0                  ONLINE       0     0     0
+            wwn-0x50014ee20a0e3c24  ONLINE       0     0     0
+            wwn-0x5000c500b58913f9  ONLINE       0     0     0
+            wwn-0x5000039fd5d06cb1  ONLINE       0     0     0
+errors: No known data errors
+  pool: WD-1Tb
+ state: ONLINE
+  scan: scrub repaired 0B in 02:14:27 with 0 errors on Sun Mar  8 02:38:39 2026
+config:
+        NAME                      STATE     READ WRITE CKSUM
+        WD-1Tb                    ONLINE       0     0     0
+          wwn-0x50014ee00475490a  ONLINE       0     0     0
+errors: No known data errors
+--- ESTADO DE LVM (Si aplica) ---
+File descriptor 20 (/var/log/proxmox-backup/tasks/20/UPID:pbs:0000043E:00001620:00000003:69BD26D2:termproxy::root@pam:) leaked on vgs invocation. Parent PID 593649: -bash
+  VG  #PV #LV #SN Attr   VSize    VFree 
+  pbs   1   2   0 wz--n- <464.76g 16.00g
+File descriptor 20 (/var/log/proxmox-backup/tasks/20/UPID:pbs:0000043E:00001620:00000003:69BD26D2:termproxy::root@pam:) leaked on lvs invocation. Parent PID 593649: -bash
+  LV   VG  Attr       LSize    Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  root pbs -wi-ao---- <441.03g                                                    
+  swap pbs -wi-ao----    7.73g                                                    
+root@pbs:~# 
+
+=== proxmox samco.docx ===
+root@delli5-03:~# echo "--- MODELO Y DISCOS FISICOS ---" && lsblk -do NAME,SIZE,MODEL,ROTA && \
+echo "--- PARTICIONES Y FILSYSTEM ---" && lsblk -f && \
+echo "--- ESTADO DE ZFS (Si aplica) ---" && zpool status 2>/dev/null || echo "No usa ZFS" && \
+echo "--- ESTADO DE LVM (Si aplica) ---" && vgs && lvs
+--- MODELO Y DISCOS FISICOS ---
+NAME      SIZE MODEL                   ROTA
+sda       1.9T KINGSTON SKC6002048G       0
+sr0      1024M HL-DT-ST DVD+/-RW GU90N    1
+zd0       100G                            0
+zd16      700G                            0
+zd32      200G                            0
+zd48       40G                            0
+zd64      100G                            0
+nvme0n1 953.9G PC711 NVMe SK hynix 1TB    0
+--- PARTICIONES Y FILSYSTEM ---
+NAME    FSTYPE FSVER LABEL          UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+sda                                                                                       
+Ôö£ÔöÇsda1  zfs_me 5000  ZFS-SSD        11997217387869938899                                  
+ÔööÔöÇsda9                                                                                    
+sr0                                                                                       
+zd0                                                                                       
+Ôö£ÔöÇzd0p1                                                                                   
+Ôö£ÔöÇzd0p2 vfat   FAT32                25D3-E6B5                                             
+ÔööÔöÇzd0p3 ext4   1.0                  5c9fb453-2c7c-435f-9216-18d50d85c817                  
+zd16                                                                                      
+ÔööÔöÇzd16p1
+        ext4   1.0                  cfeb33f3-8c6c-4830-aa1a-c872ea1f4556                  
+zd32                                                                                      
+Ôö£ÔöÇzd32p1
+Ôöé       ntfs         Reservado para el sistema
+Ôöé                                   00487E05487DF9AC                                      
+Ôö£ÔöÇzd32p2
+Ôöé       ntfs                        34908001907FC83E                                      
+ÔööÔöÇzd32p3
+        ntfs                        F4F6EA34F6E9F730                                      
+zd48                                                                                      
+Ôö£ÔöÇzd48p1
+Ôöé       ext4   1.0                  6f9baed3-bc9e-46a1-b311-a6a08c44f670                  
+Ôö£ÔöÇzd48p2
+Ôöé                                                                                         
+ÔööÔöÇzd48p5
+        swap   1                    2b86550c-ccc4-4045-a2aa-c21eae72d571                  
+zd64                                                                                      
+Ôö£ÔöÇzd64p1
+Ôöé       ext4   1.0                  4434796d-81b9-4cee-8b2f-bfef13ef2883                  
+Ôö£ÔöÇzd64p2
+Ôöé                                                                                         
+ÔööÔöÇzd64p5
+        swap   1                    0f95c0a3-d2d2-4756-a73f-619a288738d9                  
+nvme0n1                                                                                   
+Ôö£ÔöÇnvme0n1p1
+Ôöé                                                                                         
+Ôö£ÔöÇnvme0n1p2
+Ôöé       vfat   FAT32                BB25-B9F6                              1010.3M     1% /boot/efi
+ÔööÔöÇnvme0n1p3
+        LVM2_m LVM2                 IJV34R-l75c-AVrJ-haJv-HJg1-BDBR-5j7YYh                
+  Ôö£ÔöÇpve-swap
+  Ôöé     swap   1                    16d0d080-a46f-4101-af70-785d0d996e4d                  [SWAP]
+  Ôö£ÔöÇpve-root
+  Ôöé     ext4   1.0                  5848c99f-bfad-4ea9-9ea7-cee972b35dcb     81.6G     8% /
+  Ôö£ÔöÇpve-data_tmeta
+  Ôöé                                                                                       
+  Ôöé ÔööÔöÇpve-data-tpool
+  Ôöé                                                                                       
+  Ôöé   ÔööÔöÇpve-data
+  Ôöé                                                                                        
+  ÔööÔöÇpve-data_tdata
+    ÔööÔöÇpve-data-tpool
+      ÔööÔöÇpve-data
+--- ESTADO DE ZFS (Si aplica) ---
+  pool: ZFS-SSD
+ state: ONLINE
+  scan: scrub repaired 0B in 00:27:04 with 0 errors on Sun Mar  8 00:51:05 2026
+config:
+        NAME                                         STATE     READ WRITE CKSUM
+        ZFS-SSD                                      ONLINE       0     0     0
+          ata-KINGSTON_SKC6002048G_50026B7785664C83  ONLINE       0     0     0
+errors: No known data errors
+--- ESTADO DE LVM (Si aplica) ---
+  VG  #PV #LV #SN Attr   VSize    VFree 
+  pve   1   3   0 wz--n- <952.87g 16.00g
+  LV   VG  Attr       LSize    Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data pve twi-aotz-- <816.21g             0.00   0.23                            
+  root pve -wi-ao----   96.00g                                                    
+  swap pve -wi-ao----    8.00g                                                    
+root@delli5-03:~#
+root@dellr610:~# echo "--- MODELO Y DISCOS FISICOS ---" && lsblk -do NAME,SIZE,MODEL,ROTA && \
+echo "--- PARTICIONES Y FILSYSTEM ---" && lsblk -f && \
+echo "--- ESTADO DE ZFS (Si aplica) ---" && zpool status 2>/dev/null || echo "No usa ZFS" && \
+echo "--- ESTADO DE LVM (Si aplica) ---" && vgs && lvs
+--- MODELO Y DISCOS FISICOS ---
+NAME    SIZE MODEL                   ROTA
+sda   111.3G PERC 6/i                   1
+sdb     1.7T PERC 6/i                   1
+sdc     2.7T PERC 6/i                   1
+sr0    1024M MATSHITA DVD-ROM UJ8E0B    1
+zd0      86G                            0
+zd32    100G                            0
+zd80    100G                            0
+zd96    700G                            0
+zd112   537G                            0
+--- PARTICIONES Y FILSYSTEM ---
+NAME             FSTYPE FSVER LABEL UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+sda                                                                                       
+Ôö£ÔöÇsda1                                                                                    
+Ôö£ÔöÇsda2           vfat   FAT32       D6E3-1EBC                                             
+ÔööÔöÇsda3           LVM2_m LVM2        W7qZKJ-RzUE-seaV-zDVZ-GNls-9wPC-37tbsh                
+  Ôö£ÔöÇpve-swap     swap   1           9fa7ab04-658d-4fd0-836d-5292c35abedc                  [SWAP]
+  Ôö£ÔöÇpve-root     ext4   1.0         b273af5d-0f46-4697-afe8-04d7840019df     24.9G    27% /
+  Ôö£ÔöÇpve-data_tmeta
+  Ôöé                                                                                       
+  Ôöé ÔööÔöÇpve-data                                                                            
+  ÔööÔöÇpve-data_tdata
+    ÔööÔöÇpve-data                                                                            
+sdb                                                                                       
+Ôö£ÔöÇsdb1           zfs_me 5000  ZFS-SSD
+Ôöé                                   4686420515717641592                                   
+ÔööÔöÇsdb9                                                                                    
+sdc              LVM2_m LVM2        UsdKts-Utd5-Djrq-Wv85-yncd-VxxU-evOK0T                
+Ôö£ÔöÇBackup--R610-Backup--R610_tmeta
+Ôöé                                                                                         
+Ôöé ÔööÔöÇBackup--R610-Backup--R610-tpool
+Ôöé                                                                                         
+Ôöé   ÔööÔöÇBackup--R610-Backup--R610
+Ôöé                                                                                         
+ÔööÔöÇBackup--R610-Backup--R610_tdata
+  ÔööÔöÇBackup--R610-Backup--R610-tpool
+    ÔööÔöÇBackup--R610-Backup--R610
+sr0                                                                                       
+zd0                                                                                       
+Ôö£ÔöÇzd0p1          ext4   1.0         1ec15c6e-137f-44f4-9f5f-e2f7a472aec4                  
+Ôö£ÔöÇzd0p2                                                                                   
+ÔööÔöÇzd0p5          swap   1           bba25f09-409e-4d12-b23c-4d8eb85a0495                  
+zd32                                                                                      
+Ôö£ÔöÇzd32p1         ext4   1.0         4434796d-81b9-4cee-8b2f-bfef13ef2883                  
+Ôö£ÔöÇzd32p2                                                                                  
+ÔööÔöÇzd32p5         swap   1           0f95c0a3-d2d2-4756-a73f-619a288738d9                  
+zd80                                                                                      
+Ôö£ÔöÇzd80p1                                                                                  
+Ôö£ÔöÇzd80p2         vfat   FAT32       25D3-E6B5                                             
+ÔööÔöÇzd80p3         ext4   1.0         5c9fb453-2c7c-435f-9216-18d50d85c817                  
+zd96                                                                                      
+ÔööÔöÇzd96p1         ext4   1.0         cfeb33f3-8c6c-4830-aa1a-c872ea1f4556                  
+zd112                                                                                     
+Ôö£ÔöÇzd112p1        ext4   1.0         0048776c-2eb2-4d5a-9a2d-52996b5652ab                  
+Ôö£ÔöÇzd112p2                                                                                 
+Ôö£ÔöÇzd112p5        swap   1           0ec2153e-fb36-48b8-8e27-bca45650697d                  
+Ôö£ÔöÇzd112p6        ext4   1.0         a17b520a-9138-4e8b-97eb-f2d349352502                  
+ÔööÔöÇzd112p7        ext4   1.0         4738262b-c472-462c-9814-4672fb850475                  
+--- ESTADO DE ZFS (Si aplica) ---
+  pool: ZFS-SSD
+ state: ONLINE
+  scan: scrub repaired 0B in 02:24:42 with 0 errors on Sun Mar  8 02:48:43 2026
+config:
+        NAME                                      STATE     READ WRITE CKSUM
+        ZFS-SSD                                   ONLINE       0     0     0
+          scsi-360026b905c742c002d00852758263ce2  ONLINE       0     0     0
+errors: No known data errors
+--- ESTADO DE LVM (Si aplica) ---
+  VG          #PV #LV #SN Attr   VSize    VFree  
+  Backup-R610   1   1   0 wz--n-   <2.73t 376.00m
+  pve           1   3   0 wz--n- <110.25g  13.75g
+  LV          VG          Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  Backup-R610 Backup-R610 twi-aotz--  <2.70t             0.00   0.17                            
+  data        pve         twi-a-tz--  48.93g             0.00   1.59                            
+  root        pve         -wi-ao---- <37.56g                                                    
+  swap        pve         -wi-ao----   8.00g                                                    
+root@dellr610:~#
+root@dellr610-2:~# echo "--- MODELO Y DISCOS FISICOS ---" && lsblk -do NAME,SIZE,MODEL,ROTA && \
+echo "--- PARTICIONES Y FILSYSTEM ---" && lsblk -f && \
+echo "--- ESTADO DE ZFS (Si aplica) ---" && zpool status 2>/dev/null || echo "No usa ZFS" && \
+echo "--- ESTADO DE LVM (Si aplica) ---" && vgs && lvs
+--- MODELO Y DISCOS FISICOS ---
+NAME    SIZE MODEL          ROTA
+sda   465.3G PERC 6/i          1
+sdb     1.7T PERC 6/i          1
+sdc     3.6T PERC 6/i          1
+sdd       0B Virtual Floppy    1
+sde       0B LCDRIVE           1
+sr0    1024M Virtual CD        1
+zd0      32G                   0
+zd16      4M                   0
+zd32    100G                   0
+zd48    200G                   0
+zd64    537G                   0
+zd80      1M                   0
+zd96    537G                   0
+zd112   100G                   0
+--- PARTICIONES Y FILSYSTEM ---
+NAME     FSTYPE FSVER LABEL         UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+sda                                                                                       
+Ôö£ÔöÇsda1                                                                                    
+Ôö£ÔöÇsda2   vfat   FAT32               87D0-0E44                                             
+ÔööÔöÇsda3   LVM2_m LVM2                ZfYI1D-NdZx-x3uE-ckRK-Ejde-AkLR-E7aS6C                
+  Ôö£ÔöÇpve-swap
+  Ôöé      swap   1                   b556400c-3bda-4074-991f-0f0fec27b7cd                  [SWAP]
+  Ôö£ÔöÇpve-root
+  Ôöé      ext4   1.0                 a3975344-2bea-4e30-bfe5-8f58d0faa0e5     74.6G    15% /
+  Ôö£ÔöÇpve-data_tmeta
+  Ôöé                                                                                       
+  Ôöé ÔööÔöÇpve-data-tpool
+  Ôöé                                                                                       
+  Ôöé   Ôö£ÔöÇpve-data
+  Ôöé   Ôöé                                                                                   
+  Ôöé   Ôö£ÔöÇpve-vm--104--disk--0
+  Ôöé   Ôöé                                                                                   
+  Ôöé   ÔööÔöÇpve-vm--115--disk--0
+  Ôöé      ext4   1.0                 8f6f4a7f-805a-4c5c-b71c-1452c0c151d0                  
+  ÔööÔöÇpve-data_tdata
+    ÔööÔöÇpve-data-tpool
+      Ôö£ÔöÇpve-data
+      Ôöé                                                                                   
+      Ôö£ÔöÇpve-vm--104--disk--0
+      Ôöé                                                                                   
+      ÔööÔöÇpve-vm--115--disk--0
+         ext4   1.0                 8f6f4a7f-805a-4c5c-b71c-1452c0c151d0                  
+sdb                                                                                       
+Ôö£ÔöÇsdb1   zfs_me 5000  ZFS-SSD       14196692725506263851                                  
+ÔööÔöÇsdb9                                                                                    
+sdc      LVM2_m LVM2                W2WdeU-19si-8vJh-yzO6-riQ9-EgKd-eiUA7b                
+Ôö£ÔöÇBackup--R610--2-backup--thin--pool_tmeta
+Ôöé                                                                                         
+Ôöé ÔööÔöÇBackup--R610--2-backup--thin--pool
+Ôöé                                                                                         
+ÔööÔöÇBackup--R610--2-backup--thin--pool_tdata
+  ÔööÔöÇBackup--R610--2-backup--thin--pool
+sdd                                                                                       
+sde                                                                                       
+sr0                                                                                       
+zd0                                                                                       
+zd16                                                                                      
+zd32                                                                                      
+Ôö£ÔöÇzd32p1 vfat   FAT32               FA9E-C21F                                             
+Ôö£ÔöÇzd32p2                                                                                  
+Ôö£ÔöÇzd32p3 ntfs                       0C5AA0615AA048F2                                      
+ÔööÔöÇzd32p4 ntfs                       B06601FB6601C2D8                                      
+zd48                                                                                      
+Ôö£ÔöÇzd48p1 ntfs         Reservado para el sistema
+Ôöé                                   00487E05487DF9AC                                      
+Ôö£ÔöÇzd48p2 ntfs                       34908001907FC83E                                      
+ÔööÔöÇzd48p3 ntfs                       F4F6EA34F6E9F730                                      
+zd64                                                                                      
+Ôö£ÔöÇzd64p1 ext4   1.0                 0048776c-2eb2-4d5a-9a2d-52996b5652ab                  
+Ôö£ÔöÇzd64p2                                                                                  
+Ôö£ÔöÇzd64p5 swap   1                   0ec2153e-fb36-48b8-8e27-bca45650697d                  
+Ôö£ÔöÇzd64p6 ext4   1.0                 a17b520a-9138-4e8b-97eb-f2d349352502                  
+ÔööÔöÇzd64p7 ext4   1.0                 4738262b-c472-462c-9814-4672fb850475                  
+zd80                                                                                      
+zd96                                                                                      
+Ôö£ÔöÇzd96p1 ext4   1.0                 0048776c-2eb2-4d5a-9a2d-52996b5652ab                  
+Ôö£ÔöÇzd96p2                                                                                  
+Ôö£ÔöÇzd96p5 swap   1                   0ec2153e-fb36-48b8-8e27-bca45650697d                  
+Ôö£ÔöÇzd96p6 ext4   1.0                 a17b520a-9138-4e8b-97eb-f2d349352502                  
+ÔööÔöÇzd96p7 ext4   1.0                 4738262b-c472-462c-9814-4672fb850475                  
+zd112                                                                                     
+Ôö£ÔöÇzd112p1
+Ôöé                                                                                         
+ÔööÔöÇzd112p2
+         ext4   1.0                 f12c59c1-c48f-4c42-90e0-8bcf8057fdf4                  
+--- ESTADO DE ZFS (Si aplica) ---
+  pool: ZFS-SSD
+ state: ONLINE
+  scan: scrub repaired 0B in 01:14:11 with 0 errors on Sun Mar  8 01:38:12 2026
+config:
+        NAME                                      STATE     READ WRITE CKSUM
+        ZFS-SSD                                   ONLINE       0     0     0
+          scsi-36782bcb01a57fb002fc31eeb10d936c0  ONLINE       0     0     0
+errors: No known data errors
+--- ESTADO DE LVM (Si aplica) ---
+  VG            #PV #LV #SN Attr   VSize    VFree 
+  Backup-R610-2   1   1   0 wz--n-   <3.64t     0 
+  pve             1   5   0 wz--n- <464.25g 16.00g
+  LV               VG            Attr       LSize    Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup-thin-pool Backup-R610-2 twi-a-tz--   <3.64t             0.00   10.41                           
+  data             pve           twi-aotz-- <337.36g             11.74  0.81                            
+  root             pve           -wi-ao----   96.00g                                                    
+  swap             pve           -wi-ao----    8.00g                                                    
+  vm-104-disk-0    pve           Vwi-aotz--   32.00g data        100.00                                 
+  vm-115-disk-0    pve           Vwi-aotz--    8.00g data        94.94                                  
+root@dellr610-2:~#
+root@hpdl360:~# echo "--- MODELO Y DISCOS FISICOS ---" && lsblk -do NAME,SIZE,MODEL,ROTA && \
+echo "--- PARTICIONES Y FILSYSTEM ---" && lsblk -f && \
+echo "--- ESTADO DE ZFS (Si aplica) ---" && zpool status 2>/dev/null || echo "No usa ZFS" && \
+echo "--- ESTADO DE LVM (Si aplica) ---" && vgs && lvs
+--- MODELO Y DISCOS FISICOS ---
+NAME   SIZE MODEL          ROTA
+sda    7.3T LOGICAL VOLUME    1
+sdb    7.4G USB RAID LUN      1
+sdc     64K Log File LUN      1
+sdd    320K SPI Flash LUN     1
+sr0   1024M hp DVDRW GUD0N    1
+zd0     40G                   0
+zd16     4M                   0
+zd48   100G                   0
+zd64   100G                   0
+zd96   537G                   0
+zd112    1M                   0
+zd144  700G                   0
+--- PARTICIONES Y FILSYSTEM ---
+NAME         FSTYPE  FSVER  LABEL   UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+sda                                                                                       
+Ôö£ÔöÇsda1       zfs_mem 5000   ZFS-SSD 2705496116053608495                                   
+ÔööÔöÇsda9                                                                                    
+sdb                                                                                       
+Ôö£ÔöÇsdb1                                                                                    
+Ôö£ÔöÇsdb2       vfat    FAT32          DBF9-08BC                               499.3M     2% /boot/efi
+ÔööÔöÇsdb3       LVM2_me LVM2 0         SAPjdZ-JMrv-dsRf-TuMG-x0lU-WZzc-l2x9lo                
+  Ôö£ÔöÇpve-swap swap    1              7503b418-015a-46c6-8a70-6fb2e98b2af4                  [SWAP]
+  ÔööÔöÇpve-root ext4    1.0            5ed19344-2504-4cca-b147-31c1e70b081a        2G    62% /
+sdc                                                                                       
+sdd                                                                                       
+sr0                                                                                       
+zd0                                                                                       
+Ôö£ÔöÇzd0p1      ext4    1.0            6f9baed3-bc9e-46a1-b311-a6a08c44f670                  
+Ôö£ÔöÇzd0p2                                                                                   
+ÔööÔöÇzd0p5      swap    1              2b86550c-ccc4-4045-a2aa-c21eae72d571                  
+zd16                                                                                      
+zd48                                                                                      
+Ôö£ÔöÇzd48p1     ext4    1.0            4434796d-81b9-4cee-8b2f-bfef13ef2883                  
+Ôö£ÔöÇzd48p2                                                                                  
+ÔööÔöÇzd48p5     swap    1              0f95c0a3-d2d2-4756-a73f-619a288738d9                  
+zd64                                                                                      
+Ôö£ÔöÇzd64p1     vfat    FAT32          FA9E-C21F                                             
+Ôö£ÔöÇzd64p2                                                                                  
+Ôö£ÔöÇzd64p3     ntfs                   0C5AA0615AA048F2                                      
+ÔööÔöÇzd64p4     ntfs                   B06601FB6601C2D8                                      
+zd96                                                                                      
+Ôö£ÔöÇzd96p1     ext4    1.0            0048776c-2eb2-4d5a-9a2d-52996b5652ab                  
+Ôö£ÔöÇzd96p2                                                                                  
+Ôö£ÔöÇzd96p5     swap    1              0ec2153e-fb36-48b8-8e27-bca45650697d                  
+Ôö£ÔöÇzd96p6     ext4    1.0            a17b520a-9138-4e8b-97eb-f2d349352502                  
+ÔööÔöÇzd96p7     ext4    1.0            4738262b-c472-462c-9814-4672fb850475                  
+zd112                                                                                     
+zd144                                                                                     
+ÔööÔöÇzd144p1    ext4    1.0            cfeb33f3-8c6c-4830-aa1a-c872ea1f4556                  
+--- ESTADO DE ZFS (Si aplica) ---
+  pool: ZFS-SSD
+ state: ONLINE
+  scan: scrub repaired 0B in 00:29:21 with 0 errors on Sun Mar  8 00:53:22 2026
+config:
+        NAME                                      STATE     READ WRITE CKSUM
+        ZFS-SSD                                   ONLINE       0     0     0
+          scsi-3600508b1001c56ac641c0833eaa33376  ONLINE       0     0     0
+errors: No known data errors
+--- ESTADO DE LVM (Si aplica) ---
+  VG  #PV #LV #SN Attr   VSize  VFree
+  pve   1   2   0 wz--n- <6.92g 4.00m
+  LV   VG  Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  root pve -wi-ao----   6.16g                                                    
+  swap pve -wi-ao---- 768.00m                                                    
+root@hpdl360:~#
+root@hpdl360:~# echo "--- LISTADO DE VMS Y ESTADO ---" && qm list && \
+echo "--- CONFIGURACION DE RED DEL HOST ---" && cat /etc/network/interfaces
+--- LISTADO DE VMS Y ESTADO ---
+      VMID NAME                 STATUS     MEM(MB)    BOOTDISK(GB) PID       
+       103 MySql-Server         running    6144             537.00 71507     
+       106 OMVServer            running    4128             100.00 71866     
+       120 Win11                running    4096             100.00 740790    
+--- CONFIGURACION DE RED DEL HOST ---
+# network interface settings; autogenerated
+# Please do NOT modify this file directly, unless you know what
+# you're doing.
+#
+# If you want to manage parts of the network configuration manually,
+# please utilize the 'source' or 'source-directory' directives to do
+# so.
+# PVE will preserve these directives, but will NOT read its network
+# configuration from sourced files, so do not attempt to move any of
+# the PVE managed interfaces into external files!
+auto lo
+iface lo inet loopback
+auto eno52
+iface eno52 inet manual
+iface eno1 inet manual
+iface eno2 inet manual
+iface eno3 inet manual
+iface eno4 inet manual
+auto eno49
+iface eno49 inet manual
+auto eno50
+iface eno50 inet manual
+auto eno51
+iface eno51 inet manual
+auto bond0
+iface bond0 inet manual
+        bond-slaves eno49 eno50 eno51 eno52
+        bond-miimon 100
+        bond-mode balance-alb
+auto vmbr0
+iface vmbr0 inet static
+        address 10.175.6.20/23
+        gateway 10.175.6.201
+        bridge-ports bond0
+        bridge-stp off
+        bridge-fd 0
+source /etc/network/interfaces.d/*
+root@hpdl360:~#
+root@dellr610-2:~# echo "--- LISTADO DE VMS Y ESTADO ---" && qm list && \
+echo "--- CONFIGURACION DE RED DEL HOST ---" && cat /etc/network/interfaces
+--- LISTADO DE VMS Y ESTADO ---
+      VMID NAME                 STATUS     MEM(MB)    BOOTDISK(GB) PID       
+       101 W10Full              running    6144             200.00 1583      
+       104 WindowsXP            running    1024              32.00 1740      
+       108 MySql-Desarrollo     running    6144             537.00 2066      
+       111 Ubuntu-25            stopped    4064             100.00 0         
+--- CONFIGURACION DE RED DEL HOST ---
+# network interface settings; autogenerated
+# Please do NOT modify this file directly, unless you know what
+# you're doing.
+#
+# If you want to manage parts of the network configuration manually,
+# please utilize the 'source' or 'source-directory' directives to do
+# so.
+# PVE will preserve these directives, but will NOT read its network
+# configuration from sourced files, so do not attempt to move any of
+# the PVE managed interfaces into external files!
+auto lo
+iface lo inet loopback
+auto eno1
+iface eno1 inet manual
+auto eno2
+iface eno2 inet manual
+auto eno3
+iface eno3 inet manual
+auto eno4
+iface eno4 inet manual
+auto bond0
+iface bond0 inet manual
+        bond-slaves eno1 eno2 eno3
+        bond-miimon 100
+        bond-mode balance-alb
+auto vmbr0
+iface vmbr0 inet static
+        address 10.175.6.14/23
+        gateway 10.175.6.201
+        bridge-ports bond0
+        bridge-stp off
+        bridge-fd 0
+auto vmbr1
+iface vmbr1 inet manual
+        bridge-ports eno4
+        bridge-stp off
+        bridge-fd 0
+source /etc/network/interfaces.d/*
+root@dellr610-2:~#
+root@dellr610:~# echo "--- LISTADO DE VMS Y ESTADO ---" && qm list && \
+echo "--- CONFIGURACION DE RED DEL HOST ---" && cat /etc/network/interfaces
+--- LISTADO DE VMS Y ESTADO ---
+      VMID NAME                 STATUS     MEM(MB)    BOOTDISK(GB) PID       
+       100 miHospital           running    2048              86.00 3269024   
+       105 ServerAplicaciones   running    3072             100.00 3296410   
+--- CONFIGURACION DE RED DEL HOST ---
+# network interface settings; autogenerated
+# Please do NOT modify this file directly, unless you know what
+# you're doing.
+#
+# If you want to manage parts of the network configuration manually,
+# please utilize the 'source' or 'source-directory' directives to do
+# so.
+# PVE will preserve these directives, but will NOT read its network
+# configuration from sourced files, so do not attempt to move any of
+# the PVE managed interfaces into external files!
+auto lo
+iface lo inet loopback
+auto eno2
+iface eno2 inet manual
+auto eno1
+iface eno1 inet manual
+auto eno3
+iface eno3 inet manual
+auto eno4
+iface eno4 inet manual
+auto bond0
+iface bond0 inet manual
+        bond-slaves eno1 eno2 eno3 eno4
+        bond-miimon 100
+        bond-mode balance-alb
+auto vmbr0
+iface vmbr0 inet static
+        address 10.175.6.4/24
+        gateway 10.175.6.201
+        bridge-ports bond0
+        bridge-stp off
+        bridge-fd 0
+source /etc/network/interfaces.d/*
+root@dellr610:~#
+root@delli5-03:~# echo "--- LISTADO DE VMS Y ESTADO ---" && qm list && \
+echo "--- CONFIGURACION DE RED DEL HOST ---" && cat /etc/network/interfaces
+--- LISTADO DE VMS Y ESTADO ---
+      VMID NAME                 STATUS     MEM(MB)    BOOTDISK(GB) PID       
+       119 OCS                  running    2048              40.00 3822502   
+--- CONFIGURACION DE RED DEL HOST ---
+auto lo
+iface lo inet loopback
+iface enp2s0 inet manual
+auto vmbr0
+iface vmbr0 inet static
+        address 10.175.6.8/23
+        gateway 10.175.6.201
+        bridge-ports enp2s0
+        bridge-stp off
+        bridge-fd 0
+source /etc/network/interfaces.d/*
+root@delli5-03:~# 
+pvesr list
+JobID                Target                 Schedule  Rate  Enabled
+101-0                local/delli5-03         monthly     -      yes
+102-0                local/dellr610          monthly     -      yes
+103-0                local/delli5-02          */2:00     -      yes
+103-1                local/delli5-04           20:00     -      yes
+103-2                local/dellr610            21:00     -      yes
+103-3                local/dellr610-2          23:00     -      yes
+105-0                local/delli5-03         monthly     -      yes
+105-1                local/delli5-02         monthly     -      yes
+106-0                local/dellr610            21:00     -      yes
+106-1                local/delli5-03           23:30     -      yes
+113-0                local/dellr610          monthly     -      yes
+113-1                local/dellr610-2           */15     -      yes
+119-0                local/hpdl360             21:00     -      yes
+pvesm status
+Name                 Type     Status           Total            Used       Available        %
+Backup-R610       lvmthin   disabled               0               0               0      N/A
+Backup-R610-2     lvmthin   disabled               0               0               0      N/A
+BackupsOMV           cifs     active       960379920       414311284       546068636   43.14%
+PBS                   pbs     active      1883683456       461556864      1422126592   24.50%
+PBS-WD-1Tb            pbs     active       942846080       494363776       448482304   52.43%
+SSD2TB                lvm   disabled               0               0               0      N/A
+ZFS-SSD           zfspool     active      7667187712      2135328284      5531859428   27.85%
+local                 dir     active         6268112         3866612         2061944   61.69%
+local-lvm         lvmthin   disabled               0               0               0      N/A
+root@hpdl360:~# 
+pvesh get /cluster/resources --type vm --output-format yaml | grep -A 5 "vmid: 12[04]\|vmid: 10[0356]"
+  vmid: 100
+- cpu: 0.325982351856631
+  disk: 0
+  diskread: 708813819392
+  diskwrite: 405262364160
+  id: qemu/101
+--
+  vmid: 103
+- cpu: 0.0367340238892815
+  disk: 0
+  diskread: 1230177280
+  diskwrite: 10673851392
+  id: qemu/104
+--
+  vmid: 105
+- cpu: 0.017123508540829
+  disk: 0
+  diskread: 35014692352
+  diskwrite: 123038918656
+  id: qemu/106
+--
+  vmid: 106
+- cpu: 0.000481594027289039
+  disk: 894828544
+  diskread: 2749132800
+  diskwrite: 9089024
+  id: lxc/107
+--
+  vmid: 120
+- cpu: 0.000361195520466779
+  disk: 1164181504
+  diskread: 1497894912
+  diskwrite: 0
+  id: lxc/121
+--
+  vmid: 124
+- cpu: 0.00265927623771175
+  disk: 1141243904
+  diskread: 247828480
+  diskwrite: 0
+  id: lxc/300
+root@dellr610-2:~# 
+pvecm status && pvesh get /cluster/resources --type vm --output-format table
+Cluster information
+-------------------
+Name:             Cluster-Samco
+Config Version:   16
+Transport:        knet
+Secure auth:      on
+Quorum information
+------------------
+Date:             Fri Mar 20 11:22:57 2026
+Quorum provider:  corosync_votequorum
+Nodes:            4
+Node ID:          0x00000006
+Ring ID:          1.47ab
+Quorate:          Yes
+Votequorum information
+----------------------
+Expected votes:   4
+Highest expected: 4
+Total votes:      4
+Quorum:           3  
+Flags:            Quorate 
+Membership information
+----------------------
+    Nodeid      Votes Name
+0x00000001          1 10.175.6.14
+0x00000002          1 10.175.6.4
+0x00000004          1 10.175.6.8
+0x00000006          1 10.175.6.20 (local)
+400 Parameter verification failed.
+output-format: value 'table' does not have a value in the enumeration 'text, json, json-pretty, yaml'
+pvesh get <api_path> [OPTIONS] [FORMAT_OPTIONS]
+root@dellr610-2:~# pvesh get /cluster/resources --type vm
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇ
+Ôöé id       Ôöé type Ôöé cgroup-mode Ôöé content Ôöé   cpu Ôöé       disk Ôöé   diskread Ôöé  diskwrite Ôöé hastate Ôöé 
+Ôò×ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¬ÔòÉ
+Ôöé lxc/107  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.04% Ôöé 853.38 MiB Ôöé   2.56 GiB Ôöé   8.67 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/109  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.02% Ôöé   2.05 GiB Ôöé   2.66 GiB Ôöé  10.27 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/112  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.02% Ôöé   1.25 GiB Ôöé   3.34 GiB Ôöé  18.46 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/114  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.02% Ôöé   1.50 GiB Ôöé   3.41 GiB Ôöé  14.01 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/115  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.10% Ôöé   2.78 GiB Ôöé 418.43 MiB Ôöé   6.87 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/116  Ôöé lxc  Ôöé             Ôöé         Ôöé 1.84% Ôöé   1.51 GiB Ôöé   5.77 GiB Ôöé   1.86 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/117  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.05% Ôöé   1.50 GiB Ôöé   2.96 GiB Ôöé  13.05 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/118  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.01% Ôöé   1.50 GiB Ôöé   3.26 GiB Ôöé  10.53 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/121  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.27% Ôöé   1.08 GiB Ôöé   1.40 GiB Ôöé     0.00 B Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/124  Ôöé lxc  Ôöé             Ôöé         Ôöé 2.37% Ôöé   1.67 GiB Ôöé 473.84 MiB Ôöé     0.00 B Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé lxc/300  Ôöé lxc  Ôöé             Ôöé         Ôöé 0.21% Ôöé   1.06 GiB Ôöé 236.35 MiB Ôöé     0.00 B Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/100 Ôöé qemu Ôöé             Ôöé         Ôöé 1.83% Ôöé     0.00 B Ôöé 249.24 MiB Ôöé 876.72 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/101 Ôöé qemu Ôöé             Ôöé         Ôöé 4.60% Ôöé     0.00 B Ôöé 660.15 GiB Ôöé 377.47 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/103 Ôöé qemu Ôöé             Ôöé         Ôöé 0.48% Ôöé     0.00 B Ôöé  17.84 GiB Ôöé 154.28 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/104 Ôöé qemu Ôöé             Ôöé         Ôöé 3.33% Ôöé     0.00 B Ôöé   1.15 GiB Ôöé   9.94 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/105 Ôöé qemu Ôöé             Ôöé         Ôöé 2.82% Ôöé     0.00 B Ôöé   2.16 GiB Ôöé  15.89 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/106 Ôöé qemu Ôöé             Ôöé         Ôöé 1.97% Ôöé     0.00 B Ôöé  32.61 GiB Ôöé 114.60 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/108 Ôöé qemu Ôöé             Ôöé         Ôöé 0.53% Ôöé     0.00 B Ôöé 515.00 MiB Ôöé  10.19 GiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/111 Ôöé qemu Ôöé             Ôöé         Ôöé 0.00% Ôöé     0.00 B Ôöé     0.00 B Ôöé     0.00 B Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/119 Ôöé qemu Ôöé             Ôöé         Ôöé 1.12% Ôöé     0.00 B Ôöé 409.29 MiB Ôöé 286.16 MiB Ôöé         Ôöé 
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇ
+Ôöé qemu/120 Ôöé qemu Ôöé             Ôöé         Ôöé 5.20% Ôöé     0.00 B Ôöé 530.38 GiB Ôöé   1.11 TiB Ôöé         Ôöé 
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇ
+root@dellr610-2:~# 
+cat recursos_cluster.yaml
+---
+- cpu: 0.0138364451870896
+  disk: 0
+  diskread: 261345792
+  diskwrite: 919306240
+  id: qemu/100
+  maxcpu: 1
+  maxdisk: 92341796864
+  maxmem: 2147483648
+  mem: 507940864
+  name: miHospital
+  netin: 5445625469
+  netout: 812829546
+  node: dellr610
+  status: running
+  template: 0
+  type: qemu
+  uptime: 354686
+  vmid: 100
+- cpu: 0.0495035588194679
+  disk: 0
+  diskread: 708852041728
+  diskwrite: 405322735104
+  id: qemu/101
+  maxcpu: 4
+  maxdisk: 214748364800
+  maxmem: 6442450944
+  mem: 5279180447
+  name: W10Full
+  netin: 77532251037
+  netout: 4358675537
+  node: dellr610-2
+  status: running
+  template: 0
+  type: qemu
+  uptime: 5626058
+  vmid: 101
+- cpu: 0.00879729788458029
+  disk: 0
+  diskread: 19151277720
+  diskwrite: 165665964032
+  id: qemu/103
+  maxcpu: 4
+  maxdisk: 576599359488
+  maxmem: 6442450944
+  mem: 5671620608
+  name: MySql-Server
+  netin: 160761644396
+  netout: 223297584838
+  node: hpdl360
+  status: running
+  template: 0
+  type: qemu
+  uptime: 10341016
+  vmid: 103
+- cpu: 0.0291884191152523
+  disk: 0
+  diskread: 1230177280
+  diskwrite: 10675451392
+  id: qemu/104
+  maxcpu: 4
+  maxdisk: 34359738368
+  maxmem: 1073741824
+  mem: 479992345
+  name: WindowsXP
+  netin: 70310293650
+  netout: 1180127703
+  node: dellr610-2
+  status: running
+  tags: equipodesarrollo
+  template: 0
+  type: qemu
+  uptime: 5626052
+  vmid: 104
+- cpu: 0.0284711468272805
+  disk: 0
+  diskread: 2324350654
+  diskwrite: 17078171648
+  id: qemu/105
+  maxcpu: 4
+  maxdisk: 107374182400
+  maxmem: 3221225472
+  mem: 2963591168
+  name: ServerAplicaciones
+  netin: 4612243943
+  netout: 144125071
+  node: dellr610
+  status: running
+  template: 0
+  type: qemu
+  uptime: 350978
+  vmid: 105
+- cpu: 0.0155837848241137
+  disk: 0
+  diskread: 35014807040
+  diskwrite: 123055065088
+  id: qemu/106
+  maxcpu: 2
+  maxdisk: 107374182400
+  maxmem: 4328521728
+  mem: 3959197696
+  name: OMVServer
+  netin: 178744449290
+  netout: 93935724321
+  node: hpdl360
+  status: running
+  template: 0
+  type: qemu
+  uptime: 10341011
+  vmid: 106
+- cpu: 0.000430076966046403
+  disk: 894828544
+  diskread: 2749530112
+  diskwrite: 9089024
+  id: lxc/107
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 144445440
+  name: personal-web
+  netin: 56651240236
+  netout: 71319963
+  node: dellr610-2
+  status: running
+  tags: container_personal
+  template: 0
+  type: lxc
+  uptime: 5626043
+  vmid: 107
+- cpu: 0.00396962499967432
+  disk: 0
+  diskread: 540014232
+  diskwrite: 10944385024
+  id: qemu/108
+  maxcpu: 4
+  maxdisk: 576599359488
+  maxmem: 6442450944
+  mem: 2344280064
+  name: MySql-Desarrollo
+  netin: 55957496754
+  netout: 535519558
+  node: dellr610-2
+  status: running
+  tags: servertesting
+  template: 0
+  type: qemu
+  uptime: 5626040
+  vmid: 108
+- cpu: 0.000322557724534802
+  disk: 2205024256
+  diskread: 2860806144
+  diskwrite: 10772480
+  id: lxc/109
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 82124800
+  name: patrimonio-web
+  netin: 56554770382
+  netout: 30407139
+  node: dellr610-2
+  status: running
+  tags: container_patrimonioweb
+  template: 0
+  type: lxc
+  uptime: 5626030
+  vmid: 109
+- cpu: 0
+  disk: 0
+  diskread: 0
+  diskwrite: 0
+  id: qemu/111
+  maxcpu: 4
+  maxdisk: 107374182400
+  maxmem: 4261412864
+  mem: 0
+  name: Ubuntu-25
+  netin: 0
+  netout: 0
+  node: dellr610-2
+  status: stopped
+  template: 0
+  type: qemu
+  uptime: 0
+  vmid: 111
+- cpu: 0.000215038483023201
+  disk: 1347289088
+  diskread: 3581452288
+  diskwrite: 19357696
+  id: lxc/112
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 76054528
+  name: patrimonio-web-2
+  netin: 56500255651
+  netout: 67229436
+  node: dellr610-2
+  status: running
+  tags: container_patrimonioweb2
+  template: 0
+  type: lxc
+  uptime: 5626025
+  vmid: 112
+- cpu: 0.000322557724534802
+  disk: 1613758464
+  diskread: 3663892480
+  diskwrite: 14688256
+  id: lxc/114
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 80293888
+  name: lista-espera
+  netin: 56433596934
+  netout: 20050413
+  node: dellr610-2
+  status: running
+  tags: container_lista_espera
+  template: 0
+  type: lxc
+  uptime: 5626018
+  vmid: 114
+- cpu: 0.00129023089813921
+  disk: 2984853504
+  diskread: 438760448
+  diskwrite: 7378813440
+  id: lxc/115
+  maxcpu: 1
+  maxdisk: 8350298112
+  maxmem: 1073741824
+  mem: 299544576
+  name: CT115
+  netin: 9557838939
+  netout: 8303047
+  node: dellr610-2
+  status: running
+  tags: lxcmariadb-160
+  template: 0
+  type: lxc
+  uptime: 866732
+  vmid: 115
+- cpu: 0.0172030786418561
+  disk: 1618608128
+  diskread: 6191632384
+  diskwrite: 1997414400
+  id: lxc/116
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 71426048
+  name: lista-espera-2
+  netin: 79410611125
+  netout: 17653938700
+  node: dellr610-2
+  status: running
+  tags: container_lista_espera
+  template: 0
+  type: lxc
+  uptime: 5626010
+  vmid: 116
+- cpu: 0.000322557724534802
+  disk: 1612578816
+  diskread: 3182559232
+  diskwrite: 13688832
+  id: lxc/117
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 81387520
+  name: lista-espera-cullen
+  netin: 56401000238
+  netout: 17609590
+  node: dellr610-2
+  status: running
+  tags: container_lista_espera
+  template: 0
+  type: lxc
+  uptime: 5626003
+  vmid: 117
+- cpu: 0.000215038483023201
+  disk: 1611399168
+  diskread: 3496841216
+  diskwrite: 11042816
+  id: lxc/118
+  maxcpu: 1
+  maxdisk: 5368709120
+  maxmem: 536870912
+  mem: 83025920
+  name: lista-espera-reconq
+  netin: 56401966782
+  netout: 22056675
+  node: dellr610-2
+  status: running
+  tags: container_lista_espera
+  template: 0
+  type: lxc
+  uptime: 5625997
+  vmid: 118
+- cpu: 0.0101227955252281
+  disk: 0
+  diskread: 429172270
+  diskwrite: 300124160
+  id: qemu/119
+  maxcpu: 1
+  maxdisk: 42949672960
+  maxmem: 2147483648
+  mem: 1022160896
+  name: OCS
+  netin: 4359273250
+  netout: 3978742
+  node: delli5-03
+  status: running
+  template: 0
+  type: qemu
+  uptime: 347895
+  vmid: 119
+- cpu: 0.0372000024833681
+  disk: 0
+  diskread: 569495164416
+  diskwrite: 1215263924224
+  id: qemu/120
+  maxcpu: 2
+  maxdisk: 107374182400
+  maxmem: 4294967296
+  mem: 3160696702
+  name: Win11
+  netin: 157811492197
+  netout: 4030916256
+  node: hpdl360
+  status: running
+  template: 0
+  type: qemu
+  uptime: 10288864
+  vmid: 120
+- cpu: 0.000349437534912702
+  disk: 1164312576
+  diskread: 1497894912
+  diskwrite: 0
+  id: lxc/121
+  maxcpu: 4
+  maxdisk: 107374182400
+  maxmem: 2147483648
+  mem: 193392640
+  name: cooperadora644
+  netin: 56784349722
+  netout: 3267119093
+  node: dellr610-2
+  status: running
+  template: 0
+  type: lxc
+  uptime: 5625965
+  vmid: 121
+- cpu: 0.025123720611159
+  disk: 1790181376
+  diskread: 496959488
+  diskwrite: 0
+  id: lxc/124
+  maxcpu: 1
+  maxdisk: 10737418240
+  maxmem: 536870912
+  mem: 420651008
+  name: zabix
+  netin: 1912651456
+  netout: 693995896
+  node: hpdl360
+  status: running
+  template: 0
+  type: lxc
+  uptime: 97423
+  vmid: 124
+- cpu: 0.00199430755376014
+  disk: 1141243904
+  diskread: 247828480
+  diskwrite: 0
+  id: lxc/300
+  maxcpu: 1
+  maxdisk: 32212254720
+  maxmem: 2147483648
+  mem: 141910016
+  name: Grafana
+  netin: 344699017
+  netout: 12308068
+  node: delli5-03
+  status: running
+  template: 0
+  type: lxc
+  uptime: 11357
+  vmid: 300
+root@dellr610-2:~# 
+echo "--- REPLICACION ---" && pvesh get /cluster/replication --output-format yaml && echo "--- STORAGE ---" && pvesh get /storage --output-format yaml
+--- REPLICACION ---
+---
+- guest: 101
+  id: 101-0
+  jobnum: 0
+  schedule: monthly
+  source: dellr610-2
+  target: delli5-03
+  type: local
+- guest: 102
+  id: 102-0
+  jobnum: 0
+  schedule: monthly
+  source: hpdl360
+  target: dellr610
+  type: local
+- guest: 103
+  id: 103-0
+  jobnum: 0
+  remove_job: full
+  schedule: '*/2:00'
+  source: hpdl360
+  target: delli5-02
+  type: local
+- guest: 103
+  id: 103-1
+  jobnum: 1
+  schedule: 20:00
+  source: hpdl360
+  target: delli5-04
+  type: local
+- guest: 103
+  id: 103-2
+  jobnum: 2
+  schedule: 21:00
+  source: hpdl360
+  target: dellr610
+  type: local
+- guest: 103
+  id: 103-3
+  jobnum: 3
+  schedule: 23:00
+  source: hpdl360
+  target: dellr610-2
+  type: local
+- guest: 105
+  id: 105-0
+  jobnum: 0
+  schedule: monthly
+  source: dellr610
+  target: delli5-03
+  type: local
+- guest: 105
+  id: 105-1
+  jobnum: 1
+  remove_job: full
+  schedule: monthly
+  source: dellr610
+  target: delli5-02
+  type: local
+- guest: 106
+  id: 106-0
+  jobnum: 0
+  schedule: 21:00
+  source: hpdl360
+  target: dellr610
+  type: local
+- guest: 106
+  id: 106-1
+  jobnum: 1
+  schedule: 23:30
+  source: hpdl360
+  target: delli5-03
+  type: local
+- guest: 113
+  id: 113-0
+  jobnum: 0
+  schedule: monthly
+  source: delli5-02
+  target: dellr610
+  type: local
+- guest: 113
+  id: 113-1
+  jobnum: 1
+  source: delli5-02
+  target: dellr610-2
+  type: local
+- guest: 119
+  id: 119-0
+  jobnum: 0
+  schedule: 21:00
+  source: delli5-03
+  target: hpdl360
+  type: local
+--- STORAGE ---
+---
+- content: backup
+  datastore: WD-1Tb
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  fingerprint: 0c:de:e3:51:9b:db:c7:84:fe:96:ea:8e:e8:f2:5a:9b:89:02:05:f9:19:18:76:2a:8c:35:a6:2c:bb:a0:57:db
+  prune-backups: keep-all=1
+  server: 10.175.6.2
+  shared: 1
+  storage: PBS-WD-1Tb
+  type: pbs
+  username: root@pam
+- content: rootdir,images
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  mountpoint: /ZFS-SSD
+  nodes: delli5-03,dellr610-2,dellr610,delli5-02,delli5-04,hpdl360
+  pool: ZFS-SSD
+  sparse: 0
+  storage: ZFS-SSD
+  type: zfspool
+- content: rootdir,images
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  nodes: dellr610
+  storage: Backup-R610
+  thinpool: Backup-R610
+  type: lvmthin
+  vgname: Backup-R610
+- content: images,rootdir
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  nodes: dellr610-2
+  storage: Backup-R610-2
+  thinpool: backup-thin-pool
+  type: lvmthin
+  vgname: Backup-R610-2
+- content: backup
+  datastore: Copia-3Tb
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  fingerprint: 0c:de:e3:51:9b:db:c7:84:fe:96:ea:8e:e8:f2:5a:9b:89:02:05:f9:19:18:76:2a:8c:35:a6:2c:bb:a0:57:db
+  prune-backups: keep-all=1
+  server: 10.175.6.2
+  shared: 1
+  storage: PBS
+  type: pbs
+  username: root@pam
+- content: backup
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  path: /mnt/pve/BackupsOMV
+  prune-backups: keep-all=1
+  server: 10.175.6.10
+  share: BackupsVMs
+  shared: 1
+  storage: BackupsOMV
+  type: cifs
+  username: root
+- content: rootdir,images
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  nodes: delli5-01
+  shared: 0
+  storage: SSD2TB
+  type: lvm
+  vgname: SSD2TB
+- content: images,rootdir
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  nodes: dellr610,dellr610-2,delli5-03
+  storage: local-lvm
+  thinpool: data
+  type: lvmthin
+  vgname: pve
+- content: vztmpl,iso,backup
+  digest: fc328ede3e7aae7ed576880e6377acad9e922f5a
+  path: /var/lib/vz
+  storage: local
+  type: dir
+root@dellr610-2:~# 
+pvesh get /cluster/backup --output-format yaml
+---
+- comment: Diagnose
+  enabled: 1
+  id: backup-1270f414-9dbe
+  mailnotification: failure
+  mailto: informatica.samcoesperanza@santafe.gov.ar
+  mode: snapshot
+  next-run: 1774051200
+  notes-template: '{{guestname}}'
+  prune-backups:
+    keep-daily: '7'
+  schedule: 21:00
+  storage: PBS
+  type: vzdump
+  vmid: '103'
+- comment: FileServer
+  enabled: 1
+  id: backup-a29d9ea0-833a
+  mailnotification: failure
+  mailto: informatica.samcoesperanza@santafe.gov.ar
+  mode: snapshot
+  next-run: 1774054800
+  notes-template: '{{guestname}}'
+  prune-backups:
+    keep-daily: '2'
+    keep-last: '6'
+    keep-weekly: '2'
+  schedule: 22:00
+  storage: PBS
+  type: vzdump
+  vmid: '106'
+- comment: WXP-MiHospital-Zabbix-ServerApp
+  enabled: 1
+  fleecing:
+    enabled: '0'
+  id: backup-ecce75d2-9594
+  mode: snapshot
+  next-run: 1774152000
+  notes-template: '{{guestname}}'
+  prune-backups:
+    keep-last: '2'
+    keep-weekly: '2'
+  schedule: sun 01:00
+  storage: PBS-WD-1Tb
+  type: vzdump
+  vmid: 104,102,105,100,101,113,107,115
+root@dellr610-2:~# 
+pvesh get /nodes/localhost/replication --output-format yaml
+---
+- duration: 264.903206
+  fail_count: 0
+  guest: 101
+  id: 101-0
+  jobnum: 0
+  last_sync: 1772334005
+  last_try: 1772334005
+  next_sync: 1775012400
+  schedule: monthly
+  source: dellr610-2
+  target: delli5-03
+  type: local
+  vmtype: qemu
+pvesh get /nodes/localhost/replication --output-format yaml
+---
+- duration: 0.054336
+  error: 'hostname lookup ''delli5-02'' failed - failed to get address info for: delli5-02:
+    Name or service not known'
+  fail_count: 288677
+  guest: 103
+  id: 103-0
+  jobnum: 0
+  last_sync: 1756810802
+  last_try: 1774432442
+  next_sync: 1
+  remove_job: full
+  schedule: '*/2:00'
+  source: hpdl360
+  target: delli5-02
+  type: local
+  vmtype: qemu
+- duration: 0.023248
+  error: 'hostname lookup ''delli5-04'' failed - failed to get address info for: delli5-04:
+    Name or service not known'
+  fail_count: 6909
+  guest: 103
+  id: 103-1
+  jobnum: 1
+  last_sync: 1757503088
+  last_try: 1774432442
+  next_sync: 1
+  remove_job: full
+  schedule: 20:00
+  source: hpdl360
+  target: delli5-04
+  type: local
+  vmtype: qemu
+- duration: 9.328528
+  fail_count: 0
+  guest: 103
+  id: 103-2
+  jobnum: 2
+  last_sync: 1774396812
+  last_try: 1774396812
+  next_sync: 1774483200
+  schedule: 21:00
+  source: hpdl360
+  target: dellr610
+  type: local
+  vmtype: qemu
+- duration: 9.46785
+  fail_count: 0
+  guest: 103
+  id: 103-3
+  jobnum: 3
+  last_sync: 1774404013
+  last_try: 1774404013
+  next_sync: 1774490400
+  schedule: 23:00
+  source: hpdl360
+  target: dellr610-2
+  type: local
+  vmtype: qemu
+- duration: 14.904664
+  fail_count: 0
+  guest: 106
+  id: 106-0
+  jobnum: 0
+  last_sync: 1774396822
+  last_try: 1774396822
+  next_sync: 1774483200
+  schedule: 21:00
+  source: hpdl360
+  target: dellr610
+  type: local
+  vmtype: qemu
+- duration: 7.091334
+  fail_count: 0
+  guest: 106
+  id: 106-1
+  jobnum: 1
+  last_sync: 1774405813
+  last_try: 1774405813
+  next_sync: 1774492200
+  schedule: 23:30
+  source: hpdl360
+  target: delli5-03
+  type: local
+  vmtype: qemu
+pvesh get /nodes/localhost/replication --output-format yaml
+---
+- duration: 655.847502
+  fail_count: 0
+  guest: 105
+  id: 105-0
+  jobnum: 0
+  last_sync: 1773750254
+  last_try: 1773750254
+  next_sync: 1775012400
+  schedule: monthly
+  source: dellr610
+  target: delli5-03
+  type: local
+  vmtype: qemu
+- duration: 0.092809
+  error: 'hostname lookup ''delli5-02'' failed - failed to get address info for: delli5-02:
+    Name or service not known'
+  fail_count: 280360
+  guest: 105
+  id: 105-1
+  jobnum: 1
+  last_sync: 1756696091
+  last_try: 1774432504
+  next_sync: 1
+  remove_job: full
+  schedule: monthly
+  source: dellr610
+  target: delli5-02
+  type: local
+  vmtype: qemu
+root@delli5-03:~# pvesh get /nodes/localhost/replication --output-format yaml
+---
+- duration: 3.842977
+  fail_count: 0
+  guest: 119
+  id: 119-0
+  jobnum: 0
+  last_sync: 1774396802
+  last_try: 1774396802
+  next_sync: 1774483200
+  schedule: 21:00
+  source: delli5-03
+  target: hpdl360
+  type: local
+  vmtype: qemu
+

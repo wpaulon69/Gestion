@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMCo Esperanza - Dashboard de Red Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .card-glass { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; transition: all 0.2s; }
+        .card-glass:hover { border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
+        .bg-ok { background-color: #22c55e; }
+        .bg-error { background-color: #ef4444; }
+        .bg-warn { background-color: #f59e0b; }
+    </style>
+</head>
+<body class="p-4 lg:p-6">
+
+    <!-- Header Principal -->
+    <header class="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">SAMCo Esperanza - Infraestructura</h1>
+            <p class="text-slate-500 text-sm">Control Centralizado de Dispositivos • <span id="last-update" class="font-semibold">Esperando archivo...</span></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <label class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl cursor-pointer flex items-center gap-2 transition-all shadow-lg active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span class="text-sm font-medium">Cargar config_red_total.json</span>
+                <input type="file" id="fileInput" class="hidden" accept=".json">
+            </label>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto space-y-6">
+        
+        <!-- KPIs Rápidos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="card-glass p-5">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Clientes WiFi</p>
+                <div class="flex items-center justify-between">
+                    <span id="stat-clients" class="text-3xl font-bold text-blue-600">--</span>
+                    <div class="p-2 bg-blue-50 rounded-lg text-blue-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card-glass p-5">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Relojes Personal</p>
+                <div class="flex items-center justify-between">
+                    <span id="stat-clocks" class="text-3xl font-bold text-slate-700">--</span>
+                    <div class="p-2 bg-slate-50 rounded-lg text-slate-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card-glass p-5">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Huawei CAPS</p>
+                <div class="flex items-center justify-between">
+                    <span id="stat-huawei" class="text-3xl font-bold text-red-600">--</span>
+                    <div class="p-2 bg-red-50 rounded-lg text-red-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card-glass p-5">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Routers WiFi</p>
+                <div class="flex items-center justify-between">
+                    <span id="stat-routers" class="text-3xl font-bold text-emerald-600">--</span>
+                    <div class="p-2 bg-emerald-50 rounded-lg text-emerald-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card-glass p-5">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Zabbix</p>
+                <div class="flex items-center justify-between">
+                    <span id="stat-alerts" class="text-3xl font-bold text-orange-500">--</span>
+                    <div class="p-2 bg-orange-50 rounded-lg text-orange-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo del Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Listado de Dispositivos Específicos -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Tabla Routers y CAPS -->
+                <div class="card-glass overflow-hidden">
+                    <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700">Equipos de Acceso (WiFi & CAPS)</h3>
+                        <span class="text-[10px] bg-white border border-slate-200 px-2 py-1 rounded-md text-slate-400 font-mono">NET-ACCESS-VIEW</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-slate-400 uppercase text-[10px] tracking-widest border-b border-slate-50">
+                                    <th class="px-6 py-3">Dispositivo</th>
+                                    <th class="px-6 py-3">Tipo</th>
+                                    <th class="px-6 py-3">IP</th>
+                                    <th class="px-6 py-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wifi-table" class="divide-y divide-slate-50">
+                                <tr><td colspan="4" class="px-6 py-10 text-center text-slate-400">Cargue el JSON para ver Routers y CAPS.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla Relojes -->
+                <div class="card-glass overflow-hidden">
+                    <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-700">Relojes Control de Personal</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6" id="clocks-grid">
+                        <!-- Clocks dynamically loaded here -->
+                        <p class="col-span-2 text-center text-slate-400 text-sm italic">Esperando datos de relojes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de Alertas y Omada Summary -->
+            <div class="space-y-6">
+                <!-- Omada Chart -->
+                <div class="card-glass p-6">
+                    <h3 class="font-bold text-slate-700 mb-4">Carga WiFi Omada</h3>
+                    <div class="h-48">
+                        <canvas id="clientsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Critical Alerts -->
+                <div class="card-glass p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-700">Alertas Zabbix</h3>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold">Tiempo Real</span>
+                    </div>
+                    <div id="alerts-list" class="space-y-2 overflow-y-auto max-h-[300px]">
+                        <p class="text-slate-400 text-sm italic">Sin alertas para mostrar.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let clientsChart = null;
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    updateDashboard(data);
+                } catch (err) {
+                    alert('Error en JSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function updateDashboard(data) {
+            // Metadatos
+            document.getElementById('last-update').innerText = data.metadatos?.fecha_auditoria || new Date().toLocaleString();
+
+            // 1. Switches Omada y Clientes
+            const switches = data.red_omada?.switches || data.infraestructura_switches || [];
+            const totalClients = switches.reduce((acc, s) => acc + (parseInt(s.clientes) || 0), 0);
+            document.getElementById('stat-clients').innerText = totalClients;
+
+            // 2. Routers WiFi y CAPS Huawei
+            const wifiDevices = data.dispositivos_wifi || [];
+            const routers = wifiDevices.filter(d => d.tipo === 'Router' || d.tipo?.toLowerCase().includes('wifi'));
+            const caps = wifiDevices.filter(d => d.tipo?.toLowerCase().includes('cap') || d.tipo === 'Huawei CAPS');
+            
+            document.getElementById('stat-routers').innerText = routers.length;
+            document.getElementById('stat-huawei').innerText = caps.length;
+
+            const wifiTable = document.getElementById('wifi-table');
+            wifiTable.innerHTML = '';
+            
+            wifiDevices.forEach(d => {
+                const tr = document.createElement('tr');
+                const isOnline = d.estado === 'Online' || d.estado === 'OK';
+                tr.innerHTML = `
+                    <td class="px-6 py-3 font-semibold text-slate-700">${d.nombre}</td>
+                    <td class="px-6 py-3 text-slate-500 text-xs">${d.tipo || 'Desconocido'}</td>
+                    <td class="px-6 py-3 font-mono text-blue-500">${d.ip}</td>
+                    <td class="px-6 py-3">
+                        <span class="flex items-center gap-2">
+                            <span class="status-dot ${isOnline ? 'bg-ok' : 'bg-error'}"></span>
+                            <span class="font-bold ${isOnline ? 'text-green-600' : 'text-red-600'} text-[10px]">${isOnline ? 'ON' : 'OFF'}</span>
+                        </span>
+                    </td>
+                `;
+                wifiTable.appendChild(tr);
+            });
+
+            // 3. Relojes
+            const clocks = data.relojes_personal || [];
+            document.getElementById('stat-clocks').innerText = clocks.length;
+            const clocksGrid = document.getElementById('clocks-grid');
+            clocksGrid.innerHTML = '';
+
+            clocks.forEach(c => {
+                const isOnline = c.estado === 'Online' || c.estado === 'OK';
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border ${isOnline ? 'bg-white border-slate-100' : 'bg-red-50 border-red-100'} flex items-center justify-between shadow-sm`;
+                div.innerHTML = `
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">${c.nombre}</p>
+                        <p class="text-[10px] font-mono text-slate-400">${c.ip}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-bold ${isOnline ? 'text-green-500' : 'text-red-500'}">${isOnline ? 'ONLINE' : 'FALLA'}</span>
+                        <p class="text-[9px] text-slate-400">${c.ubicacion || 'SAMCo'}</p>
+                    </div>
+                `;
+                clocksGrid.appendChild(div);
+            });
+
+            // 4. Zabbix Alerts
+            const zabbix = data.monitoreo_zabbix || data.estado_alertas || {};
+            const alertCount = zabbix.alertas_activas || 0;
+            document.getElementById('stat-alerts').innerText = alertCount;
+            
+            const alertsList = document.getElementById('alerts-list');
+            alertsList.innerHTML = '';
+            const rawAlerts = zabbix.detalle || [];
+            if (rawAlerts.length > 0) {
+                rawAlerts.forEach(a => {
+                    const div = document.createElement('div');
+                    div.className = "p-3 bg-white border border-slate-100 rounded-lg shadow-sm flex flex-col gap-1";
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-orange-600 uppercase">Falla Detectada</span>
+                            <span class="text-[9px] text-slate-400">${a.hora || ''}</span>
+                        </div>
+                        <p class="text-xs text-slate-700 font-medium">${a.evento}</p>
+                    `;
+                    alertsList.appendChild(div);
+                });
+            } else {
+                alertsList.innerHTML = '<div class="text-center p-4 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold">✓ Infraestructura Saludable</div>';
+            }
+
+            updateChart(switches);
+        }
+
+        function updateChart(switches) {
+            if (!switches.length) return;
+            const ctx = document.getElementById('clientsChart').getContext('2d');
+            
+            if (clientsChart) clientsChart.destroy();
+
+            clientsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: switches.map(s => s.nombre.split('-')[0]),
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: switches.map(s => s.clientes),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

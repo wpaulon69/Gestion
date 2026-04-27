@@ -1,0 +1,98 @@
+[
+    {
+        "camara": "Camara Hall Central",
+        "ip": "10.175.6.210",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camHallCentral",
+            "existe_carpeta": true,
+            "archivo_actual": "hiv00002.pic",
+            "ultima_modificacion": "2026-04-17 08:57:08",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:04"
+    },
+    {
+        "camara": "Camara Estacionamiento Norte",
+        "ip": "10.175.6.216",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camEstacionamiento",
+            "existe_carpeta": true,
+            "archivo_actual": "HIKWS",
+            "ultima_modificacion": "2026-04-17 09:05:55",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:04"
+    },
+    {
+        "camara": "Camara Porton Entrada",
+        "ip": "10.175.6.211",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camPortonPral",
+            "existe_carpeta": true,
+            "archivo_actual": "hiv00004.pic",
+            "ultima_modificacion": "2026-04-17 09:05:01",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:04"
+    },
+    {
+        "camara": "Camara Consultorios Externos",
+        "ip": "10.175.6.217",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camConsultorioExt",
+            "existe_carpeta": true,
+            "archivo_actual": "HIKWS",
+            "ultima_modificacion": "2026-04-17 08:49:45",
+            "grabando": false
+        },
+        "timestamp": "2026-04-17 09:06:04"
+    },
+    {
+        "camara": "Camara Odonto Rx",
+        "ip": "10.175.6.212",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camOdontoRX",
+            "existe_carpeta": true,
+            "archivo_actual": "HIKWS",
+            "ultima_modificacion": "2026-04-17 09:03:16",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:05"
+    },
+    {
+        "camara": "Camara SUM",
+        "ip": "10.175.6.215",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camSUM",
+            "existe_carpeta": true,
+            "archivo_actual": "HIKWS",
+            "ultima_modificacion": "2026-04-17 09:03:10",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:05"
+    },
+    {
+        "camara": "Camara Taller",
+        "ip": "10.175.6.214",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camTaller",
+            "existe_carpeta": true,
+            "archivo_actual": "HIKWS",
+            "ultima_modificacion": "2026-04-17 08:59:57",
+            "grabando": true
+        },
+        "timestamp": "2026-04-17 09:06:05"
+    },
+    {
+        "camara": "Camara Laboratorio",
+        "ip": "10.175.6.213",
+        "estado_grabacion": {
+            "carpeta_en_nas": "camLaboratorio",
+            "existe_carpeta": true,
+            "archivo_actual": "hiv00121.mp4",
+            "ultima_modificacion": "2026-04-14 08:03:39",
+            "grabando": false
+        },
+        "timestamp": "2026-04-17 09:06:05"
+    }
+]

@@ -1,0 +1,110 @@
+[
+    {
+        "info_basica": {
+            "nombre": "10.175.6.220-Rack-arriba-se-reemplaza",
+            "modelo": "SG3428",
+            "mac": "F0-09-0D-17-93-A1",
+            "ip": "10.175.6.220",
+            "version_firmware": "2.30.0 Build 20231019 Rel.60485",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": null,
+            "clientes_actuales": 0,
+            "uso_cpu": "0%",
+            "uso_memoria": "0%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 0
+    },
+    {
+        "info_basica": {
+            "nombre": "10.175.6.186-rack-medio",
+            "modelo": "SG3428",
+            "mac": "1C-61-B4-B9-5C-FF",
+            "ip": "10.175.6.186",
+            "version_firmware": "2.30.0 Build 20231019 Rel.60485",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": "134day(s) 4h 36m 43s",
+            "clientes_actuales": 176,
+            "uso_cpu": "24%",
+            "uso_memoria": "36%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 1
+    },
+    {
+        "info_basica": {
+            "nombre": "10.175.6.235-Carlitos",
+            "modelo": "SG3428",
+            "mac": "78-20-51-42-C5-44",
+            "ip": "10.175.6.235",
+            "version_firmware": "2.30.3 Build 20250121 Rel.50059",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": "4day(s) 22h 11s",
+            "clientes_actuales": 12,
+            "uso_cpu": "24%",
+            "uso_memoria": "38%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 1
+    },
+    {
+        "info_basica": {
+            "nombre": "10.175.6.234-Pepe",
+            "modelo": "TL-SG3428",
+            "mac": "50-91-E3-DC-D8-F2",
+            "ip": "10.175.6.234",
+            "version_firmware": "2.0.11 Build 20230602 Rel.76586",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": "4day(s) 21h 59m 47s",
+            "clientes_actuales": 102,
+            "uso_cpu": "27%",
+            "uso_memoria": "36%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 1
+    },
+    {
+        "info_basica": {
+            "nombre": "10.175.6.190-rack-pediatria",
+            "modelo": "T1600G-28TS",
+            "mac": "68-FF-7B-E6-F0-85",
+            "ip": "10.175.6.190",
+            "version_firmware": "3.0.6 Build 20200805 Rel.55968",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": "2day(s) 3h 40m 33s",
+            "clientes_actuales": 2,
+            "uso_cpu": "6%",
+            "uso_memoria": "39%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 1
+    },
+    {
+        "info_basica": {
+            "nombre": "68-FF-7B-E6-F0-89",
+            "modelo": "T1600G-28TS",
+            "mac": "68-FF-7B-E6-F0-89",
+            "ip": "170.175.6.67",
+            "version_firmware": "3.0.6 Build 20200805 Rel.55968",
+            "necesita_upgrade": false
+        },
+        "rendimiento": {
+            "uptime": "2day(s) 3h 6m 37s",
+            "clientes_actuales": 0,
+            "uso_cpu": "0%",
+            "uso_memoria": "0%"
+        },
+        "configuracion_puertos": [],
+        "alertas_dispositivo": 2
+    }
+]

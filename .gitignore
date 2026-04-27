@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+output/
+gestion_env/
+.gemini/
+.idea/
+.vscode/
+*.log
+"config.json" 
+"rclone/rclone.conf" 
