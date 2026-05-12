@@ -16,20 +16,42 @@ def obtener_estado_interfaces(config):
         )
         
         if response.status_code == 200:
-            data = response.json()
-            # Simplificamos la respuesta para el dashboard
+            # Verificar que la respuesta sea JSON antes de parsear
+            content_type = response.headers.get('content-type', '')
+            if 'application/json' in content_type:
+                try:
+                    data = response.json()
+                except ValueError:
+                    return {"error": "Respuesta no es JSON válido"}
+            else:
+                # Si no es JSON, intentar interpretar como texto o devolver error
+                return {"error": f"Respuesta inesperada (content-type: {content_type}): {response.text[:200]}"}
+            
+            # La API de OPNsense devuelve un objeto con 'rows' que contiene las interfaces
             interfaces_limpias = []
-            for key, info in data.items():
-                if info.get('enabled'):
-                    interfaces_limpias.append({
-                        "id": key,
-                        "nombre": info.get('description', key),
-                        "status": info.get('status', 'unknown'),
-                        "ip": info.get('addr4', 'N/A'),
-                        "mac": info.get('macaddr', 'N/A')
-                    })
+            if 'rows' in data:
+                for info in data['rows']:
+                    if info.get('enabled'):
+                        interfaces_limpias.append({
+                            "id": info.get('device', 'unknown'),
+                            "nombre": info.get('description', info.get('device', 'unknown')),
+                            "status": info.get('status', 'unknown'),
+                            "ip": info.get('addr4', 'N/A'),
+                            "mac": info.get('macaddr', 'N/A')
+                        })
+            else:
+                # Formato alternativo: intentar el formato antiguo por compatibilidad
+                for key, info in data.items():
+                    if isinstance(info, dict) and info.get('enabled'):
+                        interfaces_limpias.append({
+                            "id": key,
+                            "nombre": info.get('description', key),
+                            "status": info.get('status', 'unknown'),
+                            "ip": info.get('addr4', 'N/A'),
+                            "mac": info.get('macaddr', 'N/A')
+                        })
             return {"interfaces": interfaces_limpias}
         else:
-            return {"error": f"HTTP {response.status_code}"}
+            return {"error": f"HTTP {response.status_code}: {response.text[:200]}"}
     except Exception as e:
         return {"error": str(e)}

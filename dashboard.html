@@ -61,7 +61,7 @@
 
 </head>
 <body class="p-4 lg:p-10">
-
+    <input type="file" id="fileInput" accept=".json" class="hidden">\n
     <!-- Header -->
     <header class="max-w-[1600px] mx-auto mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div class="flex items-center gap-5">
@@ -357,7 +357,17 @@
                     </div>
                     <a href="https://10.175.7.3:8043" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-indigo-600 border border-transparent hover:border-indigo-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir Omada <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+                    <div class="flex-1 min-w-0">
+                        <label for="ip-input" class="block text-[10px] font-bold text-sub uppercase tracking-[0.2em] mb-1">Ingresar IP para buscar</label>
+                        <div class="relative">
+                            <input type="text" id="ip-input" placeholder="Ej: 10.175.6.100" class="w-full px-3 py-2 bg-white/10 border border-indigo-200/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                        </div>
+                    </div>
+                    <button id="buscar-ip-btn" onclick="buscarPuertosPorIP()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all flex items-center gap-2 w-full sm:w-auto">
+                        Buscar Puertos <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2"/></svg>
+                    </button>
+                </div><div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-sub/50 text-[10px] uppercase text-sub font-extrabold">
                             <tr>
@@ -365,6 +375,8 @@
                                 <th class="px-8 py-5 tracking-widest">Estado / IP</th>
                                 <th class="px-8 py-5 tracking-widest text-center">Clientes</th>
                                 <th class="px-8 py-5 tracking-widest">Métricas & Firmware</th>
+                            </tr>
+                                <th class="px-8 py-5 tracking-widest">Puerto Conexión IP</th>
                             </tr>
                         </thead>
                         <tbody id="switch-table" class="divide-y divide-slate-100/50">
@@ -451,19 +463,22 @@
 
         async function tryAutoLoad() {
             try {
-                // Si estamos en file:// o en otro puerto, forzamos la ruta al servidor
-                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080/' : '';
+                // Usar el mismo host desde el que se sirve la página para llamadas al backend
+                const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                           ? 'localhost:8081' 
+                           : window.location.hostname + ':8081';
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8081' : ('http://' + host);
                 // Añadimos timestamp para evitar caché
-                const response = await fetch(baseUrl + 'output/reporte_completo.json?t=' + Date.now());
+                const response = await fetch(baseUrl + '/output/reporte_completo.json?t=' + Date.now());
                 if (response.ok) {
                     const data = await response.json();
-
+    
                     updateDashboard(data);
                     document.getElementById('auto-refresh-tag').classList.remove('hidden');
                     restartProgressBar();
                     return true;
                 }
-            } catch (e) { console.log("Auto-load no disponible"); }
+            } catch (e) { console.log("Auto-load no disponible: ", e); }
             return false;
         }
 
@@ -473,15 +488,19 @@
             const text = document.getElementById('sync-text');
             
             if (btn.disabled) return;
-
+            
             // UI State: Loading
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             icon.classList.add('animate-spin');
             text.innerText = 'Sincronizando...';
-
+            
             try {
-                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
+                // Usar el mismo host desde el que se sirve la página para llamadas al backend
+                const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                           ? 'localhost:8081' 
+                           : window.location.hostname + ':8081';
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8081' : ('http://' + host);
                 const response = await fetch(baseUrl + '/api/run-audit', { method: 'POST' });
                 const result = await response.json();
                 
@@ -498,21 +517,21 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('No se pudo conectar con el servidor backend (Puerto 8080). ¿Está servidor.py corriendo?');
-                text.innerText = 'Server Offline';
+                alert('Error de conexión al backend');
+                text.innerText = 'Error';
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 icon.classList.remove('animate-spin');
             }
-        }
-
-        document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
-
-        async function openNASFolder(path) {
+        }async function openNASFolder(path) {
             if (!path || path === "N/A") return;
             try {
-                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
+                // Usar el mismo host desde el que se sirve la página para llamadas al backend
+                const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                           ? 'localhost:8081' 
+                           : window.location.hostname + ':8081';
+                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8081' : ('http://' + host);
                 await fetch(baseUrl + '/api/open-folder?path=' + encodeURIComponent(path));
             } catch (err) {
                 console.error("Error al abrir carpeta:", err);
@@ -521,9 +540,20 @@
 
         function updateDashboard(data) {
             const meta = data.metadatos || {};
-            document.getElementById('update-full-date').innerText = meta.fecha_auditoria || meta.fecha || 'Hoy';
-            document.getElementById('update-time').innerText = (meta.fecha_auditoria || meta.fecha || '').split(' ')[1] || '--:--:--';
-            document.getElementById('responsable-tag').innerText = meta.responsable || 'SAMCo Esperanza';
+            // Convert timestamp to Argentina time for display
+            if (meta.fecha_auditoria) {
+                // Parse the fecha_auditoria string (format: DD/MM/YYYY HH:MM:SS)
+                const [datePart, timePart] = meta.fecha_auditoria.split(' ');
+                const [day, month, year] = datePart.split('/');
+                // Create Date object - assuming the timestamp is in local server time (UTC)
+                // But we want to display it as Argentina time (UTC-3)
+                const utcDate = new Date(Date.UTC(year, month - 1, day, ...timePart.split(':').map(Number)));
+                fechaDisplay = utcDate.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+            } else if (meta.fecha) {
+                fechaDisplay = meta.fecha;
+            }
+            document.getElementById('update-full-date').innerText = fechaDisplay;
+            document.getElementById('update-time').innerText = fechaDisplay !== 'Hoy' ? fechaDisplay.split(' ')[1] || '--:--:--' : '--:--:--';
 
             // 1. CAMARAS
             const camsGrid = document.getElementById('cams-grid');
@@ -1164,6 +1194,9 @@
                 autoUpdateInterval = setInterval(tryAutoLoad, 300000); // 5 mins
             }
         });
+document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
+// Attach click event listener to sincronizar button
+
     </script>
     <div id="help-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
@@ -1304,6 +1337,84 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
+    
+        async function buscarPuertosPorIP() {
+            const ipInput = document.getElementById('ip-input');
+            const ip = ipInput.value.trim();
+            
+            if (!ip) {
+                alert('Por favor ingrese una dirección IP');
+                return;
+            }
+            
+            // Show loading state
+            const btn = document.getElementById('buscar-ip-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Buscando... <svg class="h-3 w-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-13.82 0m0 0H4m11 11a8.005 8.005 0 01-11.803 0m15.356-6A8.005 8.005 0 0012.582 8m-2.238.581a4.256 4.256 0 01-3.001 5.418M15.082 6a4.257 4.257 0 003.001 5.418M15.082 6a4.257 4.257 0 013.001-5.418M6.918 10.082a4.257 4.257 0 00-3.001 5.418M6.918 10.082a4.257 4.257 0 013.001-5.418M12 4a2 2 0 110 4 2 2 0 010-4zm0 6a4 4 0 110 0-8 4 4 0 010 8z"/></svg>';
+            btn.disabled = true;
+            
+            // URL fija conocida para el servidor de auditoría
+            const baseUrl = 'http://10.175.6.18:8081';
+            
+            // Make request to our backend API
+            fetch(baseUrl + '/api/buscar-puerto-ip?ip=' + encodeURIComponent(ip))
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Show results in a modal or update the table
+                    let resultadoHTML = `
+                        <div class="bg-white/10 rounded-lg p-4 mb-4">
+                            <h3 class="font-bold text-indigo-200 mb-2">Resultado de la búsqueda</h3>
+                            <p class="mb-2"><span class="font-semibold">IP buscada:</span> ${ip}</p>
+                            <p class="mb-2"><span class="font-semibold">Switch:</span> ${data.switch_name || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">IP del Switch:</span> ${data.switch_ip || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">Modelo:</span> ${data.switch_model || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">Puerto:</span> ${data.port_number || 'N/A'} (${data.standard_port || 'N/A'})</p>
+                            <p class="mb-2"><span class="font-semibold">VLAN:</span> ${data.vlan || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">MAC del Cliente:</span> ${data.client_mac || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">Nombre del Cliente:</span> ${data.client_name || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">Hostname:</span> ${data.client_hostname || 'N/A'}</p>
+                            <p class="mb-2"><span class="font-semibold">Estado:</span> <span class="px-2 py-0.5 bg-indigo-600/20 text-indigo-200 rounded text-[9px]">${data.status || 'Desconocido'}</span></p>
+                        </div>
+                    `;
+                    
+                    // Add result to the page
+                    const resultDiv = document.createElement('div');
+                    resultDiv.innerHTML = resultadoHTML;
+                    resultDiv.className = 'mt-4';
+                    
+                    // Insert after the button group
+                    const buttonGroup = document.querySelector('.mt-4.flex.flex-col.sm\:flex-row.sm\:items-center.sm\:justify-between.gap-3.w-full');
+                    if (buttonGroup) {
+                        buttonGroup.insertAdjacentElement('afterend', resultDiv);
+                    } else {
+                        // Fallback: insert after the Core Infrastructure header
+                        const coreHeader = document.querySelector('h2.text-2xl.font-black.text-title.tracking-tight.flex.items-center.gap-2');
+                        if (coreHeader) {
+                            coreHeader.parentNode.insertAdjacentElement('afterend', resultDiv);
+                        }
+                    }
+                    
+                    // Clear input
+                    ipInput.value = '';
+                })
+                .catch(error => {
+                    // Reset button state
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    console.error('Error:', error);
+                    alert('Error al realizar la búsqueda: ' + error.message);
+                });
+        }
+
     </script>
 </body>
 </html>

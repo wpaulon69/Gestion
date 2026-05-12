@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 PORT = 8081
-AUDIT_SCRIPT = r".\gestion_env\Scripts\python.exe auditar.py"
+AUDIT_SCRIPT = "./venv/bin/python auditar.py"
 
 class DashboardHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -32,12 +32,60 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(str(e).encode())
+        elif self.path.startswith('/api/buscar-puerto-ip'):
+            try:
+                from urllib.parse import urlparse, parse_qs
+                query = parse_qs(urlparse(self.path).query)
+                ip_list = query.get('ip')
+                if not ip_list or not ip_list[0]:
+                    self.send_response(400)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'IP parameter is required'}).encode())
+                    return
+                
+                target_ip = ip_list[0]
+                
+                # Run the omada_port_lookup script
+                process = subprocess.run(
+                    ['/home/sectorial/gestion/venv/bin/python', '/home/sectorial/gestion/omada_port_lookup.py', target_ip],
+                    capture_output=True,
+                    text=True,
+                    cwd='/home/sectorial/gestion'
+                )
+                
+                if process.returncode != 0:
+                    self.send_response(500)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': f'Script failed: {process.stderr}'}).encode())
+                    return
+                
+                # The script outputs JSON to stdout
+                try:
+                    result = json.loads(process.stdout)
+                except json.JSONDecodeError:
+                    self.send_response(500)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'Invalid JSON output from script'}).encode())
+                    return
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode())
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode())
         else:
             # Comportamiento normal para archivos estáticos
             super().do_GET()
 
     def do_POST(self):
-
         if self.path == '/api/run-audit':
             try:
                 print(f"[{datetime.now()}] [BACKEND] Iniciando auditoría solicitada desde el Dashboard...")
@@ -68,29 +116,65 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     }
                     self.wfile.write(json.dumps(response).encode())
                     print(f"[{datetime.now()}] [BACKEND] ERROR en la auditoría: {process.stderr}")
-
+                    
             except Exception as e:
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(str(e).encode())
+        elif self.path.startswith('/api/buscar-puerto-ip'):
+            try:
+                from urllib.parse import urlparse, parse_qs
+                query = parse_qs(urlparse(self.path).query)
+                ip_list = query.get('ip')
+                if not ip_list or not ip_list[0]:
+                    self.send_response(400)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'IP parameter is required'}).encode())
+                    return
+                
+                target_ip = ip_list[0]
+                
+                # Run the omada_port_lookup script
+                process = subprocess.run(
+                    ['/home/sectorial/gestion/venv/bin/python', '/home/sectorial/gestion/omada_port_lookup.py', target_ip],
+                    capture_output=True,
+                    text=True,
+                    cwd='/home/sectorial/gestion'
+                )
+                
+                if process.returncode != 0:
+                    self.send_response(500)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': f'Script failed: {process.stderr}'}).encode())
+                    return
+                
+                # The script outputs JSON to stdout
+                try:
+                    result = json.loads(process.stdout)
+                except json.JSONDecodeError:
+                    self.send_response(500)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'Invalid JSON output from script'}).encode())
+                    return
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode())
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode())
         else:
             self.send_response(404)
             self.end_headers()
 
-    def end_headers(self):
-        # Permite CORS para desarrollo local si fuera necesario
-        self.send_header('Access-Control-Allow-Origin', '*')
-        super().end_headers()
-
 if __name__ == "__main__":
-    # Cambiamos al directorio del script para que las rutas relativas funcionen
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    
     with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
-        print(f"--- SERVIDOR DASHBOARD INICIADO ---")
-        print(f"URL: http://localhost:{PORT}/dashboard.html")
-        print(f"Presiona Ctrl+C para detener.")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nServidor detenido.")
+        print(f"Serving at port {PORT}")
+        httpd.serve_forever()
