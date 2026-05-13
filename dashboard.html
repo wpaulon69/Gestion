@@ -651,61 +651,59 @@
             nasGrid.innerHTML = '';
             const nasVolumes = data.nas_health || [];
             
-            // Filtrar: solo grabaciones (>0% y no sistema)
-            const grabaciones = nasVolumes.filter(v => {
-                const n = v.nombre.toLowerCase();
-                const isCamara = n.startsWith('cam');
-                const isNotZero = v.porcentaje > 0;
-                return isCamara && isNotZero;
-            });
-            const otros = nasVolumes.filter(v => {
-                const n = v.nombre.toLowerCase();
-                return !n.startsWith('cam') && v.porcentaje > 0;
-            });
-            
-            // Mostrar solo grabaciones (máx 4) y resumir el resto
-            const mostar = grabaciones.slice(0, 4);
-            let nasCriticalCount = 0;
-            let maxOccupancy = 0;
+// Filtrar: solo grabaciones (>0% y no sistema)
+const grabaciones = nasVolumes.filter(v => {
+const n = v.nombre.toLowerCase();
+const isCamara = n.startsWith('cam');
+const isNotZero = v.porcentaje > 0;
+return isCamara && isNotZero;
+});
+const otros = nasVolumes.filter(v => {
+const n = v.nombre.toLowerCase();
+return !n.startsWith('cam') && v.porcentaje > 0;
+});
 
-            mostar.forEach(v => {
-                const isCritical = v.porcentaje > 90;
-                if (isCritical) nasCriticalCount++;
-                if (v.porcentaje > maxOccupancy) maxOccupancy = v.porcentaje;
-                
-                const vol = document.createElement('div');
-                vol.className = `p-4 rounded-2xl border transition-all flex flex-col gap-2 ${isCritical ? 'border-rose-200 bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100'}`;
-                vol.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black uppercase text-sub tracking-widest">${v.nombre}</span>
-                        <span class="text-sm font-black ${isCritical ? 'text-rose-500' : 'text-title'}">${v.porcentaje}%</span>
-                    </div>
-                    <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div class="h-full ${isCritical ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${v.porcentaje}%"></div>
-                    </div>
-                `;
-                nasGrid.appendChild(vol);
-            });
+// Mostrar solo grabaciones (máx 4) - siempre en estilo neutro, sin alarma
+const mostar = grabaciones.slice(0, 4);
+let nasCriticalCount = 0;
+let maxOccupancy = 0;
 
-            // Si hay más volúmenes, mostrar resumen compacto
-            if (otros.length > 0) {
-                const otrosMax = Math.max(...otros.map(o => o.porcentaje));
-                if (otrosMax > maxOccupancy) maxOccupancy = otrosMax;
-                if (otrosMax > 90) nasCriticalCount++;
-                
-                const resumen = document.createElement('div');
-                resumen.className = `p-4 rounded-2xl border bg-slate-50 dark:bg-slate-800/50 border-slate-100`;
-                resumen.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black uppercase text-sub">+ ${otros.length} volúmenes</span>
-                        <span class="text-sm font-black ${otrosMax > 90 ? 'text-rose-500' : 'text-title'}">máx ${otrosMax}%</span>
-                    </div>
-                    <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div class="h-full ${otrosMax > 90 ? 'bg-rose-500' : 'bg-slate-300'}" style="width: ${otrosMax}%"></div>
-                    </div>
-                `;
-                nasGrid.appendChild(resumen);
-            }
+mostar.forEach(v => {
+if (v.porcentaje > maxOccupancy) maxOccupancy = v.porcentaje;
+
+const vol = document.createElement('div');
+vol.className = `p-4 rounded-2xl border transition-all flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 border-slate-100`;
+vol.innerHTML = `
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-black uppercase text-sub tracking-widest">${v.nombre}</span>
+<span class="text-sm font-black text-title">${v.porcentaje}%</span>
+</div>
+<div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-400" style="width: ${v.porcentaje}%"></div>
+</div>
+`;
+nasGrid.appendChild(vol);
+});
+
+// Volúmenes NO-cámara: estos sí generan alertas
+if (otros.length > 0) {
+const otrosMax = Math.max(...otros.map(o => o.porcentaje));
+if (otrosMax > maxOccupancy) maxOccupancy = otrosMax;
+if (otrosMax > 90) nasCriticalCount++;
+
+const resumen = document.createElement('div');
+resumen.className = `p-4 rounded-2xl border transition-all flex flex-col gap-2 ${otrosMax > 90 ? 'border-rose-200 bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100'}`;
+resumen.innerHTML = `
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-black uppercase text-sub">+ ${otros.length} volúmenes</span>
+<span class="text-sm font-black ${otrosMax > 90 ? 'text-rose-500' : 'text-title'}">máx ${otrosMax}%</span>
+</div>
+<div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+<div class="h-full ${otrosMax > 90 ? 'bg-rose-500' : 'bg-slate-300'}" style="width: ${otrosMax}%"></div>
+</div>
+`;
+nasGrid.appendChild(resumen);
+}
 
             
             const nasBadge = document.getElementById('nas-status-badge');
