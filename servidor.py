@@ -18,8 +18,16 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 
                 if folder_path:
                     print(f"[{datetime.now()}] [BACKEND] Solicitada apertura de carpeta: {folder_path}")
-                    # En Windows, os.startfile abre el explorador o aplicación por defecto
-                    os.startfile(folder_path)
+                    import platform
+                    import shutil
+                    if platform.system() == 'Windows':
+                        os.startfile(folder_path)
+                    else:
+                        opener = shutil.which('xdg-open') or shutil.which('nautilus') or shutil.which('thunar') or shutil.which('pcmanfm')
+                        if opener:
+                            subprocess.Popen([opener, folder_path])
+                        else:
+                            print(f"[{datetime.now()}] [BACKEND] No se encontró gestor de archivos para abrir: {folder_path}")
                     
                     self.send_response(200)
                     self.send_header('Content-type', 'application/json')
