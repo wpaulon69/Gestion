@@ -357,7 +357,7 @@
                     </div>
                     <a href="https://10.175.7.3:8043" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-indigo-600 border border-transparent hover:border-indigo-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir Omada <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
                 </div>
-                <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+                <div id="ip-search-container" class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                     <div class="flex-1 min-w-0">
                         <label for="ip-input" class="block text-[10px] font-bold text-sub uppercase tracking-[0.2em] mb-1">Ingresar IP para buscar</label>
                         <div class="relative">
@@ -796,18 +796,23 @@
                 const isOnline = d.estado === "Online";
                 const row = document.createElement('div');
                 row.className = `flex items-center justify-between p-3.5 rounded-2xl transition-all border ${isOnline ? 'bg-sub border-sub hover:border-indigo-100' : 'bg-rose-50 border-rose-200'}`;
-                row.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="h-9 w-9 rounded-xl flex items-center justify-center ${isOnline ? 'bg-white shadow-sm text-indigo-500' : 'bg-rose-100 text-rose-500'}">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9" stroke-width="2.5"/></svg>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <p class="text-xs font-black ${isOnline ? 'text-title' : 'text-rose-700'} tracking-tight">${d.nombre}</p>
-                            <p class="text-[9px] ${isOnline ? 'text-sub' : 'text-rose-400'} font-mono font-bold">${d.ip}</p>
-                        </div>
-                    </div>
-                    ${!isOnline ? '<span class="status-pill badge-err">OFFLINE</span>' : ''}
-                `;
+ row.innerHTML = `
+ <div class="flex items-center gap-4">
+ <div class="h-9 w-9 rounded-xl flex items-center justify-center ${isOnline ? 'bg-white shadow-sm text-indigo-500' : 'bg-rose-100 text-rose-500'}">
+ <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9" stroke-width="2.5"/></svg>
+ </div>
+ <div class="min-w-0 flex-1">
+ <p class="text-xs font-black ${isOnline ? 'text-title' : 'text-rose-700'} tracking-tight">${d.nombre}</p>
+ <div class="flex gap-2 items-center">
+ <p class="text-[9px] ${isOnline ? 'text-sub' : 'text-rose-400'} font-mono font-bold">${d.ip}</p>
+ <a href="http://${d.ip}" target="_blank" title="Abrir interfaz Web" class="p-1 bg-slate-100 hover:bg-indigo-100 text-indigo-500 rounded-md transition-colors">
+ <svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="3"/></svg>
+ </a>
+ </div>
+ </div>
+ </div>
+ ${!isOnline ? '<span class="status-pill badge-err">OFFLINE</span>' : ''}
+ `;
                 if (d.tipo === "Huawei CAPS") capsList.appendChild(row);
                 else wifiList.appendChild(row);
             });
@@ -1392,7 +1397,7 @@ document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
                     resultDiv.className = 'mt-4';
                     
                     // Insert after the button group
-                    const buttonGroup = document.querySelector('.mt-4.flex.flex-col.sm\:flex-row.sm\:items-center.sm\:justify-between.gap-3.w-full');
+                    const buttonGroup = document.getElementById('ip-search-container');
                     if (buttonGroup) {
                         buttonGroup.insertAdjacentElement('afterend', resultDiv);
                     } else {
