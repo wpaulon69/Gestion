@@ -89,12 +89,19 @@
                 <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
             </button>
 
-            <button onclick="showHelp()" class="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm text-sub dark:text-sub hover:text-indigo-500 transition-colors border border-slate-200 dark:border-slate-700 group relative">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Ayuda Técnica</span>
-            </button>
+<button onclick="showHelp()" class="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm text-sub dark:text-sub hover:text-indigo-500 transition-colors border border-slate-200 dark:border-slate-700 group relative">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+<span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Ayuda Técnica</span>
+</button>
+
+<button onclick="openAsistente()" class="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full shadow-lg transition-all border border-indigo-400 group relative">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547a3.374 3.374 0 000 4.772L19 17a3.374 3.374 0 01-4.772 0l-.547-.548a3.374 3.374 0 00-4.772 0l-.548.548a3.374 3.374 0 01-4.772 0l-.547-.548a3.374 3.374 0 00-4.772 0L4 17a3.374 3.374 0 010-4.772l.548-.547a3.374 3.374 0 000-4.772L4 6.343a3.374 3.374 0 014.772 0l.547.548a3.374 3.374 0 004.772 0l.548-.548a3.374 3.374 0 014.772 0l.547.548a3.374 3.374 0 004.772 0l.548-.547M12 9a3 3 0 100 6 3 3 0 000-6z" />
+</svg>
+<span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Asistente IA</span>
+</button>
 
             
             <div class="text-right px-6 border-r border-slate-200 dark:border-slate-800">
@@ -1200,26 +1207,66 @@ nasGrid.appendChild(resumen);
 document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
 // Attach click event listener to sincronizar button
 
-    </script>
-    <div id="help-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="glass-card w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
-            <div class="p-8 border-b border-sub flex justify-between items-center bg-indigo-600 text-white">
-                <div>
-                    <h2 class="text-2xl font-black tracking-tight" id="help-title">Centro de Ayuda Técnica</h2>
-                    <p class="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Manual de Referencia del Dashboard</p>
-                </div>
-                <button onclick="toggleHelp()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-6" id="help-content">
-                <!-- Dynamic Content -->
-            </div>
-            <div class="p-6 border-t border-sub flex justify-center bg-sub">
-                <button onclick="toggleHelp()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg">Entendido</button>
-            </div>
-        </div>
-    </div>
+</script>
+<div id="help-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+<div class="glass-card w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="p-8 border-b border-sub flex justify-between items-center bg-indigo-600 text-white">
+<div>
+<h2 class="text-2xl font-black tracking-tight" id="help-title">Centro de Ayuda Técnica</h2>
+<p class="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Manual de Referencia del Dashboard</p>
+</div>
+<button onclick="toggleHelp()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+</button>
+</div>
+<div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-6" id="help-content">
+<!-- Dynamic Content -->
+</div>
+<div class="p-6 border-t border-sub flex justify-center bg-sub">
+<button onclick="toggleHelp()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg">Entendido</button>
+</div>
+</div>
+</div>
+
+<!-- Modal Asistente IA -->
+<div id="asistente-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+<div class="glass-card w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="p-6 border-b border-sub flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+<div>
+<h2 class="text-xl font-black tracking-tight">Asistente IA SAMCo</h2>
+<p class="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Consultá sobre backups, red, firewalls</p>
+</div>
+<button onclick="closeAsistente()" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+</button>
+</div>
+<div class="p-6 bg-slate-900/50">
+<!-- Área de chat -->
+<div id="asistente-chat" class="h-[400px] overflow-y-auto custom-scrollbar space-y-4 mb-4 p-4 bg-white/5 rounded-2xl">
+<div class="text-center text-sub text-sm">
+<p class="font-bold mb-2">👋 ¡Hola! Soy tu asistente de infraestructura.</p>
+<p>Preguntame sobre:</p>
+<ul class="list-disc pl-5 mt-2 space-y-1 opacity-80">
+<li>Backups de VMs (ej: "¿Cuál es la política de backup de miHospital?")</li>
+<li>Configuración de OPNsense (firewall, reglas, traffic shaper)</li>
+<li>Estado de la red (Omada, switches, WiFi)</li>
+<li>Alertas de Zabbix</li>
+</ul>
+</div>
+</div>
+<!-- Input -->
+<div class="flex gap-3">
+<input type="text" id="asistente-input" 
+class="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+placeholder="Escribí tu pregunta..." 
+onkeypress="if(event.key==='Enter') enviarPregunta()">
+<button onclick="enviarPregunta()" id="asistente-btn" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg">
+Enviar
+</button>
+</div>
+</div>
+</div>
+</div>
 
     <script>
         const helpDocs = {
@@ -1335,13 +1382,92 @@ document.getElementById('btn-sincronizar').addEventListener('click', runAudit);
             document.getElementById('help-modal').classList.add('flex');
         }
 
-        function toggleHelp() {
-            const modal = document.getElementById('help-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    
-        async function buscarPuertosPorIP() {
+function toggleHelp() {
+const modal = document.getElementById('help-modal');
+modal.classList.add('hidden');
+modal.classList.remove('flex');
+}
+
+// Funciones del Asistente IA
+function openAsistente() {
+const modal = document.getElementById('asistente-modal');
+modal.classList.remove('hidden');
+modal.classList.add('flex');
+document.getElementById('asistente-input').focus();
+}
+
+function closeAsistente() {
+const modal = document.getElementById('asistente-modal');
+modal.classList.add('hidden');
+modal.classList.remove('flex');
+}
+
+async function enviarPregunta() {
+const input = document.getElementById('asistente-input');
+const btn = document.getElementById('asistente-btn');
+const chat = document.getElementById('asistente-chat');
+const pregunta = input.value.trim();
+
+if (!pregunta) return;
+
+// Agregar mensaje del usuario
+const userMsg = document.createElement('div');
+userMsg.className = 'flex justify-end';
+userMsg.innerHTML = `<div class="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[80%] text-sm">${pregunta.replace(/</g, '&lt;')}</div>`;
+chat.appendChild(userMsg);
+
+// Limpiar input
+input.value = '';
+
+// Scroll al fondo
+chat.scrollTop = chat.scrollHeight;
+
+// Mostrar loading
+btn.disabled = true;
+btn.innerHTML = '<svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+// Enviar al backend
+try {
+const response = await fetch('/api/pregunta', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ pregunta })
+});
+
+const data = await response.json();
+
+// Agregar respuesta
+const aiMsg = document.createElement('div');
+aiMsg.className = 'flex justify-start';
+
+let respuestaHTML = '';
+if (data.error) {
+respuestaHTML = `<div class="bg-red-600/20 text-red-200 border border-red-500/30 px-4 py-2 rounded-2xl rounded-tl-sm max-w-[80%] text-sm">Error: ${data.error}</div>`;
+} else {
+// Convertir markdown basico a HTML
+const respuesta = data.respuesta || 'Sin respuesta';
+respuestaHTML = `<div class="bg-white/10 text-white px-4 py-2 rounded-2xl rounded-tl-sm max-w-[80%] text-sm whitespace-pre-line">${respuesta.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>`;
+}
+
+aiMsg.innerHTML = `<div class="flex items-start gap-2">${respuestaHTML}</div>`;
+chat.appendChild(aiMsg);
+} catch (error) {
+const errorMsg = document.createElement('div');
+errorMsg.className = 'flex justify-start';
+errorMsg.innerHTML = `<div class="bg-red-600/20 text-red-200 border border-red-500/30 px-4 py-2 rounded-2xl rounded-tl-sm max-w-[80%] text-sm">Error de conexión: ${error.message}</div>`;
+chat.appendChild(errorMsg);
+}
+
+// Reset button
+btn.disabled = false;
+btn.innerHTML = 'Enviar';
+
+// Scroll al fondo
+chat.scrollTop = chat.scrollHeight;
+}
+
+ 
+async function buscarPuertosPorIP() {
             const ipInput = document.getElementById('ip-input');
             const ip = ipInput.value.trim();
             

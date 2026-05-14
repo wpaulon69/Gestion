@@ -3,6 +3,7 @@ import socketserver
 import subprocess
 import os
 import json
+import sys
 from datetime import datetime
 
 PORT = 8081
@@ -99,7 +100,6 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"[{datetime.now()}] [BACKEND] Iniciando auditoría solicitada desde el Dashboard...")
                 
                 # Ejecutar el script de auditoría
-                # shell=True es necesario para expandir rutas en Windows si usamos comandos complejos
                 process = subprocess.run(AUDIT_SCRIPT, shell=True, capture_output=True, text=True)
                 
                 if process.returncode == 0:
@@ -107,9 +107,9 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_header('Content-type', 'application/json')
                     self.end_headers()
                     response = {
-                         "status": "success", 
-                         "message": "Auditoría completada exitosamente.",
-                         "output": process.stdout
+                        "status": "success", 
+                        "message": "Auditoría completada exitosamente.",
+                        "output": process.stdout
                     }
                     self.wfile.write(json.dumps(response).encode())
                     print(f"[{datetime.now()}] [BACKEND] Auditoría terminada con éxito.")
@@ -124,11 +124,50 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     }
                     self.wfile.write(json.dumps(response).encode())
                     print(f"[{datetime.now()}] [BACKEND] ERROR en la auditoría: {process.stderr}")
-                    
+                
             except Exception as e:
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(str(e).encode())
+        elif self.path == '/api/pregunta':
+            # Endpoint para el asistente IA
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length).decode('utf-8')
+                data = json.loads(post_data) if post_data else {}
+                
+                pregunta = data.get('pregunta', '')
+                
+                if not pregunta:
+                    self.send_response(400)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'La pregunta es requerida'}).encode())
+                    return
+                
+                print(f"[{datetime.now()}] [BACKEND] Pregunta recibida: {pregunta[:100]}...")
+                
+                # Importar y ejecutar el módulo de IA
+                sys.path.insert(0, '/home/sectorial/gestion')
+                from ia_asistente import responder_pregunta
+                
+                resultado = responder_pregunta(pregunta)
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(resultado, ensure_ascii=False).encode())
+                
+                print(f"[{datetime.now()}] [BACKEND] Respuesta generada exitosamente")
+                
+            except Exception as e:
+                print(f"[{datetime.now()}] [BACKEND] ERROR en pregunta IA: {e}")
+                import traceback
+                traceback.print_exc()
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode())
         elif self.path.startswith('/api/buscar-puerto-ip'):
             try:
                 from urllib.parse import urlparse, parse_qs
