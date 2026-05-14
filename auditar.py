@@ -41,10 +41,7 @@ async def main():
         
         # Prioridad 1: Valor de ping real (1=Online, 0=Offline)
         val_ping = pings.get(hid, "1") # Default 1 si no hay item
-        if val_ping == "0":
-            real_status = "Offline"
-        else:
-            real_status = "Online" if h['status'] == "0" else "Offline"
+        real_status = "Offline" if val_ping == "0" else "Online"
 
         lista_camaras.append({
             "camara": nombre,
@@ -89,11 +86,11 @@ async def main():
         "nas_health": nas_health,
         "resumen_clientes": resumen_clientes,
         "dispositivos_wifi": [
-            *[{"nombre": h['name'], "ip": h['interfaces'][0]['ip'], "tipo": "Router WiFi", "estado": "Offline" if pings.get(h['hostid']) == "0" or h['status']!="0" else "Online"} for h in wifi_h],
-            *[{"nombre": h['name'], "ip": h['interfaces'][0]['ip'], "tipo": "Huawei CAPS", "estado": "Offline" if pings.get(h['hostid']) == "0" or h['status']!="0" else "Online"} for h in huawei_h]
+            *[{"nombre": h['name'], "ip": h['interfaces'][0]['ip'], "tipo": "Router WiFi", "estado": "Offline" if pings.get(h['hostid']) == "0" else "Online"} for h in wifi_h],
+            *[{"nombre": h['name'], "ip": h['interfaces'][0]['ip'], "tipo": "Huawei CAPS", "estado": "Offline" if pings.get(h['hostid']) == "0" else "Online"} for h in huawei_h]
         ],
         "relojes_personal": [
-            {"nombre": h['name'], "ip": h['interfaces'][0]['ip'] if h.get('interfaces') else "S/D", "estado": "Offline" if pings.get(h['hostid']) == "0" or h['status']!="0" else "Online"} for h in relojes_h
+            {"nombre": h['name'], "ip": h['interfaces'][0]['ip'] if h.get('interfaces') else "S/D", "estado": "Offline" if pings.get(h['hostid']) == "0" else "Online"} for h in relojes_h
         ]
     }
 

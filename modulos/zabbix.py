@@ -19,7 +19,7 @@ def autenticar(config):
         return None
 
 def obtener_hosts_por_grupo(token, config, nombre_grupo):
-    """Obtiene hosts filtrando por el nombre del grupo."""
+    """Obtiene hosts filtrando por el nombre del grupo (solo habilitados)."""
     # 1. Obtener ID del grupo
     payload_group = {
         "jsonrpc": "2.0",
@@ -35,14 +35,15 @@ def obtener_hosts_por_grupo(token, config, nombre_grupo):
         
         group_id = group_res[0]['groupid']
 
-        # 2. Obtener hosts
+        # 2. Obtener hosts (solo habilitados: status=0)
         payload_hosts = {
             "jsonrpc": "2.0",
             "method": "host.get",
             "params": {
                 "groupids": group_id,
                 "selectInterfaces": ["ip"],
-                "output": ["name", "status"]
+                "output": ["name", "status"],
+                "filter": {"status": "0"}
             },
             "auth": token,
             "id": 2
