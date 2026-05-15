@@ -27,7 +27,7 @@ def obtener_datos_pve(config):
     try:
         # 1. Obtener lista de nodos
         url_nodos = f"{base_url}/api2/json/nodes"
-        res_nodos = requests.get(url_nodos, headers=headers, verify=False, timeout=5)
+        res_nodos = requests.get(url_nodos, headers=headers, verify=False, timeout=30)
         
         if res_nodos.status_code == 200:
             nodos_data = res_nodos.json().get("data", [])
@@ -36,7 +36,7 @@ def obtener_datos_pve(config):
                 
                 # 2. Obtener estado detallado del nodo (para discos y RAM)
                 url_st = f"{base_url}/api2/json/nodes/{node_name}/status"
-                res_st = requests.get(url_st, headers=headers, verify=False, timeout=5)
+                res_st = requests.get(url_st, headers=headers, verify=False, timeout=30)
                 
                 if res_st.status_code == 200:
                     st = res_st.json().get("data", {})
@@ -49,7 +49,7 @@ def obtener_datos_pve(config):
                     pct_root = 0
                     if total_root > 0:
                         pct_root = round((used_root / total_root) * 100, 2)
-
+                    
                     node_info = {
                         "nombre": node_name,
                         "cpu_uso": round(st.get("cpu", 0) * 100, 2),
@@ -64,7 +64,7 @@ def obtener_datos_pve(config):
                     
                     # 3. Obtener VMs del nodo
                     url_vms = f"{base_url}/api2/json/nodes/{node_name}/qemu"
-                    res_vms = requests.get(url_vms, headers=headers, verify=False, timeout=5)
+                    res_vms = requests.get(url_vms, headers=headers, verify=False, timeout=30)
                     
                     if res_vms.status_code == 200:
                         vms_data = res_vms.json().get("data", [])
@@ -79,13 +79,13 @@ def obtener_datos_pve(config):
                                 "uptime": v.get("uptime", 0),
                                 "nodo": node_name
                             })
-                            
+                    
                     # 4. Obtener Contenedores (LXC) del nodo
                     url_lxc = f"{base_url}/api2/json/nodes/{node_name}/lxc"
-                    res_lxc = requests.get(url_lxc, headers=headers, verify=False, timeout=5)
+                    res_lxc = requests.get(url_lxc, headers=headers, verify=False, timeout=30)
                     if res_lxc.status_code == 200:
-                         for l in res_lxc.json().get("data", []):
-                             resultado["vms"].append({
+                        for l in res_lxc.json().get("data", []):
+                            resultado["vms"].append({
                                 "vmid": l.get("vmid"),
                                 "nombre": l.get("name"),
                                 "estado": l.get("status"),
@@ -95,9 +95,9 @@ def obtener_datos_pve(config):
                                 "nodo": node_name,
                                 "tipo": "lxc"
                             })
-
-        else:
-            resultado["error"] = f"Error al consultar nodos PVE: HTTP {res_nodos.status_code}"
+                    
+                    else:
+                        resultado["error"] = f"Error al consultar nodos PVE: HTTP {res_nodos.status_code}"
             
     except Exception as e:
         resultado["error"] = f"Excepción en PVE: {str(e)}"
