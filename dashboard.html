@@ -684,11 +684,15 @@
  barColor = 'bg-amber-500'; borderColor = 'border-amber-200'; bgColor = 'bg-amber-50 dark:bg-amber-900/20'; textColor = 'text-amber-600';
  }
  
+ const hostLabel = v.host ? `<span class="text-[9px] font-bold text-indigo-500 dark:text-indigo-400">${v.host}</span>` : '';
  const vol = document.createElement('div');
  vol.className = `p-4 rounded-2xl border transition-all flex flex-col gap-2 ${bgColor} ${borderColor}`;
  vol.innerHTML = `
  <div class="flex justify-between items-center">
+ <div class="flex flex-col">
  <span class="text-[10px] font-black uppercase text-sub tracking-widest">${v.nombre}</span>
+ ${hostLabel}
+ </div>
  <span class="text-sm font-black ${textColor}">${v.porcentaje}%</span>
  </div>
  <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -703,12 +707,16 @@
  const camMax = Math.max(...camaras.map(c => c.porcentaje));
  if (camMax > maxOccupancy) maxOccupancy = camMax;
  // Las cámaras NO suman a nasCriticalCount porque rotan
+ const camHost = camaras[0].host || 'OMV-Backups';
  
  const resumen = document.createElement('div');
  resumen.className = `p-4 rounded-2xl border bg-slate-50 dark:bg-slate-800/50 border-slate-100`;
  resumen.innerHTML = `
  <div class="flex justify-between items-center">
+ <div class="flex flex-col">
  <span class="text-[10px] font-black uppercase text-sub">📷 ${camaras.length} cámaras</span>
+ <span class="text-[9px] font-bold text-indigo-500 dark:text-indigo-400">${camHost}</span>
+ </div>
  <span class="text-sm font-black text-title">rotan ${camMax}%</span>
  </div>
  <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">

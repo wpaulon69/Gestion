@@ -152,47 +152,52 @@ def obtener_trafico_wan(token, config, ip_opnsense="10.175.6.203"):
     except:
         return {"rx": 0, "tx": 0}
 
-def obtener_ocupacion_nas(token, config, ip_nas="10.175.6.10"):
-    """Obtiene la ocupación de los discos del NAS."""
+def obtener_ocupacion_nas(token, config):
+    """Obtiene la ocupación de discos de todos los hosts con 'Space utilization'."""
     payload = {
         "jsonrpc": "2.0",
         "method": "item.get",
         "params": {
-            "filter": {"ip": [ip_nas]},
-            "search": {"name": ["Space utilization"]},
-            "output": ["name", "lastvalue"]
+            "search": {"name": "Space utilization"},
+            "output": ["name", "lastvalue"],
+            "selectHosts": ["host", "name"],
+            "limit": 200
         },
         "auth": token,
         "id": 1
     }
     try:
-        res = requests.post(config["zabbix"]["url"], json=payload).json().get("result", [])
+        res = requests.post(config["zabbix"]["url"], json=payload, timeout=10).json().get("result", [])
         volumenes = []
         for item in res:
             # Capturar el nombre del punto de montaje del item name (formato: "MountPoint: Space utilization")
             full_path = item['name'].split(': ')[0]
             
-            # Filtro: Solo nos interesan los volúmenes compartidos (/export) o montajes de datos (/mnt)
-            # Ignoramos particiones de sistema, snaps de ubuntu y subvols de proxmox
+            # Filtro: ignorar particiones de sistema, snaps, subvols, etc.
             black_list = ['/var/snap', 'subvol-', 'loop', 'squashfs', '/dev/', '/run']
             if any(x in full_path for x in black_list):
                 continue
             
-            # Si el path es muy largo o técnico, y no es /export, lo ignoramos (opcional, ajustamos según imagen)
+            # Ignorar paths técnicos UUID (ya tenemos los /export equivalentes)
             if full_path.startswith('/srv/dev-disk-by-uuid'):
-                continue # Ya tenemos los de /export que apuntan aquí
-
+                continue
+            
+            # Nombre del host Zabbix
+            hosts = item.get('hosts', [])
+            host_name = hosts[0]['name'] if hosts else 'Desconocido'
+            
             # Limpiar nombre para el dashboard
             nombre = full_path.replace('/export/', '').replace('/mnt/datastore/', 'DS-')
             if nombre == "/": nombre = "Sistema (Root)"
             
             volumenes.append({
                 "nombre": nombre,
-                "porcentaje": round(float(item['lastvalue']), 2)
+                "porcentaje": round(float(item['lastvalue']), 2),
+                "host": host_name
             })
         
-        # Ordenar por nombre para consistencia
-        volumenes.sort(key=lambda x: x['nombre'])
+        # Ordenar por host + nombre para consistencia
+        volumenes.sort(key=lambda x: (x['host'], x['nombre']))
         return volumenes
 
     except:
