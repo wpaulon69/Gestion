@@ -318,12 +318,12 @@
                     <!-- Dynamic Nodes -->
                 </div>
 
-                <div class="border-t border-sub pt-6">
-                    <h3 class="text-xs font-black text-sub uppercase tracking-widest mb-4">Máquinas Virtuales & Contenedores</h3>
-                    <div id="pve-vms-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Dynamic VMs -->
-                    </div>
-                </div>
+ <div class="border-t border-sub pt-6">
+ <h3 class="text-xs font-black text-sub uppercase tracking-widest mb-4">Máquinas Virtuales & Contenedores</h3>
+ <div id="pve-vms-grid" class="space-y-6">
+ <!-- Dynamic VMs grouped by node -->
+ </div>
+ </div>
             </section>
 
             <!-- NAS Health Section (New) -->
@@ -984,10 +984,21 @@
                 pveNodesGrid.innerHTML = `<p class="text-xs text-rose-500 italic px-4 py-2 bg-rose-50 rounded-xl col-span-2">Error API PVE: ${pve.error}</p>`;
             } else {
                 const nodos = pve.nodos || [];
-                nodos.forEach(n => {
-                    const diskFull = n.disco_root_pct > 90;
-                    const nodeBox = document.createElement('div');
-                    nodeBox.className = `p-5 rounded-3xl border transition-all ${diskFull ? 'bg-rose-50 border-rose-200 animate-pulse' : 'bg-sub border-sub'}`;
+ 
+ // Colores por nodo para relación visual (nodos + VMs)
+ const nodeColors = {
+ 'dellr610-2': { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-700', accent: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300' },
+ 'hpdl360': { bg: 'bg-violet-50 dark:bg-violet-900/20', border: 'border-violet-200 dark:border-violet-700', accent: 'bg-violet-500', text: 'text-violet-600 dark:text-violet-400', badge: 'bg-violet-100 text-violet-700 dark:bg-violet-800 dark:text-violet-300' },
+ 'dellr610': { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-700', accent: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-300' },
+ 'delli5-03': { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-700', accent: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-300' }
+ };
+ const defaultColor = { bg: 'bg-slate-50 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700', accent: 'bg-slate-400', text: 'text-slate-600 dark:text-slate-400', badge: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300' };
+ 
+ nodos.forEach(n => {
+ const diskFull = n.disco_root_pct > 90;
+ const nc = nodeColors[n.nombre] || defaultColor;
+ const nodeBox = document.createElement('div');
+ nodeBox.className = `p-5 rounded-3xl border-l-4 transition-all ${diskFull ? 'bg-rose-50 border-rose-200 animate-pulse' : `bg-sub ${nc.border}`}`;
                     nodeBox.innerHTML = `
                         <div class="flex justify-between items-start mb-4">
                             <div>
@@ -1021,45 +1032,102 @@
                     pveNodesGrid.appendChild(nodeBox);
                 });
 
-                const vms = pve.vms || [];
-                vms.forEach(v => {
-                    const isRunning = v.estado === 'running';
-                    const isLXC = v.tipo === 'lxc';
-                    const vmBox = document.createElement('div');
-                    
-                    // Ajuste de colores para compatibilidad con dark mode
-                    vmBox.className = `p-4 rounded-2xl border transition-all flex items-center justify-between ${
-                        isRunning 
-                        ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm' 
-                        : 'bg-slate-50 dark:bg-slate-900/50 border-transparent opacity-60 grayscale'
-                    }`;
-
-                    vmBox.innerHTML = `
-                        <div class="flex items-center gap-4 overflow-hidden">
-                            <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                isRunning 
-                                ? (isLXC ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400') 
-                                : 'bg-slate-200 text-slate-400'
-                            }">
-                                ${isLXC 
-                                    ? '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" stroke-width="2" /></svg>'
-                                    : '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" stroke-width="2" /></svg>'
-                                }
-                            </div>
-                            <div class="truncate">
-                                <p class="text-sm font-black text-title leading-tight mb-0.5 truncate">${v.nombre}</p>
-                                <div class="flex items-center gap-2 text-[10px] font-mono text-sub font-bold">
-                                    <span class="bg-sub dark:bg-slate-700 px-1.5 py-0.5 rounded text-[9px]">ID: ${v.vmid}</span>
-                                    <span class="opacity-70">${v.ram_gb}GB</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full ${isRunning ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}"></span>
-                        </div>
-                    `;
-                    pveVmsGrid.appendChild(vmBox);
-                });
+ const vms = pve.vms || [];
+ // Agrupar VMs por nodo
+ const vmsByNode = {};
+ vms.forEach(v => {
+ if (!vmsByNode[v.nodo]) vmsByNode[v.nodo] = [];
+ vmsByNode[v.nodo].push(v);
+ });
+ 
+ // Colores por nodo ya definidos arriba (nodeColors / defaultColor)
+ 
+ // Renderizar por nodo
+ nodos.forEach(n => {
+ const nodeVms = vmsByNode[n.nombre] || [];
+ if (nodeVms.length === 0) return;
+ 
+ const c = nodeColors[n.nombre] || defaultColor;
+ 
+ // Buscar datos del nodo para resumen
+ const ramPct = n.ram_pct || 0;
+ const cpuPct = n.cpu_uso || 0;
+ const diskPct = n.disco_root_pct || 0;
+ const diskFull = diskPct > 90;
+ 
+ // Contadores
+ const running = nodeVms.filter(v => v.estado === 'running').length;
+ const stopped = nodeVms.filter(v => v.estado !== 'running').length;
+ const totalRam = nodeVms.filter(v => v.estado === 'running').reduce((s, v) => s + v.ram_gb, 0).toFixed(1);
+ 
+ const group = document.createElement('div');
+ group.className = `rounded-2xl border-l-4 ${c.border} ${c.bg} overflow-hidden`;
+ 
+ // Header del nodo
+ let header = `
+ <div class="flex items-center justify-between px-5 py-3">
+ <div class="flex items-center gap-3">
+ <div class="h-8 w-8 rounded-lg ${c.accent} flex items-center justify-center">
+ <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+ </div>
+ <div>
+ <h4 class="text-sm font-black text-title uppercase tracking-tight">${n.nombre}</h4>
+ <div class="flex items-center gap-2 text-[9px] font-mono font-bold text-sub mt-0.5">
+ <span class="${c.badge} px-1.5 py-0.5 rounded">${running} activas${stopped > 0 ? ` · ${stopped} off` : ''}</span>
+ <span>${totalRam}GB RAM asignados</span>
+ </div>
+ </div>
+ </div>
+ <div class="flex items-center gap-4 text-[10px] font-bold">
+ <div class="text-center"><span class="block text-sub">CPU</span><span class="text-title">${cpuPct}%</span></div>
+ <div class="text-center"><span class="block text-sub">RAM</span><span class="${ramPct > 85 ? 'text-rose-500' : 'text-title'}">${ramPct}%</span></div>
+ <div class="text-center"><span class="block text-sub">DISCO</span><span class="${diskFull ? 'text-rose-500 font-black' : 'text-title'}">${diskPct}%</span></div>
+ <span class="status-dot ${n.status === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+ </div>
+ </div>
+ `;
+ 
+ // Grid de VMs dentro del nodo
+ let vmsHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4">`;
+ nodeVms.forEach(v => {
+ const isRunning = v.estado === 'running';
+ const isLXC = v.tipo === 'lxc';
+ 
+ vmsHtml += `
+ <div class="p-3 rounded-xl border transition-all flex items-center justify-between ${
+ isRunning 
+ ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm' 
+ : 'bg-slate-50 dark:bg-slate-900/50 border-transparent opacity-60 grayscale'
+ }">
+ <div class="flex items-center gap-3 overflow-hidden">
+ <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+ isRunning 
+ ? (isLXC ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400') 
+ : 'bg-slate-200 text-slate-400'
+ }">
+ ${isLXC 
+ ? '<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" stroke-width="2" /></svg>'
+ : '<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" stroke-width="2" /></svg>'
+ }
+ </div>
+ <div class="truncate">
+ <p class="text-xs font-black text-title leading-tight truncate">${v.nombre}</p>
+ <div class="flex items-center gap-1.5 text-[9px] font-mono text-sub font-bold mt-0.5">
+ <span class="bg-sub dark:bg-slate-700 px-1 py-0.5 rounded">${v.vmid}</span>
+ <span>${v.ram_gb}GB</span>
+ ${v.cpu > 0 ? `<span>· ${v.cpu}%</span>` : ''}
+ </div>
+ </div>
+ </div>
+ <span class="h-2 w-2 rounded-full shrink-0 ${isRunning ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}"></span>
+ </div>
+ `;
+ });
+ vmsHtml += `</div>`;
+ 
+ group.innerHTML = header + vmsHtml;
+ pveVmsGrid.appendChild(group);
+ });
             }
 
             // 8. ALERTAS TERMINAL
