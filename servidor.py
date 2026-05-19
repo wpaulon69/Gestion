@@ -130,7 +130,9 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
 
 def run_server():
     socketserver.TCPServer.allow_reuse_address = True
-    httpd = socketserver.TCPServer(('', PORT), HermesHandler)
+    class ThreadedHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+        daemon_threads = True
+    httpd = ThreadedHTTPServer(('0.0.0.0', PORT), HermesHandler)
     print(f"[{datetime.now()}] [BACKEND] Serving on port {PORT}...")
     try:
         httpd.serve_forever()
