@@ -9,6 +9,7 @@ from urllib.parse import urlparse, parse_qs
 
 PORT = 8081
 AUDIT_SCRIPT = ['venv/bin/python', 'auditar.py']
+REPORT_PATH = '/home/sectorial/gestion/output/reporte_completo.json'
 
 class HermesHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -20,25 +21,29 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Expires', '0')
         super().end_headers()
 
+    def _run_audit(self):
+        """Ejecuta auditar.py y devuelve el JSON del reporte generado."""
+        print(f"[{datetime.now()}] [BACKEND] Iniciando auditoria solicitada desde el Dashboard...")
+        process = subprocess.run(AUDIT_SCRIPT, capture_output=True, text=True, cwd='/home/sectorial/gestion')
+        
+        if process.returncode != 0:
+            print(f"[{datetime.now()}] [BACKEND] Error en auditoria: {process.stderr}")
+            raise Exception(f'Script failed: {process.stderr}')
+        
+        print(f"[{datetime.now()}] [BACKEND] Auditoria completada. Leyendo reporte...")
+        with open(REPORT_PATH, 'r', encoding='utf-8') as f:
+            result = json.load(f)
+        return result
+
     def do_GET(self):
         if self.path == '/api/run-audit':
             try:
-                print(f"[{datetime.now()}] [BACKEND] Iniciando auditoria solicitada desde el Dashboard...")
-                
-                process = subprocess.run(AUDIT_SCRIPT, shell=True, capture_output=True, text=True, cwd='/home/sectorial/gestion')
-                
-                if process.returncode == 0:
-                    print(f"[{datetime.now()}] [BACKEND] Auditoria completada.")
-                    result = json.loads(process.stdout)
-                else:
-                    print(f"[{datetime.now()}] [BACKEND] Error en auditoria: {process.stderr}")
-                    raise Exception(f'Script failed: {process.stderr}')
-
+                result = self._run_audit()
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(result).encode())
-                
+
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
@@ -100,22 +105,12 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/run-audit':
             try:
-                print(f"[{datetime.now()}] [BACKEND] Iniciando auditoria solicitada desde el Dashboard...")
-                
-                process = subprocess.run(AUDIT_SCRIPT, shell=True, capture_output=True, text=True, cwd='/home/sectorial/gestion')
-                
-                if process.returncode == 0:
-                    print(f"[{datetime.now()}] [BACKEND] Auditoria completada.")
-                    result = json.loads(process.stdout)
-                else:
-                    print(f"[{datetime.now()}] [BACKEND] Error en auditoria: {process.stderr}")
-                    raise Exception(f'Script failed: {process.stderr}')
-
+                result = self._run_audit()
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(result).encode())
-                
+
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
