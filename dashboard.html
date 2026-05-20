@@ -640,7 +640,7 @@ Interfaces Firewall (OPNsense)
             // 2. OPNsense
             const opnGrid = document.getElementById('opnsense-interfaces-grid');
             opnGrid.innerHTML = '';
-            const interfaces = data.opnsense?.interfaces || [];
+            const interfaces = (data.opnsense && data.opnsense.interfaces) || [];
             if (interfaces.length > 0) {
                 interfaces.forEach(i => {
                     const isUp = i.status === "up";
@@ -1261,7 +1261,7 @@ if (mpls && mpls.estado) {
             // 8. ALERTAS TERMINAL
             const alertsCont = document.getElementById('alerts-container');
             alertsCont.innerHTML = '';
-            const alerts = data.estado_alertas?.detalle || [];
+            const alerts = (data.estado_alertas && data.estado_alertas.detalle) || [];
             document.getElementById('alert-stat').innerText = alerts.length;
             const badge = document.getElementById('alert-summary-badge');
             
