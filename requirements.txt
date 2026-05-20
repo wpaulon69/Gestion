@@ -1,0 +1,11 @@
+# SAMCo Esperanza - Dependencias Python
+# Instalar: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+
+# HTTP requests (Zabbix API, OPNsense API, check-watch)
+requests>=2.28
+
+# TP-Link Omada SDN client
+tplink-omada-client>=1.0
+
+# Suprimir warnings InsecureRequestWarning (conexiones HTTPS self-signed)
+urllib3>=2.0

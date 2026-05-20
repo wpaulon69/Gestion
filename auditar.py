@@ -57,10 +57,11 @@ async def main():
     pbs_data = pbs.obtener_datos_pbs(config)
     pve_data = pve.obtener_datos_pve(config)
     
-    # 5. Datos Extra desde Zabbix (Tráfico y NAS)
-    print("[INFO] Obteniendo tráfico WAN y salud de NAS desde Zabbix...")
+    # 5. Datos Extra desde Zabbix (Tráfico, NAS y MPLS)
+    print("[INFO] Obteniendo tráfico WAN, salud de NAS y estado MPLS desde Zabbix...")
     trafico_wan = zabbix.obtener_trafico_wan(token, config)
     nas_health = zabbix.obtener_ocupacion_nas(token, config)
+    estado_mpls = zabbix.obtener_estado_mpls(token, config)
     
     switches = await switches_task
     
@@ -83,6 +84,7 @@ async def main():
         "pbs": pbs_data,
         "pve": pve_data,
         "trafico_wan": trafico_wan,
+        "estado_mpls": estado_mpls,
         "nas_health": nas_health,
         "resumen_clientes": resumen_clientes,
         "dispositivos_wifi": [
@@ -108,8 +110,9 @@ async def main():
     print(f"   -> Camaras: {len(lista_camaras)}")
     print(f"   -> Switches: {len(switches)}")
     print(f"   -> PVE Nodos: {len(pve_data.get('nodos', []))} | VMs: {len(pve_data.get('vms', []))}")
-    print(f"   -> Tráfico WAN (Rx/Tx): {round(trafico_wan['rx']/1000000, 2)} / {round(trafico_wan['tx']/1000000, 2)} Mbps")
-    print(f"   -> Clientes Red: PC/Trabajo: {resumen_clientes['pc']} | WiFi: {resumen_clientes['wifi']}")
+    print(f" -> Tráfico WAN (Rx/Tx): {round(trafico_wan['rx']/1000000, 2)} / {round(trafico_wan['tx']/1000000, 2)} Mbps")
+    print(f" -> MPLS: {estado_mpls['estado']} | IP: {estado_mpls['ip']} | Latencia: {estado_mpls['latencia_ms']}ms | Loss: {estado_mpls['loss_pct']}%")
+    print(f" -> Clientes Red: PC/Trabajo: {resumen_clientes['pc']} | WiFi: {resumen_clientes['wifi']}")
     print(f"   -> Alertas Zabbix: {alertas['alertas_activas']}")
 
 if __name__ == "__main__":

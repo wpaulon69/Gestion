@@ -221,12 +221,36 @@
                 </div>
             </section>
 
-            <!-- OPNsense Interfaces -->
-            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-emerald-500">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-xl font-extrabold text-title flex items-center gap-3">
-                    <svg class="h-6 w-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" /></svg>
-                    Interfaces Firewall (OPNsense)
+<!-- Enlace MPLS - MAN Provincial -->
+<section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-amber-500" id="mpls-section">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-extrabold text-title flex items-center gap-3">
+<svg class="h-6 w-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+Enlace MPLS - MAN Provincial
+</h2>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hospital ↔ MAN</p>
+<p id="mpls-ip" class="text-[10px] font-mono font-bold text-sub">--</p>
+</div>
+<div id="mpls-status-badge" class="status-pill badge-ok">--</div>
+</div>
+</div>
+<div id="mpls-content" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Se llena dinámicamente -->
+</div>
+<div class="mt-4" id="mpls-chart-container" style="display:none;">
+<p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Latencia (24h)</p>
+<canvas id="mpls-latency-chart" height="60"></canvas>
+</div>
+</section>
+
+<!-- OPNsense Interfaces -->
+<section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-emerald-500">
+<div class="flex justify-between items-center mb-8">
+<h2 class="text-xl font-extrabold text-title flex items-center gap-3">
+<svg class="h-6 w-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" /></svg>
+Interfaces Firewall (OPNsense)
                     <button onclick="showHelp('networking')" class="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-indigo-500 transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg></button>
                 </h2>
                     <div class="flex gap-4">
@@ -640,13 +664,117 @@
                 opnGrid.innerHTML = `<p class="text-sub text-xs italic py-4">Sin datos de interfaces.</p>`;
             }
 
-            // 2.1 Tráfico WAN
-            const wanStats = data.trafico_wan || {rx: 0, tx: 0};
-            const rxMbps = (wanStats.rx / 1000000).toFixed(2);
-            const txMbps = (wanStats.tx / 1000000).toFixed(2);
-            document.getElementById('wan-traffic-stats').innerText = `${txMbps} Mbps / ${rxMbps} Mbps`;
+// 2.1 Tráfico WAN
+const wanStats = data.trafico_wan || {rx: 0, tx: 0};
+const rxMbps = (wanStats.rx / 1000000).toFixed(2);
+const txMbps = (wanStats.tx / 1000000).toFixed(2);
+document.getElementById('wan-traffic-stats').innerText = `${txMbps} Mbps / ${rxMbps} Mbps`;
 
- // 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
+// 2.1b Enlace MPLS
+const mpls = data.estado_mpls || {};
+const mplsContent = document.getElementById('mpls-content');
+const mplsBadge = document.getElementById('mpls-status-badge');
+const mplsIp = document.getElementById('mpls-ip');
+const mplsChartContainer = document.getElementById('mpls-chart-container');
+
+if (mpls && mpls.estado) {
+    mplsIp.innerText = mpls.ip || '--';
+
+    // Badge de estado
+    const mplsColors = {
+        'OK': 'badge-ok',
+        'ALERTA': 'badge-warn',
+        'CRITICO': 'badge-err',
+        'CAIDO': 'badge-err',
+        'Error': 'badge-err',
+        'No encontrado': 'badge-err'
+    };
+    mplsBadge.className = `status-pill ${mplsColors[mpls.estado] || 'badge-err'}`;
+    mplsBadge.innerText = mpls.estado;
+
+    // Tarjetas de métricas
+    const latColor = mpls.latencia_ms > 20 ? 'text-rose-500' : mpls.latencia_ms > 10 ? 'text-amber-500' : 'text-emerald-500';
+    const lossColor = mpls.loss_pct > 5 ? 'text-rose-500' : mpls.loss_pct > 1 ? 'text-amber-500' : 'text-emerald-500';
+
+    let triggersHtml = '';
+    if (mpls.triggers_activos > 0) {
+        triggersHtml = `<div class="p-4 rounded-2xl border border-rose-200 bg-rose-50 dark:bg-rose-900/20">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Triggers Activos</p>
+            <p class="text-lg font-black text-rose-500">${mpls.triggers_activos}</p>
+            ${mpls.triggers_detalle.map(t => `<p class="text-[9px] text-rose-400 mt-1">• ${t.descripcion}</p>`).join('')}
+        </div>`;
+    }
+
+    mplsContent.innerHTML = `
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado Ping</p>
+            <p class="text-lg font-black ${mpls.ping ? 'text-emerald-500' : 'text-rose-500'}">${mpls.ping ? '✓ Online' : '✗ Offline'}</p>
+        </div>
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Latencia</p>
+            <p class="text-lg font-black ${latColor}">${mpls.latencia_ms} ms</p>
+        </div>
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Packet Loss</p>
+            <p class="text-lg font-black ${lossColor}">${mpls.loss_pct}%</p>
+        </div>
+        ${triggersHtml}
+    `;
+
+    // Gráfico de latencia (si hay trends)
+    if (mpls.trends_latencia && mpls.trends_latencia.length > 1) {
+        mplsChartContainer.style.display = 'block';
+        const ctx = document.getElementById('mpls-latency-chart').getContext('2d');
+        const labels = mpls.trends_latencia.map(t => t.hora);
+        const avgData = mpls.trends_latencia.map(t => t.avg);
+        const maxData = mpls.trends_latencia.map(t => t.max);
+
+        if (window.mplsChart) window.mplsChart.destroy();
+        window.mplsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Máx',
+                        data: maxData,
+                        borderColor: 'rgba(239,68,68,0.5)',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Promedio',
+                        data: avgData,
+                        borderColor: 'rgba(245,158,11,0.9)',
+                        backgroundColor: 'rgba(245,158,11,0.15)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, labels: { boxWidth: 8, font: { size: 9 } } } },
+                scales: {
+                    x: { display: true, ticks: { maxTicksLimit: 8, font: { size: 8 } }, grid: { display: false } },
+                    y: { display: true, ticks: { font: { size: 8 }, callback: v => v + 'ms' }, grid: { color: 'rgba(100,116,139,0.1)' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+} else {
+    mplsBadge.className = 'status-pill badge-err';
+    mplsBadge.innerText = 'S/D';
+    mplsContent.innerHTML = '<p class="text-sub text-xs italic py-4">Sin datos del enlace MPLS.</p>';
+}
+
+// 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
  const nasGrid = document.getElementById('nas-volumes-grid');
  nasGrid.innerHTML = '';
  const nasVolumes = data.nas_health || [];

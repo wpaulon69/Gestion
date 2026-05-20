@@ -152,6 +152,112 @@ def obtener_trafico_wan(token, config, ip_opnsense="10.175.6.203"):
     except:
         return {"rx": 0, "tx": 0}
 
+def obtener_estado_mpls(token, config, host_name="MPLS"):
+    """Obtiene estado completo del enlace MPLS: ping, latencia, packet loss y trends horarios."""
+    try:
+        # 1. Obtener host MPLS
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "host.get",
+            "params": {
+                "output": ["hostid", "host", "name"],
+                "filter": {"host": [host_name]},
+                "selectInterfaces": ["ip"],
+                "selectItems": ["itemid", "name", "key_", "lastvalue", "units"],
+                "selectTriggers": ["triggerid", "description", "priority", "value"]
+            },
+            "auth": token,
+            "id": 1
+        }
+        res = requests.post(config["zabbix"]["url"], json=payload, timeout=10).json()
+        hosts = res.get("result", [])
+        if not hosts:
+            return {"estado": "No encontrado", "ip": "N/A"}
+
+        h = hosts[0]
+        ip = h["interfaces"][0]["ip"] if h.get("interfaces") else "N/A"
+        items = {it["key_"]: it for it in h.get("items", [])}
+
+        # 2. Valores actuales
+        ping_ok = items.get("icmpping", {}).get("lastvalue", "0") == "1"
+        latencia_ms = round(float(items.get("icmppingsec", {}).get("lastvalue", 0)) * 1000, 2)
+        loss_pct = float(items.get("icmppingloss", {}).get("lastvalue", 0))
+
+        # 3. Triggers activos
+        triggers_activos = [t for t in h.get("triggers", []) if t.get("value") == "1"]
+
+        # 4. Trends de latencia (últimas 24 horas)
+        from datetime import datetime
+        now = int(datetime.now().timestamp())
+        ayer = now - 86400
+
+        itemid_latency = items.get("icmppingsec", {}).get("itemid")
+        itemid_loss = items.get("icmppingloss", {}).get("itemid")
+
+        trends_latencia = []
+        trends_loss = []
+
+        if itemid_latency:
+            payload_t = {
+                "jsonrpc": "2.0",
+                "method": "trend.get",
+                "params": {
+                    "itemids": [itemid_latency],
+                    "time_from": ayer,
+                    "time_till": now,
+                    "output": ["clock", "value_avg", "value_min", "value_max"],
+                    "sortfield": "clock"
+                },
+                "auth": token,
+                "id": 2
+            }
+            r = requests.post(config["zabbix"]["url"], json=payload_t, timeout=10).json()
+            for t in r.get("result", []):
+                trends_latencia.append({
+                    "hora": datetime.fromtimestamp(int(t["clock"])).strftime("%H:%M"),
+                    "avg": round(float(t["value_avg"]) * 1000, 2),
+                    "min": round(float(t["value_min"]) * 1000, 2),
+                    "max": round(float(t["value_max"]) * 1000, 2)
+                })
+
+        if itemid_loss:
+            payload_t["params"]["itemids"] = [itemid_loss]
+            r = requests.post(config["zabbix"]["url"], json=payload_t, timeout=10).json()
+            for t in r.get("result", []):
+                trends_loss.append({
+                    "hora": datetime.fromtimestamp(int(t["clock"])).strftime("%H:%M"),
+                    "avg": float(t["value_avg"]),
+                    "max": float(t["value_max"])
+                })
+
+        # 5. Calcular estado resumido
+        if not ping_ok:
+            estado = "CAIDO"
+        elif loss_pct > 20:
+            estado = "CRITICO"
+        elif loss_pct > 5 or latencia_ms > 20:
+            estado = "ALERTA"
+        else:
+            estado = "OK"
+
+        return {
+            "estado": estado,
+            "ip": ip,
+            "ping": ping_ok,
+            "latencia_ms": latencia_ms,
+            "loss_pct": loss_pct,
+            "triggers_activos": len(triggers_activos),
+            "triggers_detalle": [{"descripcion": t["description"], "prioridad": t["priority"]} for t in triggers_activos],
+            "trends_latencia": trends_latencia,
+            "trends_loss": trends_loss
+        }
+
+    except Exception as e:
+        print(f"❌ Error consultando MPLS: {e}")
+        return {"estado": "Error", "ip": "N/A", "ping": False, "latencia_ms": 0, "loss_pct": 100,
+                "triggers_activos": 0, "triggers_detalle": [], "trends_latencia": [], "trends_loss": []}
+
+
 def obtener_ocupacion_nas(token, config):
     """Obtiene la ocupación de discos de todos los hosts con 'Space utilization'."""
     payload = {
