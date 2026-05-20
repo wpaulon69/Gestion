@@ -1611,11 +1611,14 @@ async function checkWatchWeb(ip, btnId, resId) {
             btn.innerHTML = 'Buscando... <svg class="h-3 w-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-13.82 0m0 0H4m11 11a8.005 8.005 0 01-11.803 0m15.356-6A8.005 8.005 0 0012.582 8m-2.238.581a4.256 4.256 0 01-3.001 5.418M15.082 6a4.257 4.257 0 003.001 5.418M15.082 6a4.257 4.257 0 013.001-5.418M6.918 10.082a4.257 4.257 0 00-3.001 5.418M6.918 10.082a4.257 4.257 0 013.001-5.418M12 4a2 2 0 110 4 2 2 0 010-4zm0 6a4 4 0 110 0-8 4 4 0 010 8z"/></svg>';
             btn.disabled = true;
             
-            // URL fija conocida para el servidor de auditoría
-            const baseUrl = 'http://10.175.6.18:8081';
-            
-            // Make request to our backend API
-            fetch(baseUrl + '/api/buscar-puerto-ip?ip=' + encodeURIComponent(ip))
+ // URL fija conocida para el servidor de auditoría
+ const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+ ? 'localhost:8081' 
+ : window.location.hostname + ':8081';
+ const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8081' : ('http://' + host);
+ 
+ // Make request to our backend API
+ fetch(baseUrl + '/api/buscar-puerto-ip?ip=' + encodeURIComponent(ip))
                 .then(response => response.json())
                 .then(data => {
                     // Reset button state

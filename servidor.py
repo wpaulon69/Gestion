@@ -6,6 +6,7 @@ import json
 import requests as req_lib
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
+from omada_port_lookup import buscar_puerto_por_ip
 
 PORT = 8081
 AUDIT_SCRIPT = ['venv/bin/python', 'auditar.py']
@@ -35,34 +36,29 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
             result = json.load(f)
         return result
 
+    def _send_json(self, code, data):
+        self.send_response(code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
+
     def do_GET(self):
         if self.path == '/api/run-audit':
             try:
                 result = self._run_audit()
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result).encode())
-
+                self._send_json(200, result)
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': str(e)}).encode())
-            
+                self._send_json(500, {'error': str(e)})
+        
         elif self.path.startswith('/api/check-watch'):
             try:
                 query = parse_qs(urlparse(self.path).query)
                 ip_list = query.get('ip')
                 if not ip_list or not ip_list[0]:
-                    self.send_response(400)
-                    self.send_header('Content-type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'error': 'IP parameter is required'}).encode())
+                    self._send_json(400, {'error': 'IP parameter is required'})
                     return
                 
                 target_ip = ip_list[0]
-                
                 result = {'ip': target_ip, 'status_code': None, 'is_watch': False, 'web_ok': False, 'message': 'SIN WEB'}
 
                 try:
@@ -87,17 +83,27 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as e:
                     result['message'] = f'Error: {str(e)}'
                 
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result).encode())
-                
+                self._send_json(200, result)
+
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': str(e)}).encode())
-            
+                self._send_json(500, {'error': str(e)})
+
+        elif self.path.startswith('/api/buscar-puerto-ip'):
+            try:
+                query = parse_qs(urlparse(self.path).query)
+                ip_list = query.get('ip')
+                if not ip_list or not ip_list[0]:
+                    self._send_json(400, {'error': 'IP parameter is required'})
+                    return
+                
+                target_ip = ip_list[0]
+                config = json.load(open('/home/sectorial/gestion/config.json'))
+                result = buscar_puerto_por_ip(config, target_ip)
+                self._send_json(200, result)
+
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+        
         else:
             # Servir archivos estáticos del dashboard
             super().do_GET()
@@ -106,21 +112,11 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/api/run-audit':
             try:
                 result = self._run_audit()
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result).encode())
-
+                self._send_json(200, result)
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': str(e)}).encode())
+                self._send_json(500, {'error': str(e)})
         else:
-            self.send_response(404)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': 'Not Found'}).encode())
+            self._send_json(404, {'error': 'Not Found'})
 
 
 def run_server():
