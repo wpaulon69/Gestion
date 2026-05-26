@@ -942,26 +942,58 @@ if (mpls && mpls.estado) {
             sortedWifi.forEach(d => {
                 const isOnline = d.estado === "Online";
                 const row = document.createElement('div');
-                row.className = `flex items-center justify-between p-3.5 rounded-2xl transition-all border ${isOnline ? 'bg-sub border-sub hover:border-indigo-100' : 'bg-rose-50 border-rose-200'}`;
- row.innerHTML = `
- <div class="flex items-center gap-4">
- <div class="h-9 w-9 rounded-xl flex items-center justify-center ${isOnline ? 'bg-white shadow-sm text-indigo-500' : 'bg-rose-100 text-rose-500'}">
- <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9" stroke-width="2.5"/></svg>
- </div>
- <div class="min-w-0 flex-1">
- <p class="text-xs font-black ${isOnline ? 'text-title' : 'text-rose-700'} tracking-tight">${d.nombre}</p>
- <div class="flex gap-2 items-center">
- <p class="text-[9px] ${isOnline ? 'text-sub' : 'text-rose-400'} font-mono font-bold">${d.ip}</p>
- <a href="http://${d.ip}" target="_blank" title="Abrir interfaz Web" class="p-1 bg-slate-100 hover:bg-indigo-100 text-indigo-500 rounded-md transition-colors">
- <svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="3"/></svg>
- </a>
- </div>
- </div>
- </div>
- ${!isOnline ? '<span class="status-pill badge-err">OFFLINE</span>' : ''}
- `;
-                if (d.tipo === "Huawei CAPS") capsList.appendChild(row);
-                else wifiList.appendChild(row);
+                const isCaps = d.tipo === "Huawei CAPS";
+                const safeId = d.ip.replace(/\./g, '-');
+                const pingDotId = 'ping-dot-' + safeId;
+                const pingLabelId = 'ping-label-' + safeId;
+                const pingBtnId = 'ping-btn-' + safeId;
+
+                row.className = "flex items-center justify-between p-3.5 rounded-2xl transition-all border " + (isOnline ? 'bg-sub border-sub hover:border-indigo-100' : 'bg-rose-50 border-rose-200');
+
+                var statusHtml;
+                if (isCaps) {
+                    // Huawei CAPS: estado via ping en tiempo real
+                    statusHtml = '<div class="flex items-center gap-2">' +
+                        '<span id="' + pingDotId + '" class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></span>' +
+                        '<span id="' + pingLabelId + '" class="text-[9px] font-bold text-amber-500 uppercase tracking-wider">PING</span>' +
+                        '<button id="' + pingBtnId + '" class="text-[8px] font-bold px-2 py-0.5 rounded bg-slate-200 text-sub hover:bg-amber-100 hover:text-amber-600 transition-colors ml-1">PING</button>' +
+                        '</div>';
+                } else {
+                    // Otros: estado desde JSON
+                    statusHtml = isOnline ? '' : '<span class="status-pill badge-err">OFFLINE</span>';
+                }
+
+                row.innerHTML = '<div class="flex items-center gap-4 min-w-0 flex-1">' +
+                    '<div class="h-9 w-9 rounded-xl flex items-center justify-center ' + (isOnline ? 'bg-white shadow-sm text-indigo-500' : 'bg-rose-100 text-rose-500') + '">' +
+                    '<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9" stroke-width="2.5"/></svg>' +
+                    '</div>' +
+                    '<div class="min-w-0 flex-1">' +
+                    '<p class="text-xs font-black ' + (isOnline ? 'text-title' : 'text-rose-700') + ' tracking-tight">' + d.nombre + '</p>' +
+                    '<div class="flex gap-2 items-center">' +
+                    '<p class="text-[9px] ' + (isOnline ? 'text-sub' : 'text-rose-400') + ' font-mono font-bold">' + d.ip + '</p>' +
+                    '<a href="http://' + d.ip + '" target="_blank" title="Abrir interfaz Web" class="p-1 bg-slate-100 hover:bg-indigo-100 text-indigo-500 rounded-md transition-colors">' +
+                    '<svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="3"/></svg>' +
+                    '</a>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    statusHtml;
+
+                if (isCaps) {
+                    capsList.appendChild(row);
+                    // Bind click del boton ping manual
+                    (function(ipAddr, dId, lId) {
+                        setTimeout(function() {
+                            var btn = document.getElementById('ping-btn-' + ipAddr.replace(/\./g, '-'));
+                            if (btn) btn.addEventListener('click', function() { checkPingStatus(ipAddr, dId, lId); });
+                        }, 0);
+                        // Ping inicial inmediato y luego cada 30s
+                        checkPingStatus(ipAddr, pingDotId, pingLabelId);
+                        startPingLoop(ipAddr, pingDotId, pingLabelId);
+                    })(d.ip, pingDotId, pingLabelId);
+                } else {
+                    wifiList.appendChild(row);
+                }
             });
 
             // 5. RELOJES
@@ -1676,6 +1708,69 @@ async function checkWatchWeb(ip, btnId, resId) {
                 });
         }
 
+    </script>
+
+    <script>
+ // === PING REAL EN HUAWEI CAPS ===
+ var pingTimers = {};
+
+ function getBaseUrl() {
+ var h = window.location.hostname;
+ if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:8081';
+ return 'http://' + h + ':8081';
+ }
+
+ function checkPingStatus(ip, dotId, labelId) {
+ var dot = document.getElementById(dotId);
+ var label = document.getElementById(labelId);
+ if (!dot || !label) return;
+
+ // Estado: consultando
+ dot.className = "h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse";
+ label.innerText = "...";
+ label.className = "text-[9px] font-bold text-amber-500 uppercase tracking-wider";
+
+ var xhr = new XMLHttpRequest();
+ xhr.open('GET', getBaseUrl() + '/api/ping-device?ip=' + encodeURIComponent(ip), true);
+ xhr.timeout = 10000;
+ xhr.onload = function() {
+ try {
+ var data = JSON.parse(xhr.responseText);
+ if (data.online) {
+ dot.className = "h-2.5 w-2.5 rounded-full bg-emerald-500";
+ label.innerText = "ON " + (data.avg_rtt || "");
+ label.className = "text-[9px] font-bold text-emerald-600 uppercase tracking-wider";
+ } else {
+ dot.className = "h-2.5 w-2.5 rounded-full bg-rose-500";
+ label.innerText = "OFFLINE";
+ label.className = "text-[9px] font-bold text-rose-600 uppercase tracking-wider";
+ }
+ } catch (e) {
+ dot.className = "h-2.5 w-2.5 rounded-full bg-rose-500";
+ label.innerText = "ERR";
+ label.className = "text-[9px] font-bold text-rose-600 uppercase tracking-wider";
+ }
+ };
+ xhr.ontimeout = function() {
+ dot.className = "h-2.5 w-2.5 rounded-full bg-rose-500";
+ label.innerText = "TIMEOUT";
+ label.className = "text-[9px] font-bold text-rose-600 uppercase tracking-wider";
+ };
+ xhr.onerror = function() {
+ dot.className = "h-2.5 w-2.5 rounded-full bg-rose-500";
+ label.innerText = "ERROR";
+ label.className = "text-[9px] font-bold text-rose-600 uppercase tracking-wider";
+ };
+ xhr.send();
+ }
+
+ function startPingLoop(ip, dotId, labelId) {
+ var timerId = 'ping-' + ip.replace(/\./g, '-');
+ if (pingTimers[timerId]) clearInterval(pingTimers[timerId]);
+ pingTimers[timerId] = setInterval(function() {
+ checkPingStatus(ip, dotId, labelId);
+ }, 30000);
+ }
     </script>
 </body>
 </html>
