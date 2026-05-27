@@ -6,7 +6,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def _crear_session(config):
-    """Crea una session con Basic Auth para OCS API REST."""
     ocs_config = config.get("ocs")
     base_url = ocs_config.get("url", "").rstrip("/")
     user = ocs_config.get("user", "")
@@ -23,7 +22,6 @@ def _crear_session(config):
 
 
 def _obtener_equipos(session, base_url, timeout, offset=0, limit=500):
-    """Obtiene equipos de OCS con paginacion. OCS API usa dict con IDs como keys."""
     all_equipos = []
     current_offset = offset
 
@@ -41,7 +39,6 @@ def _obtener_equipos(session, base_url, timeout, offset=0, limit=500):
         if not isinstance(data, dict):
             break
 
-        # OCS API REST devuelve dict con IDs numericos como keys
         items = []
         for key, value in data.items():
             try:
@@ -64,7 +61,6 @@ def _obtener_equipos(session, base_url, timeout, offset=0, limit=500):
 
 
 def _simplificar_os(os_name):
-    """Simplifica el nombre del OS para agrupar en el dashboard."""
     if not os_name:
         return "Desconocido"
     os_lower = os_name.lower()
@@ -89,6 +85,8 @@ def _simplificar_os(os_name):
             return "Linux (otro)"
     elif "mac" in os_lower or "darwin" in os_lower:
         return "macOS"
+    elif "zorin" in os_lower:
+        return "Zorin OS"
     else:
         return os_name[:30]
 
@@ -105,8 +103,11 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
         "ubicacion": "Sin ubicacion",
         "ultimo_contacto": None,
         "activo": False,
+        "cpu": "",
         "ram_gb": 0,
         "disco_uso_pct": 0,
+        "disco_total_gb": 0,
+        "disco_libre_gb": 0,
         "fecha_compra": None,
         "anios_antiguedad": 0,
         "antivirus": None,
@@ -118,11 +119,13 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
         "alerta_updates": False
     }
 
-    # OCS API REST: hardware es un dict dentro del equipo, keys MAYUSCULAS
     hw = eq.get("hardware", {})
 
     # Hostname
     detalle["hostname"] = hw.get("NAME", hw.get("name", ""))
+
+    # CPU
+    detalle["cpu"] = hw.get("PROCESSORT", "")
 
     # OS
     os_name = hw.get("OSNAME", hw.get("osname", ""))
@@ -139,7 +142,6 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
 
     # IP
     detalle["ip"] = hw.get("IPADDR", hw.get("ipaddr", ""))
-    # Si no hay IP en hardware, buscar en networks
     if not detalle["ip"]:
         networks = eq.get("networks", [])
         if isinstance(networks, list):
@@ -159,7 +161,7 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
     if detalle["ubicacion"] == "Sin ubicacion":
         detalle["ubicacion"] = hw.get("USERDOMAIN", hw.get("WORKGROUP", "Sin ubicacion"))
 
-    # Ultimo contacto - LASTCOME formato "2026-05-27 01:32:00"
+    # Ultimo contacto
     last_date_str = hw.get("LASTCOME", hw.get("LASTDATE", ""))
     if last_date_str:
         try:
@@ -177,7 +179,6 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
     except (ValueError, TypeError):
         memory_mb = 0
 
-    # Tambien verificar memories (dr DIMM)
     if memory_mb == 0:
         memories = eq.get("memories", [])
         if isinstance(memories, list):
@@ -197,9 +198,10 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
     drives = eq.get("drives", [])
     if isinstance(drives, list):
         max_uso = 0
+        total_principal = 0
+        libre_principal = 0
         for drv in drives:
             tipo_disco = str(drv.get("TYPE", drv.get("type", drv.get("FILESYSTEM", "")))).lower()
-            # Solo discos locales
             if any(t in tipo_disco for t in ["cdrom", "dvd", "network", "nfs", "smb", "removable"]):
                 continue
             total = drv.get("TOTAL", drv.get("total", 0))
@@ -211,11 +213,18 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
                     uso_pct = round(((total_int - libre_int) / total_int) * 100, 1)
                     if uso_pct > max_uso:
                         max_uso = uso_pct
+                    # Tomar el disco principal (el mas grande)
+                    if total_int > total_principal:
+                        total_principal = total_int
+                        libre_principal = libre_int
             except (ValueError, TypeError):
                 pass
         detalle["disco_uso_pct"] = max_uso
+        if total_principal > 0:
+            detalle["disco_total_gb"] = round(total_principal / 1024, 0)
+            detalle["disco_libre_gb"] = round(libre_principal / 1024, 0)
 
-    # Fecha de BIOS (approx de compra)
+    # Fecha de BIOS
     bios = eq.get("bios", [])
     if isinstance(bios, list) and len(bios) > 0:
         bios_dict = bios[0] if isinstance(bios[0], dict) else {}
@@ -229,20 +238,17 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
             except (ValueError, TypeError):
                 pass
 
-    # Antivirus - OCS puede no incluir la key antivirus en la respuesta
-    # Solo alertar si la key existe y esta vacia (sin AV instalado)
+    # Antivirus
     if "antivirus" in eq:
         antivirus_data = eq["antivirus"]
         if isinstance(antivirus_data, list) and len(antivirus_data) > 0:
             av = antivirus_data[0] if isinstance(antivirus_data[0], dict) else {}
             detalle["antivirus"] = av.get("NAME", av.get("name", av.get("PRODUCT", "Detectado")))
         elif isinstance(antivirus_data, list) and len(antivirus_data) == 0:
-            # Lista vacia = sin antivirus
             detalle["antivirus"] = None
         else:
             detalle["antivirus"] = "No reportado"
     else:
-        # Key no existe en respuesta = agente no reporta AV, no alertar
         detalle["antivirus"] = "No reportado"
 
     # === GENERAR ALERTAS ===
@@ -291,7 +297,6 @@ def obtener_datos_ocs(config):
     session, base_url, timeout = _crear_session(config)
 
     try:
-        # Verificar conexion
         try:
             r_test = session.get(base_url + "/v1/computers?offset=0&limit=1", timeout=timeout)
             if r_test.status_code == 401:
@@ -307,7 +312,6 @@ def obtener_datos_ocs(config):
             resultado["error"] = "Timeout conectando a OCS (" + str(timeout) + "s)"
             return resultado
 
-        # Obtener todos los equipos (paginado)
         equipos = _obtener_equipos(session, base_url, timeout)
 
         ahora = datetime.now()
@@ -327,25 +331,20 @@ def obtener_datos_ocs(config):
             else:
                 resultado["equipos_inactivos"] += 1
 
-            # Por OS (simplificado)
             os_simple = _simplificar_os(detalle.get("os", "Desconocido"))
             resultado["por_os"][os_simple] = resultado["por_os"].get(os_simple, 0) + 1
             resultado["distribucion_os"][os_simple] = resultado["distribucion_os"].get(os_simple, 0) + 1
 
-            # Por tipo
             tipo = detalle.get("tipo", "Desconocido")
             resultado["por_tipo"][tipo] = resultado["por_tipo"].get(tipo, 0) + 1
 
-            # Por ubicacion
             ubicacion = detalle.get("ubicacion", "Sin ubicacion")
             resultado["por_ubicacion"][ubicacion] = resultado["por_ubicacion"].get(ubicacion, 0) + 1
 
-            # Antiguedad
             if detalle.get("anios_antiguedad") > 0:
                 total_edad += detalle["anios_antiguedad"]
                 equipos_con_edad += 1
 
-            # Alertas (lista de strings legibles)
             if detalle.get("alerta_disco"):
                 resultado["alertas_disco"].append(detalle["hostname"] + " (" + str(detalle["disco_uso_pct"]) + "%)")
             if detalle.get("alerta_ram"):
@@ -359,10 +358,8 @@ def obtener_datos_ocs(config):
 
             resultado["equipos_detalle"].append(detalle)
 
-        # Equipos sin reportar
         resultado["equipos_sin_reportar"] = resultado["equipos_inactivos"]
 
-        # Antiguedad promedio
         if equipos_con_edad > 0:
             resultado["antiguedad_promedio_anios"] = round(total_edad / equipos_con_edad, 1)
 
@@ -379,8 +376,7 @@ def obtener_datos_ocs(config):
 
 
 def buscar_equipos_ocs(config, query, tipo_busqueda="hostname"):
-    """Busca equipos en OCS Inventory por hostname, IP, software o usuario.
-    OCS API REST no soporta busqueda por query params, se filtra en memoria."""
+    """Busca equipos en OCS Inventory por hostname, IP, software o usuario."""
 
     ocs_config = config.get("ocs")
     if not ocs_config:
@@ -408,7 +404,7 @@ def buscar_equipos_ocs(config, query, tipo_busqueda="hostname"):
                 if query_lower in name:
                     match = True
             elif tipo_busqueda == "ip":
-                ipaddr = hw.get("IPADDR", hw.get("IPADDR", "")).lower()
+                ipaddr = hw.get("IPADDR", hw.get("ipaddr", "")).lower()
                 if query_lower in ipaddr:
                     match = True
                 if not match:
@@ -438,11 +434,14 @@ def buscar_equipos_ocs(config, query, tipo_busqueda="hostname"):
                     "name": detalle["hostname"],
                     "ip": detalle["ip"],
                     "os": detalle["os"],
+                    "cpu": detalle["cpu"],
+                    "ram_gb": detalle["ram_gb"],
+                    "disco_uso_pct": detalle["disco_uso_pct"],
+                    "disco_total_gb": detalle["disco_total_gb"],
+                    "disco_libre_gb": detalle["disco_libre_gb"],
                     "ultimo_contacto": detalle["ultimo_contacto"] or "Nunca",
                     "last_contact": detalle["ultimo_contacto"] or "Nunca",
                     "activo": detalle["activo"],
-                    "ram_gb": detalle["ram_gb"],
-                    "disco_uso_pct": detalle["disco_uso_pct"],
                     "ubicacion": detalle["ubicacion"]
                 })
 

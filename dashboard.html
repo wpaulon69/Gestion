@@ -487,6 +487,9 @@ Interfaces Firewall (OPNsense)
  <th class="px-4 py-3 tracking-widest">Hostname</th>
  <th class="px-4 py-3 tracking-widest">IP</th>
  <th class="px-4 py-3 tracking-widest">OS</th>
+ <th class="px-4 py-3 tracking-widest">CPU</th>
+ <th class="px-4 py-3 tracking-widest">RAM</th>
+ <th class="px-4 py-3 tracking-widest">Disco</th>
  <th class="px-4 py-3 tracking-widest">Ultimo Contacto</th>
  </tr>
  </thead>
@@ -1000,8 +1003,8 @@ if (mpls && mpls.estado) {
                 const extraRow = document.createElement('tr');
                 extraRow.id = `sw-extra-${idx}`;
                 extraRow.className = "hidden bg-slate-50/30 dark:bg-slate-900/30";
-                extraRow.innerHTML = `
-                    <td colspan="4" class="px-8 flex py-4 text-[10px] items-start gap-10 border-t border-slate-100/50 dark:border-slate-800/50">
+ extraRow.innerHTML = `
+ <td colspan="4" class="px-8 flex py-4 text-[10px] items-start gap-10 border-t border-slate-100/50 dark:border-slate-800/50">
                         <div><p class="font-black text-sub uppercase mb-1">Modelo</p><p class="text-title">${s.modelo || 'TPLink Managed'}</p><p class="font-mono text-sub opacity-50 mt-1">${s.mac || '--'}</p></div>
                         <div><p class="font-black text-sub uppercase mb-1">Hardware</p><p class="text-title">Memoria: ${s.mem || '--'}</p><p class="text-title">CPU: ${s.cpu}</p></div>
                         <div><p class="font-black text-sub uppercase mb-1">Sistema</p><p class="text-title">Uptime: ${s.uptime || 'S/D'}</p><p class="font-mono bg-sub px-1 py-0.5 rounded text-sub">${s.firmware || 'V.N/A'}</p></div>
@@ -1715,7 +1718,7 @@ if (mpls && mpls.estado) {
  var results = JSON.parse(xhr.responseText);
  tbody.innerHTML = '';
  if (results.length === 0) {
- tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-sub italic">Sin resultados para "' + query + '"</td></tr>';
+ tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-sub italic">Sin resultados para "' + query + '"</td></tr>';
  } else {
  for (var i = 0; i < results.length; i++) {
  var r = results[i];
@@ -1724,32 +1727,43 @@ if (mpls && mpls.estado) {
  var hostname = r.name || r.hostname || '--';
  var ip = r.ip || '--';
  var os = r.os || '--';
+ var cpu = r.cpu || '--';
+ var ram = r.ram_gb ? r.ram_gb + ' GB' : '--';
+ var discoPct = r.disco_uso_pct || 0;
+ var discoTotal = r.disco_total_gb || 0;
+ var discoLibre = r.disco_libre_gb || 0;
+ var discoStr = discoTotal > 0 ? discoPct + '% (' + discoTotal + ' GB)' : '--';
+ var discoColor = discoPct >= 90 ? 'text-rose-500 font-bold' : (discoPct >= 75 ? 'text-amber-500' : 'text-emerald-500');
+ var ramColor = (r.ram_gb > 0 && r.ram_gb < 4) ? 'text-amber-500 font-bold' : 'text-sub';
  var lastContact = r.last_contact || r.ultimo_contacto || '--';
  tr.innerHTML = '<td class="px-4 py-2 text-[11px] font-bold text-title">' + hostname + '</td>' +
  '<td class="px-4 py-2 text-[11px] font-mono text-sub">' + ip + '</td>' +
  '<td class="px-4 py-2 text-[11px] text-sub">' + os + '</td>' +
+ '<td class="px-4 py-2 text-[11px] text-sub">' + cpu + '</td>' +
+ '<td class="px-4 py-2 text-[11px] ' + ramColor + '">' + ram + '</td>' +
+ '<td class="px-4 py-2 text-[11px] ' + discoColor + '">' + discoStr + '</td>' +
  '<td class="px-4 py-2 text-[11px] font-mono text-sub">' + lastContact + '</td>';
  tbody.appendChild(tr);
  }
  }
  resultsDiv.classList.remove('hidden');
  } catch(e) {
- tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error parseando resultados</td></tr>';
+ tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-rose-400">Error parseando resultados</td></tr>';
  resultsDiv.classList.remove('hidden');
  }
  } else {
- tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error HTTP ' + xhr.status + '</td></tr>';
+ tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-rose-400">Error HTTP ' + xhr.status + '</td></tr>';
  resultsDiv.classList.remove('hidden');
  }
  };
  xhr.ontimeout = function() {
  var tbody = document.getElementById('ocs-search-tbody');
- tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-amber-500">Timeout en busqueda (15s)</td></tr>';
+ tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-amber-500">Timeout en busqueda (15s)</td></tr>';
  document.getElementById('ocs-search-results').classList.remove('hidden');
  };
  xhr.onerror = function() {
  var tbody = document.getElementById('ocs-search-tbody');
- tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error de conexion</td></tr>';
+ tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-rose-400">Error de conexion</td></tr>';
  document.getElementById('ocs-search-results').classList.remove('hidden');
  };
  xhr.send();
