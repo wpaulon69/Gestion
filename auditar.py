@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from modulos import zabbix, omada, opnsense, nas_camaras, pbs, pve
+from modulos import zabbix, omada, opnsense, nas_camaras, pbs, pve, ocs
 
 def cargar_configuracion():
     with open("config.json", "r", encoding='utf-8') as f:
@@ -11,7 +11,7 @@ def cargar_configuracion():
 async def main():
     print(f"[{datetime.now()}] [INICIO] Iniciando Auditoria Tecnica Unificada...")
     config = cargar_configuracion()
-    
+
     # 1. Autenticacion en Zabbix
     token = zabbix.autenticar(config)
     if not token:
@@ -27,7 +27,6 @@ async def main():
     alertas = zabbix.obtener_alertas(token, config)
 
     # 3. Procesamiento Inteligente de Estados (Ping Real + Alertas)
-    # Obtenemos todos los IDs de hosts para consultar sus pings en una sola llamada
     todas_entidades = cams_h + wifi_h + huawei_h + relojes_h
     host_ids = [h['hostid'] for h in todas_entidades]
     pings = zabbix.obtener_valores_ping(token, config, host_ids)
@@ -38,9 +37,8 @@ async def main():
         nombre = h['name']
         hid = h['hostid']
         estado_nas = nas_camaras.verificar_grabacion_hikvision(config, nombre)
-        
-        # Prioridad 1: Valor de ping real (1=Online, 0=Offline)
-        val_ping = pings.get(hid, "1") # Default 1 si no hay item
+
+        val_ping = pings.get(hid, "1")
         real_status = "Offline" if val_ping == "0" else "Online"
 
         lista_camaras.append({
@@ -50,27 +48,28 @@ async def main():
             "estado_grabacion": estado_nas
         })
 
-    # 4. Auditoria de Red (Omada y OPNsense)
+    # 4. Auditoria de Red (Omada, OPNsense, PBS, PVE, OCS)
     print("[INFO] Consultando infraestructura de red (Omada y OPNsense)...")
     switches_task = omada.obtener_datos_red(config)
     opnsense_data = opnsense.obtener_estado_interfaces(config)
     pbs_data = pbs.obtener_datos_pbs(config)
     pve_data = pve.obtener_datos_pve(config)
-    
-    # 5. Datos Extra desde Zabbix (Tráfico, NAS y MPLS)
-    print("[INFO] Obteniendo tráfico WAN, salud de NAS y estado MPLS desde Zabbix...")
+    ocs_data = ocs.obtener_datos_ocs(config)
+
+    # 5. Datos Extra desde Zabbix (Trafico, NAS y MPLS)
+    print("[INFO] Obteniendo trafico WAN, salud de NAS y estado MPLS desde Zabbix...")
     trafico_wan = zabbix.obtener_trafico_wan(token, config)
     nas_health = zabbix.obtener_ocupacion_nas(token, config)
     estado_mpls = zabbix.obtener_estado_mpls(token, config)
-    
+
     switches = await switches_task
-    
+
     # Extraer resumen de clientes si hay datos disponibles
     resumen_clientes = {"pc": 0, "wifi": 0, "total": 0}
     if switches and len(switches) > 0 and "resumen_clientes" in switches[0]:
         resumen_clientes = switches[0]["resumen_clientes"]
 
-    # 5. Consolidacion Final
+    # 6. Consolidacion Final
     reporte = {
         "metadatos": {
             "fecha_auditoria": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -83,6 +82,7 @@ async def main():
         "opnsense": opnsense_data,
         "pbs": pbs_data,
         "pve": pve_data,
+        "ocs": ocs_data,
         "trafico_wan": trafico_wan,
         "estado_mpls": estado_mpls,
         "nas_health": nas_health,
@@ -105,15 +105,19 @@ async def main():
     output_file = os.path.join(output_dir, config["output"]["archivo_reporte"])
     with open(output_file, "w", encoding='utf-8') as f:
         json.dump(reporte, f, indent=4, ensure_ascii=False)
-    
+
     print(f"[{datetime.now()}] [OK] Auditoria finalizada. Reporte generado en '{output_file}'.")
-    print(f"   -> Camaras: {len(lista_camaras)}")
-    print(f"   -> Switches: {len(switches)}")
-    print(f"   -> PVE Nodos: {len(pve_data.get('nodos', []))} | VMs: {len(pve_data.get('vms', []))}")
-    print(f" -> Tráfico WAN (Rx/Tx): {round(trafico_wan['rx']/1000000, 2)} / {round(trafico_wan['tx']/1000000, 2)} Mbps")
+    print(f" -> Camaras: {len(lista_camaras)}")
+    print(f" -> Switches: {len(switches)}")
+    print(f" -> PVE Nodos: {len(pve_data.get('nodos', []))} | VMs: {len(pve_data.get('vms', []))}")
+    print(f" -> Trafico WAN (Rx/Tx): {round(trafico_wan['rx']/1000000, 2)} / {round(trafico_wan['tx']/1000000, 2)} Mbps")
     print(f" -> MPLS: {estado_mpls['estado']} | IP: {estado_mpls['ip']} | Latencia: {estado_mpls['latencia_ms']}ms | Loss: {estado_mpls['loss_pct']}%")
     print(f" -> Clientes Red: PC/Trabajo: {resumen_clientes['pc']} | WiFi: {resumen_clientes['wifi']}")
-    print(f"   -> Alertas Zabbix: {alertas['alertas_activas']}")
+    print(f" -> Alertas Zabbix: {alertas['alertas_activas']}")
+    if not ocs_data.get('error'):
+        print(f" -> OCS Inventory: {ocs_data.get('total_equipos', 0)} equipos | Activos: {ocs_data.get('equipos_activos', 0)} | Alertas: {len(ocs_data.get('alertas_disco', [])) + len(ocs_data.get('alertas_ram', [])) + len(ocs_data.get('alertas_antivirus', []))}")
+    else:
+        print(f" -> OCS Inventory: {ocs_data.get('error')}")
 
 if __name__ == "__main__":
     asyncio.run(main())

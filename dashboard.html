@@ -197,9 +197,17 @@
                         <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall</p>
                         <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
                     </div>
-                    <div class="flex items-end gap-2"><span id="fw-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span class="text-[10px] text-emerald-500 font-bold pb-1">UP</span></div>
-                </div>
-            </div>
+ <div class="flex items-end gap-2"><span id="fw-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span class="text-[10px] text-emerald-500 font-bold pb-1">UP</span></div>
+ </div>
+
+ <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">OCS Inventory</p>
+ <div class="bg-violet-50 p-1.5 rounded-xl text-violet-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+ </div>
+ <div class="flex items-end gap-2"><span id="ocs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="ocs-top-badge" class="status-pill badge-info ml-2 mb-1">CARGANDO</span></div>
+ </div>
+ </div>
 
 
             <!-- Cameras Grid -->
@@ -405,13 +413,94 @@ Interfaces Firewall (OPNsense)
                         </thead>
                         <tbody id="switch-table" class="divide-y divide-slate-100/50">
                             <!-- Dynamic -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
+ </tbody>
+ </table>
+ </div>
+ </section>
 
-        <!-- RIGHT SIDEBAR: OTHER DEVICES & ALERTS -->
+ <!-- OCS Inventory Section -->
+ <section class="glass-card rounded-[2.5rem] p-8" id="ocs-section">
+ <div class="flex justify-between items-center mb-6">
+ <h2 class="text-2xl font-black text-title flex items-center gap-3 italic">
+ <svg class="h-6 w-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+ OCS Inventory
+ </h2>
+ <a id="ocs-portal-link" href="#" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-violet-100 text-violet-600 border border-transparent hover:border-violet-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors">Abrir OCS <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>
+ </div>
+
+ <!-- OCS Quick Stats -->
+ <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+ <div class="p-3 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20">
+ <p class="text-[9px] font-extrabold text-violet-500 uppercase tracking-widest">Total Equipos</p>
+ <p id="ocs-total" class="text-2xl font-black text-violet-700 dark:text-violet-300 mt-1">--</p>
+ </div>
+ <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+ <p class="text-[9px] font-extrabold text-emerald-500 uppercase tracking-widest">Activos (30d)</p>
+ <p id="ocs-activos" class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">--</p>
+ </div>
+ <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20">
+ <p class="text-[9px] font-extrabold text-amber-500 uppercase tracking-widest">Sin Reportar</p>
+ <p id="ocs-sin-reportar" class="text-2xl font-black text-amber-700 dark:text-amber-300 mt-1">--</p>
+ </div>
+ <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
+ <p class="text-[9px] font-extrabold text-rose-500 uppercase tracking-widest">Alertas HW</p>
+ <p id="ocs-alertas" class="text-2xl font-black text-rose-700 dark:text-rose-300 mt-1">--</p>
+ </div>
+ </div>
+
+ <!-- OCS OS Distribution & Alerts -->
+ <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+ <div>
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Distribucion por Sistema Operativo</h3>
+ <div id="ocs-os-list" class="space-y-2">
+ <p class="text-slate-400 italic text-[11px]">Cargando...</p>
+ </div>
+ </div>
+ <div>
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Alertas de Hardware</h3>
+ <div id="ocs-alerts-list" class="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+ <p class="text-slate-400 italic text-[11px]">Cargando...</p>
+ </div>
+ </div>
+ </div>
+
+ <!-- OCS Search -->
+ <div class="border-t border-slate-100 dark:border-slate-800 pt-6">
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Buscar Equipo</h3>
+ <div class="flex gap-2 flex-col sm:flex-row">
+ <input type="text" id="ocs-search-input" placeholder="Hostname, IP o usuario..." class="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all">
+ <select id="ocs-search-type" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold uppercase">
+ <option value="hostname">Hostname</option>
+ <option value="ip">IP</option>
+ <option value="software">Software</option>
+ <option value="usuario">Usuario</option>
+ </select>
+ <button id="ocs-search-btn" class="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-lg transition-all flex items-center gap-2">
+ Buscar <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+ </button>
+ </div>
+ <div id="ocs-search-results" class="mt-4 hidden">
+ <div class="overflow-x-auto">
+ <table class="w-full text-left">
+ <thead class="bg-sub/50 text-[10px] uppercase text-sub font-extrabold">
+ <tr>
+ <th class="px-4 py-3 tracking-widest">Hostname</th>
+ <th class="px-4 py-3 tracking-widest">IP</th>
+ <th class="px-4 py-3 tracking-widest">OS</th>
+ <th class="px-4 py-3 tracking-widest">Ultimo Contacto</th>
+ </tr>
+ </thead>
+ <tbody id="ocs-search-tbody" class="divide-y divide-slate-100/50">
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ </div>
+
+ <!-- RIGHT SIDEBAR: OTHER DEVICES & ALERTS -->
         <div class="xl:col-span-4 space-y-8">
             
             <!-- Remote Endpoints (WiFi & Relojes) -->
@@ -1358,10 +1447,13 @@ if (mpls && mpls.estado) {
         } else {
             mainEl.classList.remove('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
             mainEl.classList.add('bg-indigo-600', 'shadow-indigo-200');
-            document.body.classList.remove('border-t-4', 'border-rose-500');
-        }
+ document.body.classList.remove('border-t-4', 'border-rose-500');
+ }
 
-    } // end updateDashboard function
+ // 9. OCS INVENTORY (carga via API directa, no del reporte)
+ loadOCSData();
+
+ } // end updateDashboard function
 
     // Filtros Zabbix
     document.querySelectorAll('#alerts-filters button').forEach(btn => {
@@ -1434,15 +1526,250 @@ if (mpls && mpls.estado) {
                 },
                 options: {
                     maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 25, boxWidth: 8, font: { family: 'Plus Jakarta Sans', size: 9, weight: '800' }, color: '#64748b' } }
-                    }
-                }
-            });
-        }
+ cutout: '80%',
+ plugins: {
+ legend: { position: 'bottom', labels: { padding: 25, boxWidth: 8, font: { family: 'Plus Jakarta Sans', size: 9, weight: '800' }, color: '#64748b' } }
+ }
+ }
+ });
+ }
 
-        // Initialize Auto-load
+ // ============================================================
+ // OCS INVENTORY FUNCTIONS (ES5 compatible - NO async/await/fetch)
+ // ============================================================
+
+ var ocsBaseUrl = '';
+ var ocsDataCache = null;
+
+ function getOcsBaseUrl() {
+ var h = window.location.hostname;
+ if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:8081';
+ return 'http://' + h + ':8081';
+ }
+
+ function loadOCSData() {
+ ocsBaseUrl = getOcsBaseUrl();
+ var xhr = new XMLHttpRequest();
+ xhr.open('GET', ocsBaseUrl + '/api/ocs-summary', true);
+ xhr.timeout = 15000;
+ xhr.onload = function() {
+ if (xhr.status === 200) {
+ try {
+ var data = JSON.parse(xhr.responseText);
+ ocsDataCache = data;
+ renderOCS(data);
+ } catch(e) {
+ renderOCSError('Error parseando datos OCS');
+ }
+ } else {
+ renderOCSError('HTTP ' + xhr.status);
+ }
+ };
+ xhr.ontimeout = function() {
+ renderOCSError('Timeout (15s)');
+ };
+ xhr.onerror = function() {
+ renderOCSError('Sin conexion a API OCS');
+ };
+ xhr.send();
+ }
+
+ function renderOCS(data) {
+ if (data.error) {
+ renderOCSError(data.error);
+ return;
+ }
+
+ // Top bar stat
+ var topStat = document.getElementById('ocs-top-stat');
+ var topBadge = document.getElementById('ocs-top-badge');
+ if (topStat) topStat.innerText = data.total_equipos || '0';
+ if (topBadge) {
+ var alertCount = (data.alertas_disco || []).length + (data.alertas_ram || []).length + (data.alertas_antivirus || []).length;
+ if (alertCount > 0) {
+ topBadge.className = 'status-pill badge-err ml-2 mb-1';
+ topBadge.innerText = alertCount + ' ALERTAS';
+ } else {
+ topBadge.className = 'status-pill badge-ok ml-2 mb-1';
+ topBadge.innerText = 'OK';
+ }
+ }
+
+ // Portal link
+ var portalLink = document.getElementById('ocs-portal-link');
+ if (portalLink && data.portal_url) {
+ portalLink.href = data.portal_url;
+ }
+
+ // Quick stats
+ var elTotal = document.getElementById('ocs-total');
+ var elActivos = document.getElementById('ocs-activos');
+ var elSinReportar = document.getElementById('ocs-sin-reportar');
+ var elAlertas = document.getElementById('ocs-alertas');
+ if (elTotal) elTotal.innerText = data.total_equipos || '0';
+ if (elActivos) elActivos.innerText = data.equipos_activos || '0';
+ if (elSinReportar) elSinReportar.innerText = data.equipos_sin_reportar || '0';
+ var totalAlerts = (data.alertas_disco || []).length + (data.alertas_ram || []).length + (data.alertas_antivirus || []).length + (data.alertas_antiguedad || []).length;
+ if (elAlertas) elAlertas.innerText = totalAlerts;
+
+ // OS Distribution
+ var osList = document.getElementById('ocs-os-list');
+ if (osList) {
+ osList.innerHTML = '';
+ var osDist = data.distribucion_os || {};
+ var osKeys = Object.keys(osDist);
+ if (osKeys.length === 0) {
+ osList.innerHTML = '<p class="text-slate-400 italic text-[11px]">Sin datos</p>';
+ } else {
+ for (var i = 0; i < osKeys.length; i++) {
+ var osName = osKeys[i];
+ var osCount = osDist[osKeys[i]];
+ var barColor = 'bg-violet-500';
+ if (osName.indexOf('Windows') >= 0) barColor = 'bg-blue-500';
+ else if (osName.indexOf('Linux') >= 0) barColor = 'bg-amber-500';
+ else if (osName.indexOf('Mac') >= 0) barColor = 'bg-slate-500';
+ var pct = data.total_equipos > 0 ? Math.round((osCount / data.total_equipos) * 100) : 0;
+ var row = document.createElement('div');
+ row.className = 'flex items-center gap-3';
+ row.innerHTML = '<span class="text-[10px] font-bold text-sub w-32 truncate" title="' + osName + '">' + osName + '</span>' +
+ '<div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">' +
+ '<div class="' + barColor + ' h-full rounded-full" style="width:' + pct + '%"></div></div>' +
+ '<span class="text-[10px] font-mono font-bold text-sub">' + osCount + ' (' + pct + '%)</span>';
+ osList.appendChild(row);
+ }
+ }
+ }
+
+ // Alerts list
+ var alertsList = document.getElementById('ocs-alerts-list');
+ if (alertsList) {
+ alertsList.innerHTML = '';
+ var allAlerts = [];
+ var diskAlerts = data.alertas_disco || [];
+ var ramAlerts = data.alertas_ram || [];
+ var avAlerts = data.alertas_antivirus || [];
+ var ageAlerts = data.alertas_antiguedad || [];
+ var j;
+ for (j = 0; j < diskAlerts.length; j++) allAlerts.push({type: 'DISCO', cls: 'badge-warn', text: diskAlerts[j]});
+ for (j = 0; j < ramAlerts.length; j++) allAlerts.push({type: 'RAM', cls: 'badge-err', text: ramAlerts[j]});
+ for (j = 0; j < avAlerts.length; j++) allAlerts.push({type: 'ANTIVIRUS', cls: 'badge-err', text: avAlerts[j]});
+ for (j = 0; j < ageAlerts.length; j++) allAlerts.push({type: 'ANTIGUO', cls: 'badge-info', text: ageAlerts[j]});
+ if (allAlerts.length === 0) {
+ alertsList.innerHTML = '<p class="text-emerald-500 font-bold text-[11px]">Sin alertas activas</p>';
+ } else {
+ var maxShow = Math.min(allAlerts.length, 20);
+ for (j = 0; j < maxShow; j++) {
+ var a = allAlerts[j];
+ var alertRow = document.createElement('div');
+ alertRow.className = 'flex items-center gap-2 text-[11px]';
+ var alertText = (typeof a.text === 'string') ? a.text : (a.text.hostname || a.text.name || JSON.stringify(a.text));
+ alertRow.innerHTML = '<span class="status-pill ' + a.cls + '">' + a.type + '</span> <span class="text-sub truncate">' + alertText + '</span>';
+ alertsList.appendChild(alertRow);
+ }
+ if (allAlerts.length > 20) {
+ var more = document.createElement('p');
+ more.className = 'text-[10px] text-sub text-center mt-2';
+ more.innerText = '...y ' + (allAlerts.length - 20) + ' alertas mas';
+ alertsList.appendChild(more);
+ }
+ }
+ }
+ }
+
+ function renderOCSError(msg) {
+ var topStat = document.getElementById('ocs-top-stat');
+ var topBadge = document.getElementById('ocs-top-badge');
+ if (topStat) topStat.innerText = '--';
+ if (topBadge) {
+ topBadge.className = 'status-pill badge-err ml-2 mb-1';
+ topBadge.innerText = 'ERROR';
+ }
+ var osList = document.getElementById('ocs-os-list');
+ var alertsList = document.getElementById('ocs-alerts-list');
+ if (osList) osList.innerHTML = '<p class="text-rose-400 italic text-[11px]">' + msg + '</p>';
+ if (alertsList) alertsList.innerHTML = '<p class="text-rose-400 italic text-[11px]">Sin datos</p>';
+ var elTotal = document.getElementById('ocs-total');
+ var elActivos = document.getElementById('ocs-activos');
+ var elSinReportar = document.getElementById('ocs-sin-reportar');
+ var elAlertas = document.getElementById('ocs-alertas');
+ if (elTotal) elTotal.innerText = '--';
+ if (elActivos) elActivos.innerText = '--';
+ if (elSinReportar) elSinReportar.innerText = '--';
+ if (elAlertas) elAlertas.innerText = '--';
+ }
+
+ // OCS Search function (ES5 - XMLHttpRequest)
+ function searchOCS() {
+ var query = document.getElementById('ocs-search-input').value.trim();
+ var tipo = document.getElementById('ocs-search-type').value;
+ if (!query) return;
+ ocsBaseUrl = ocsBaseUrl || getOcsBaseUrl();
+ var xhr = new XMLHttpRequest();
+ xhr.open('GET', ocsBaseUrl + '/api/ocs-search?q=' + encodeURIComponent(query) + '&tipo=' + encodeURIComponent(tipo), true);
+ xhr.timeout = 15000;
+ xhr.onload = function() {
+ var resultsDiv = document.getElementById('ocs-search-results');
+ var tbody = document.getElementById('ocs-search-tbody');
+ if (xhr.status === 200) {
+ try {
+ var results = JSON.parse(xhr.responseText);
+ tbody.innerHTML = '';
+ if (results.length === 0) {
+ tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-sub italic">Sin resultados para "' + query + '"</td></tr>';
+ } else {
+ for (var i = 0; i < results.length; i++) {
+ var r = results[i];
+ var tr = document.createElement('tr');
+ tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors';
+ var hostname = r.name || r.hostname || '--';
+ var ip = r.ip || '--';
+ var os = r.os || '--';
+ var lastContact = r.last_contact || r.ultimo_contacto || '--';
+ tr.innerHTML = '<td class="px-4 py-2 text-[11px] font-bold text-title">' + hostname + '</td>' +
+ '<td class="px-4 py-2 text-[11px] font-mono text-sub">' + ip + '</td>' +
+ '<td class="px-4 py-2 text-[11px] text-sub">' + os + '</td>' +
+ '<td class="px-4 py-2 text-[11px] font-mono text-sub">' + lastContact + '</td>';
+ tbody.appendChild(tr);
+ }
+ }
+ resultsDiv.classList.remove('hidden');
+ } catch(e) {
+ tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error parseando resultados</td></tr>';
+ resultsDiv.classList.remove('hidden');
+ }
+ } else {
+ tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error HTTP ' + xhr.status + '</td></tr>';
+ resultsDiv.classList.remove('hidden');
+ }
+ };
+ xhr.ontimeout = function() {
+ var tbody = document.getElementById('ocs-search-tbody');
+ tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-amber-500">Timeout en busqueda (15s)</td></tr>';
+ document.getElementById('ocs-search-results').classList.remove('hidden');
+ };
+ xhr.onerror = function() {
+ var tbody = document.getElementById('ocs-search-tbody');
+ tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-rose-400">Error de conexion</td></tr>';
+ document.getElementById('ocs-search-results').classList.remove('hidden');
+ };
+ xhr.send();
+ }
+
+ // OCS Search button event
+ (function() {
+ var searchBtn = document.getElementById('ocs-search-btn');
+ if (searchBtn) {
+ searchBtn.addEventListener('click', searchOCS);
+ }
+ var searchInput = document.getElementById('ocs-search-input');
+ if (searchInput) {
+ searchInput.addEventListener('keypress', function(e) {
+ if (e.key === 'Enter') searchOCS();
+ });
+ }
+ })();
+
+ // Initialize Auto-load
         tryAutoLoad().then(success => {
             if (success) {
                 autoUpdateInterval = setInterval(tryAutoLoad, 300000); // 5 mins

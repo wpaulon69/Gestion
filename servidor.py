@@ -10,10 +10,13 @@ import requests as req_lib
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from omada_port_lookup import buscar_puerto_por_ip
+from modulos import ocs
 
 PORT = 8081
 AUDIT_SCRIPT = ['venv/bin/python', 'auditar.py']
 REPORT_PATH = '/home/sectorial/gestion/output/reporte_completo.json'
+CONFIG_PATH = '/home/sectorial/gestion/config.json'
+
 
 class HermesHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -44,6 +47,10 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
+
+    def _load_config(self):
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
 
     def do_GET(self):
         if self.path == '/api/run-audit':
@@ -100,7 +107,7 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
                     return
 
                 target_ip = ip_list[0]
-                config = json.load(open('/home/sectorial/gestion/config.json'))
+                config = self._load_config()
                 result = buscar_puerto_por_ip(config, target_ip)
                 self._send_json(200, result)
 
@@ -153,6 +160,62 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
                     'port': reachable_port
                 })
 
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+
+        elif self.path.startswith('/api/ocs-summary'):
+            try:
+                config = self._load_config()
+                result = ocs.obtener_datos_ocs(config)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+
+        elif self.path.startswith('/api/ocs-search'):
+            try:
+                query = parse_qs(urlparse(self.path).query)
+                q = query.get('q', [''])[0]
+                tipo = query.get('tipo', ['hostname'])[0]
+                if not q:
+                    self._send_json(400, {'error': 'q parameter is required'})
+                    return
+                config = self._load_config()
+                result = ocs.buscar_equipos_ocs(config, q, tipo)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+
+        elif self.path.startswith('/api/ocs-alerts'):
+            try:
+                config = self._load_config()
+                data = ocs.obtener_datos_ocs(config)
+                if data.get('error'):
+                    self._send_json(500, data)
+                    return
+                alerts = {
+                    'disco_lleno': data.get('alertas_disco', []),
+                    'ram_baja': data.get('alertas_ram', []),
+                    'antiguedad': data.get('alertas_antiguedad', []),
+                    'sin_antivirus': data.get('alertas_antivirus', []),
+                    'sin_updates': data.get('alertas_updates', [])
+                }
+                self._send_json(200, alerts)
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+
+        elif self.path.startswith('/api/ocs-device'):
+            try:
+                query = parse_qs(urlparse(self.path).query)
+                hostname = query.get('hostname', [''])[0]
+                ip_addr = query.get('ip', [''])[0]
+                search_term = hostname or ip_addr
+                if not search_term:
+                    self._send_json(400, {'error': 'hostname or ip parameter is required'})
+                    return
+                config = self._load_config()
+                tipo_busqueda = 'ip' if ip_addr else 'hostname'
+                result = ocs.buscar_equipos_ocs(config, search_term, tipo_busqueda)
+                self._send_json(200, result)
             except Exception as e:
                 self._send_json(500, {'error': str(e)})
 
