@@ -5,143 +5,97 @@ from datetime import datetime, timedelta
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def obtener_datos_ocs(config):
-    """Consulta la API REST de OCS Inventory para obtener inventario del parque informatico."""
-
+def _crear_session(config):
+    """Crea una session con Basic Auth para OCS API REST."""
     ocs_config = config.get("ocs")
-    if not ocs_config:
-        return {"error": "Configuracion de OCS no encontrada en config.json"}
-
     base_url = ocs_config.get("url", "").rstrip("/")
     user = ocs_config.get("user", "")
     password = ocs_config.get("password", "")
     verify_ssl = ocs_config.get("verify_ssl", False)
     timeout = ocs_config.get("timeout", 15)
 
-    resultado = {
-        "total_equipos": 0,
-        "equipos_activos": 0,
-        "equipos_inactivos": 0,
-        "antiguedad_promedio_anios": 0,
-        "por_os": {},
-        "por_tipo": {},
-        "por_ubicacion": {},
-        "alertas_disco": [],
-        "alertas_ram": [],
-        "alertas_antiguedad": [],
-        "alertas_antivirus": [],
-        "alertas_updates": [],
-        "equipos_detalle": [],
-        "error": None
-    }
-
     session = requests.Session()
     session.verify = verify_ssl
+    session.auth = (user, password)
     session.timeout = timeout
 
-    try:
-        # 1. Autenticacion - obtener cookie de sesion
-        auth_url = base_url + "/v1/login"
-        auth_payload = {"username": user, "password": password}
-        r_auth = session.post(auth_url, json=auth_payload, timeout=timeout)
+    return session, base_url, timeout
 
-        if r_auth.status_code == 401 or r_auth.status_code == 403:
-            resultado["error"] = "Autenticacion OCS fallida (HTTP " + str(r_auth.status_code) + ")"
-            return resultado
 
-        # Si la API usa token en headers en vez de cookie
-        if r_auth.status_code == 200:
-            auth_data = r_auth.json()
-            token = auth_data.get("token") or auth_data.get("access_token") or auth_data.get("apikey")
-            if token:
-                session.headers.update({"Authorization": "Bearer " + token})
+def _obtener_equipos(session, base_url, timeout, offset=0, limit=500):
+    """Obtiene equipos de OCS con paginacion. OCS API usa dict con IDs como keys."""
+    all_equipos = []
+    current_offset = offset
 
-        # 2. Obtener lista de computadoras
-        computers_url = base_url + "/v1/computers"
-        r_comp = session.get(computers_url, timeout=timeout)
+    while True:
+        url = base_url + "/v1/computers?offset=" + str(current_offset) + "&limit=" + str(limit)
+        try:
+            r = session.get(url, timeout=timeout)
+        except Exception:
+            break
 
-        if r_comp.status_code == 404:
-            # Probar endpoint alternativo (OCS 2.x usa /ocsapi/v1/computers)
-            computers_url = base_url + "/computers"
-            r_comp = session.get(computers_url, timeout=timeout)
+        if r.status_code != 200:
+            break
 
-        if r_comp.status_code != 200:
-            resultado["error"] = "Error al obtener equipos (HTTP " + str(r_comp.status_code) + ")"
-            return resultado
+        data = r.json()
+        if not isinstance(data, dict):
+            break
 
-        equipos = r_comp.json()
-        if isinstance(equipos, dict):
-            equipos = equipos.get("data", equipos.get("results", equipos.get("computers", [])))
-        if not isinstance(equipos, list):
-            equipos = []
+        # OCS API REST devuelve dict con IDs numericos como keys
+        items = []
+        for key, value in data.items():
+            try:
+                int(key)
+                items.append(value)
+            except (ValueError, TypeError):
+                pass
 
-        ahora = datetime.now()
-        hace_30_dias = ahora - timedelta(days=30)
-        hace_60_dias = ahora - timedelta(days=60)
-        hace_5_anios = ahora - timedelta(days=1825)
+        if not items:
+            break
 
-        total_edad = 0
-        equipos_con_edad = 0
+        all_equipos.extend(items)
 
-        for eq in equipos:
-            detalle = _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios)
+        if len(items) < limit:
+            break
 
-            # Contadores
-            resultado["total_equipos"] += 1
-            if detalle.get("activo"):
-                resultado["equipos_activos"] += 1
-            else:
-                resultado["equipos_inactivos"] += 1
+        current_offset += limit
 
-            # Por OS
-            os_name = detalle.get("os", "Desconocido")
-            resultado["por_os"][os_name] = resultado["por_os"].get(os_name, 0) + 1
+    return all_equipos
 
-            # Por tipo
-            tipo = detalle.get("tipo", "Desconocido")
-            resultado["por_tipo"][tipo] = resultado["por_tipo"].get(tipo, 0) + 1
 
-            # Por ubicacion
-            ubicacion = detalle.get("ubicacion", "Sin ubicacion")
-            resultado["por_ubicacion"][ubicacion] = resultado["por_ubicacion"].get(ubicacion, 0) + 1
-
-            # Antiguedad
-            if detalle.get("fecha_compra"):
-                total_edad += detalle["anios_antiguedad"]
-                equipos_con_edad += 1
-
-            # Alertas
-            if detalle.get("alerta_disco"):
-                resultado["alertas_disco"].append(detalle)
-            if detalle.get("alerta_ram"):
-                resultado["alertas_ram"].append(detalle)
-            if detalle.get("alerta_antiguedad"):
-                resultado["alertas_antiguedad"].append(detalle)
-            if detalle.get("alerta_antivirus"):
-                resultado["alertas_antivirus"].append(detalle)
-            if detalle.get("alerta_updates"):
-                resultado["alertas_updates"].append(detalle)
-
-            resultado["equipos_detalle"].append(detalle)
-
-        # Antiguedad promedio
-        if equipos_con_edad > 0:
-            resultado["antiguedad_promedio_anios"] = round(total_edad / equipos_con_edad, 1)
-
-    except requests.exceptions.ConnectionError:
-        resultado["error"] = "Sin conexion al servidor OCS (" + base_url + ")"
-    except requests.exceptions.Timeout:
-        resultado["error"] = "Timeout conectando a OCS (" + str(timeout) + "s)"
-    except Exception as e:
-        resultado["error"] = "Error OCS: " + str(e)
-    finally:
-        session.close()
-
-    return resultado
+def _simplificar_os(os_name):
+    """Simplifica el nombre del OS para agrupar en el dashboard."""
+    if not os_name:
+        return "Desconocido"
+    os_lower = os_name.lower()
+    if "windows 11" in os_lower:
+        return "Windows 11"
+    elif "windows 10" in os_lower:
+        return "Windows 10"
+    elif "windows server" in os_lower:
+        return "Windows Server"
+    elif "windows 7" in os_lower:
+        return "Windows 7"
+    elif "windows" in os_lower:
+        return "Windows (otro)"
+    elif "linux" in os_lower:
+        if "ubuntu" in os_lower:
+            return "Ubuntu Linux"
+        elif "debian" in os_lower:
+            return "Debian Linux"
+        elif "centos" in os_lower:
+            return "CentOS Linux"
+        else:
+            return "Linux (otro)"
+    elif "mac" in os_lower or "darwin" in os_lower:
+        return "macOS"
+    else:
+        return os_name[:30]
 
 
 def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
-    """Extrae datos relevantes de un equipo individual de OCS."""
+    """Extrae datos relevantes de un equipo individual de OCS.
+    OCS API REST usa keys MAYUSCULAS en hardware dict."""
 
     detalle = {
         "hostname": "",
@@ -164,74 +118,92 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
         "alerta_updates": False
     }
 
-    # Hostname
-    hardware = eq.get("hardware", eq)
-    detalle["hostname"] = hardware.get("name", hardware.get("hostname", ""))
-    detalle["tipo"] = hardware.get("type", hardware.get("osname", "Desconocido"))
+    # OCS API REST: hardware es un dict dentro del equipo, keys MAYUSCULAS
+    hw = eq.get("hardware", {})
 
-    # Si el tipo viene del OS, inferir por nombre
-    os_name = hardware.get("osname", hardware.get("os", ""))
+    # Hostname
+    detalle["hostname"] = hw.get("NAME", hw.get("name", ""))
+
+    # OS
+    os_name = hw.get("OSNAME", hw.get("osname", ""))
     if os_name:
         detalle["os"] = os_name
-        if "windows" in os_name.lower():
-            if "server" in os_name.lower():
+        os_lower = os_name.lower()
+        if "windows" in os_lower:
+            if "server" in os_lower:
                 detalle["tipo"] = "Servidor"
-            elif "10" in os_name or "11" in os_name:
-                detalle["tipo"] = "PC/Notebook"
             else:
                 detalle["tipo"] = "PC/Notebook"
-        elif "linux" in os_name.lower():
-            detalle["tipo"] = "Servidor" if "ubuntu server" in os_name.lower() or "debian" in os_name.lower() else "PC/Notebook"
+        elif "linux" in os_lower:
+            detalle["tipo"] = "Servidor" if "server" in os_lower else "PC/Notebook"
 
     # IP
-    networks = eq.get("networks", [])
-    if isinstance(networks, list) and len(networks) > 0:
-        for net in networks:
-            ip = net.get("ipaddress", net.get("ip", ""))
-            if ip and ip != "0.0.0.0" and ip != "127.0.0.1" and not ip.startswith("169.254"):
-                detalle["ip"] = ip
-                break
+    detalle["ip"] = hw.get("IPADDR", hw.get("ipaddr", ""))
+    # Si no hay IP en hardware, buscar en networks
     if not detalle["ip"]:
-        detalle["ip"] = hardware.get("ipaddr", hardware.get("ip", ""))
+        networks = eq.get("networks", [])
+        if isinstance(networks, list):
+            for net in networks:
+                ip = net.get("IPADDRESS", net.get("ipaddress", net.get("IP", "")))
+                if ip and ip != "0.0.0.0" and ip != "127.0.0.1" and not ip.startswith("169.254"):
+                    detalle["ip"] = ip
+                    break
 
-    # Ubicacion
-    detalle["ubicacion"] = hardware.get("location", hardware.get("userdomain", "Sin ubicacion"))
+    # Ubicacion - accountinfo TAG
+    accountinfo = eq.get("accountinfo", [])
+    if isinstance(accountinfo, list) and len(accountinfo) > 0:
+        ai = accountinfo[0] if isinstance(accountinfo[0], dict) else {}
+        tag = ai.get("TAG", ai.get("tag", ""))
+        if tag:
+            detalle["ubicacion"] = tag
+    if detalle["ubicacion"] == "Sin ubicacion":
+        detalle["ubicacion"] = hw.get("USERDOMAIN", hw.get("WORKGROUP", "Sin ubicacion"))
 
-    # Ultimo contacto
-    last_date_str = hardware.get("lastcome", hardware.get("last_seen", ""))
+    # Ultimo contacto - LASTCOME formato "2026-05-27 01:32:00"
+    last_date_str = hw.get("LASTCOME", hw.get("LASTDATE", ""))
     if last_date_str:
         try:
-            # OCS usa formato: 2024-01-15 10:30:00
-            last_date = datetime.strptime(last_date_str[:19], "%Y-%m-%d %H:%M:%S")
-            detalle["ultimo_contacto"] = last_date_str
+            clean_date = str(last_date_str).replace("\\/", "-")[:19]
+            last_date = datetime.strptime(clean_date, "%Y-%m-%d %H:%M:%S")
+            detalle["ultimo_contacto"] = clean_date
             detalle["activo"] = last_date > hace_30_dias
         except (ValueError, TypeError):
-            pass
+            detalle["ultimo_contacto"] = str(last_date_str)[:19]
 
-    # RAM
-    memories = eq.get("memories", [])
-    if isinstance(memories, list):
-        total_ram_mb = 0
-        for mem in memories:
-            cap = mem.get("capacity", mem.get("size", 0))
-            try:
-                total_ram_mb += int(cap)
-            except (ValueError, TypeError):
-                pass
-        if total_ram_mb > 0:
-            detalle["ram_gb"] = round(total_ram_mb / 1024, 1)
+    # RAM - hardware MEMORY en MB
+    memory_mb = hw.get("MEMORY", 0)
+    try:
+        memory_mb = int(memory_mb)
+    except (ValueError, TypeError):
+        memory_mb = 0
 
-    # Disco
-    drives = eq.get("drives", eq.get("storages", []))
+    # Tambien verificar memories (dr DIMM)
+    if memory_mb == 0:
+        memories = eq.get("memories", [])
+        if isinstance(memories, list):
+            for mem in memories:
+                cap = mem.get("CAPACITY", mem.get("capacity", 0))
+                try:
+                    val = int(cap)
+                    if val > 0:
+                        memory_mb += val
+                except (ValueError, TypeError):
+                    pass
+
+    if memory_mb > 0:
+        detalle["ram_gb"] = round(memory_mb / 1024, 1)
+
+    # Disco - drives con TOTAL/FREE en MB
+    drives = eq.get("drives", [])
     if isinstance(drives, list):
         max_uso = 0
         for drv in drives:
-            tipo_disco = drv.get("type", drv.get("filesystem", ""))
-            # Solo discos locales (ignorar CD-ROM, red, etc.)
-            if any(t in tipo_disco.lower() for t in ["cdrom", "dvd", "network", "nfs", "smb"]):
+            tipo_disco = str(drv.get("TYPE", drv.get("type", drv.get("FILESYSTEM", "")))).lower()
+            # Solo discos locales
+            if any(t in tipo_disco for t in ["cdrom", "dvd", "network", "nfs", "smb", "removable"]):
                 continue
-            total = drv.get("total", drv.get("size", 0))
-            libre = drv.get("free", drv.get("avail", 0))
+            total = drv.get("TOTAL", drv.get("total", 0))
+            libre = drv.get("FREE", drv.get("free", 0))
             try:
                 total_int = int(total)
                 libre_int = int(libre)
@@ -243,34 +215,35 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
                 pass
         detalle["disco_uso_pct"] = max_uso
 
-    # Fecha de compra / BIOS
-    bios = eq.get("bios", {})
-    if isinstance(bios, dict):
-        fecha_bios = bios.get("bdate", bios.get("release_date", ""))
+    # Fecha de BIOS (approx de compra)
+    bios = eq.get("bios", [])
+    if isinstance(bios, list) and len(bios) > 0:
+        bios_dict = bios[0] if isinstance(bios[0], dict) else {}
+        fecha_bios = bios_dict.get("BDATE", bios_dict.get("bdate", ""))
         if fecha_bios:
             try:
-                fecha = datetime.strptime(fecha_bios[:10], "%Y-%m-%d")
-                detalle["fecha_compra"] = fecha_bios[:10]
+                clean = str(fecha_bios).replace("\\/", "-")[:10]
+                fecha = datetime.strptime(clean, "%Y-%m-%d")
+                detalle["fecha_compra"] = clean
                 detalle["anios_antiguedad"] = round((ahora - fecha).days / 365.25, 1)
             except (ValueError, TypeError):
                 pass
 
-    # Antivirus
-    antivirus = eq.get("antivirus", eq.get("security", []))
-    if isinstance(antivirus, list):
-        if len(antivirus) > 0:
-            av = antivirus[0]
-            detalle["antivirus"] = av.get("name", av.get("product", "Detectado"))
-        else:
+    # Antivirus - OCS puede no incluir la key antivirus en la respuesta
+    # Solo alertar si la key existe y esta vacia (sin AV instalado)
+    if "antivirus" in eq:
+        antivirus_data = eq["antivirus"]
+        if isinstance(antivirus_data, list) and len(antivirus_data) > 0:
+            av = antivirus_data[0] if isinstance(antivirus_data[0], dict) else {}
+            detalle["antivirus"] = av.get("NAME", av.get("name", av.get("PRODUCT", "Detectado")))
+        elif isinstance(antivirus_data, list) and len(antivirus_data) == 0:
+            # Lista vacia = sin antivirus
             detalle["antivirus"] = None
-
-    # Ultima actualizacion Windows
-    updates = eq.get("updates", eq.get("softwares", []))
-    if isinstance(updates, list) and len(updates) > 0:
-        ultima = updates[0]
-        fecha_upd = ultima.get("install_date", ultima.get("date", ""))
-        if fecha_upd:
-            detalle["ultima_actualizacion"] = fecha_upd
+        else:
+            detalle["antivirus"] = "No reportado"
+    else:
+        # Key no existe en respuesta = agente no reporta AV, no alertar
+        detalle["antivirus"] = "No reportado"
 
     # === GENERAR ALERTAS ===
     if detalle["disco_uso_pct"] >= 90:
@@ -281,75 +254,200 @@ def _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios):
         detalle["alerta_antiguedad"] = True
     if detalle["antivirus"] is None:
         detalle["alerta_antivirus"] = True
-    if detalle["activo"] and detalle["ultima_actualizacion"]:
-        try:
-            fecha_upd_dt = datetime.strptime(detalle["ultima_actualizacion"][:10], "%Y-%m-%d")
-            if fecha_upd_dt < hace_60_dias:
-                detalle["alerta_updates"] = True
-        except (ValueError, TypeError):
-            pass
 
     return detalle
 
 
+def obtener_datos_ocs(config):
+    """Consulta la API REST de OCS Inventory para obtener inventario del parque informatico."""
+
+    ocs_config = config.get("ocs")
+    if not ocs_config:
+        return {"error": "Configuracion de OCS no encontrada en config.json"}
+
+    resultado = {
+        "total_equipos": 0,
+        "equipos_activos": 0,
+        "equipos_inactivos": 0,
+        "equipos_sin_reportar": 0,
+        "antiguedad_promedio_anios": 0,
+        "por_os": {},
+        "por_tipo": {},
+        "por_ubicacion": {},
+        "distribucion_os": {},
+        "alertas_disco": [],
+        "alertas_ram": [],
+        "alertas_antiguedad": [],
+        "alertas_antivirus": [],
+        "alertas_updates": [],
+        "equipos_detalle": [],
+        "portal_url": "",
+        "error": None
+    }
+
+    base_url_raw = ocs_config.get("url", "").rstrip("/")
+    resultado["portal_url"] = base_url_raw.replace("/ocsapi", "/ocsreports")
+
+    session, base_url, timeout = _crear_session(config)
+
+    try:
+        # Verificar conexion
+        try:
+            r_test = session.get(base_url + "/v1/computers?offset=0&limit=1", timeout=timeout)
+            if r_test.status_code == 401:
+                resultado["error"] = "Autenticacion OCS fallida (HTTP 401)"
+                return resultado
+            if r_test.status_code != 200:
+                resultado["error"] = "Error API OCS (HTTP " + str(r_test.status_code) + ")"
+                return resultado
+        except requests.exceptions.ConnectionError:
+            resultado["error"] = "Sin conexion al servidor OCS (" + base_url + ")"
+            return resultado
+        except requests.exceptions.Timeout:
+            resultado["error"] = "Timeout conectando a OCS (" + str(timeout) + "s)"
+            return resultado
+
+        # Obtener todos los equipos (paginado)
+        equipos = _obtener_equipos(session, base_url, timeout)
+
+        ahora = datetime.now()
+        hace_30_dias = ahora - timedelta(days=30)
+        hace_60_dias = ahora - timedelta(days=60)
+        hace_5_anios = ahora - timedelta(days=1825)
+
+        total_edad = 0
+        equipos_con_edad = 0
+
+        for eq in equipos:
+            detalle = _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios)
+
+            resultado["total_equipos"] += 1
+            if detalle.get("activo"):
+                resultado["equipos_activos"] += 1
+            else:
+                resultado["equipos_inactivos"] += 1
+
+            # Por OS (simplificado)
+            os_simple = _simplificar_os(detalle.get("os", "Desconocido"))
+            resultado["por_os"][os_simple] = resultado["por_os"].get(os_simple, 0) + 1
+            resultado["distribucion_os"][os_simple] = resultado["distribucion_os"].get(os_simple, 0) + 1
+
+            # Por tipo
+            tipo = detalle.get("tipo", "Desconocido")
+            resultado["por_tipo"][tipo] = resultado["por_tipo"].get(tipo, 0) + 1
+
+            # Por ubicacion
+            ubicacion = detalle.get("ubicacion", "Sin ubicacion")
+            resultado["por_ubicacion"][ubicacion] = resultado["por_ubicacion"].get(ubicacion, 0) + 1
+
+            # Antiguedad
+            if detalle.get("anios_antiguedad") > 0:
+                total_edad += detalle["anios_antiguedad"]
+                equipos_con_edad += 1
+
+            # Alertas (lista de strings legibles)
+            if detalle.get("alerta_disco"):
+                resultado["alertas_disco"].append(detalle["hostname"] + " (" + str(detalle["disco_uso_pct"]) + "%)")
+            if detalle.get("alerta_ram"):
+                resultado["alertas_ram"].append(detalle["hostname"] + " (" + str(detalle["ram_gb"]) + "GB)")
+            if detalle.get("alerta_antiguedad"):
+                resultado["alertas_antiguedad"].append(detalle["hostname"] + " (" + str(detalle["anios_antiguedad"]) + " anios)")
+            if detalle.get("alerta_antivirus"):
+                resultado["alertas_antivirus"].append(detalle["hostname"])
+            if detalle.get("alerta_updates"):
+                resultado["alertas_updates"].append(detalle["hostname"])
+
+            resultado["equipos_detalle"].append(detalle)
+
+        # Equipos sin reportar
+        resultado["equipos_sin_reportar"] = resultado["equipos_inactivos"]
+
+        # Antiguedad promedio
+        if equipos_con_edad > 0:
+            resultado["antiguedad_promedio_anios"] = round(total_edad / equipos_con_edad, 1)
+
+    except requests.exceptions.ConnectionError:
+        resultado["error"] = "Sin conexion al servidor OCS (" + base_url + ")"
+    except requests.exceptions.Timeout:
+        resultado["error"] = "Timeout conectando a OCS (" + str(timeout) + "s)"
+    except Exception as e:
+        resultado["error"] = "Error OCS: " + str(e)
+    finally:
+        session.close()
+
+    return resultado
+
+
 def buscar_equipos_ocs(config, query, tipo_busqueda="hostname"):
-    """Busca equipos en OCS Inventory por hostname, IP, software o usuario."""
+    """Busca equipos en OCS Inventory por hostname, IP, software o usuario.
+    OCS API REST no soporta busqueda por query params, se filtra en memoria."""
 
     ocs_config = config.get("ocs")
     if not ocs_config:
         return {"error": "Configuracion de OCS no encontrada", "resultados": []}
 
-    base_url = ocs_config.get("url", "").rstrip("/")
-    user = ocs_config.get("user", "")
-    password = ocs_config.get("password", "")
-    verify_ssl = ocs_config.get("verify_ssl", False)
-    timeout = ocs_config.get("timeout", 15)
-
-    session = requests.Session()
-    session.verify = verify_ssl
-    session.timeout = timeout
-
+    session, base_url, timeout = _crear_session(config)
     resultados = []
 
     try:
-        # Autenticacion
-        auth_url = base_url + "/v1/login"
-        r_auth = session.post(auth_url, json={"username": user, "password": password}, timeout=timeout)
-        if r_auth.status_code == 200:
-            auth_data = r_auth.json()
-            token = auth_data.get("token") or auth_data.get("access_token") or auth_data.get("apikey")
-            if token:
-                session.headers.update({"Authorization": "Bearer " + token})
+        equipos = _obtener_equipos(session, base_url, timeout, limit=1000)
 
-        # Busqueda via API
-        search_url = base_url + "/v1/computers"
-        params = {}
-        if tipo_busqueda == "hostname":
-            params["name"] = query
-        elif tipo_busqueda == "ip":
-            params["ip"] = query
-        elif tipo_busqueda == "software":
-            search_url = base_url + "/v1/softwares"
-            params["name"] = query
-        elif tipo_busqueda == "usuario":
-            params["user"] = query
+        ahora = datetime.now()
+        hace_30_dias = ahora - timedelta(days=30)
+        hace_60_dias = ahora - timedelta(days=60)
+        hace_5_anios = ahora - timedelta(days=1825)
 
-        r_search = session.get(search_url, params=params, timeout=timeout)
-        if r_search.status_code != 200:
-            search_url_alt = base_url + "/computers"
-            r_search = session.get(search_url_alt, params=params, timeout=timeout)
+        query_lower = query.lower()
 
-        if r_search.status_code == 200:
-            data = r_search.json()
-            if isinstance(data, dict):
-                data = data.get("data", data.get("results", data.get("computers", [])))
-            if isinstance(data, list):
-                ahora = datetime.now()
-                hace_30_dias = ahora - timedelta(days=30)
-                hace_60_dias = ahora - timedelta(days=60)
-                hace_5_anios = ahora - timedelta(days=1825)
-                for eq in data[:50]:
-                    resultados.append(_procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios))
+        for eq in equipos:
+            hw = eq.get("hardware", {})
+            match = False
+
+            if tipo_busqueda == "hostname":
+                name = hw.get("NAME", hw.get("name", "")).lower()
+                if query_lower in name:
+                    match = True
+            elif tipo_busqueda == "ip":
+                ipaddr = hw.get("IPADDR", hw.get("IPADDR", "")).lower()
+                if query_lower in ipaddr:
+                    match = True
+                if not match:
+                    networks = eq.get("networks", [])
+                    for net in networks:
+                        ip = net.get("IPADDRESS", net.get("ipaddress", "")).lower()
+                        if query_lower in ip:
+                            match = True
+                            break
+            elif tipo_busqueda == "software":
+                softwares = eq.get("software", [])
+                if isinstance(softwares, list):
+                    for sw in softwares:
+                        sw_name = sw.get("NAME", sw.get("name", "")).lower()
+                        if query_lower in sw_name:
+                            match = True
+                            break
+            elif tipo_busqueda == "usuario":
+                user = hw.get("USERID", hw.get("userid", "")).lower()
+                if query_lower in user:
+                    match = True
+
+            if match:
+                detalle = _procesar_equipo(eq, ahora, hace_30_dias, hace_60_dias, hace_5_anios)
+                resultados.append({
+                    "hostname": detalle["hostname"],
+                    "name": detalle["hostname"],
+                    "ip": detalle["ip"],
+                    "os": detalle["os"],
+                    "ultimo_contacto": detalle["ultimo_contacto"] or "Nunca",
+                    "last_contact": detalle["ultimo_contacto"] or "Nunca",
+                    "activo": detalle["activo"],
+                    "ram_gb": detalle["ram_gb"],
+                    "disco_uso_pct": detalle["disco_uso_pct"],
+                    "ubicacion": detalle["ubicacion"]
+                })
+
+            if len(resultados) >= 50:
+                break
 
     except requests.exceptions.ConnectionError:
         return {"error": "Sin conexion a OCS", "resultados": []}
@@ -360,4 +458,4 @@ def buscar_equipos_ocs(config, query, tipo_busqueda="hostname"):
     finally:
         session.close()
 
-    return {"resultados": resultados, "total": len(resultados)}
+    return resultados
