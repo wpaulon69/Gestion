@@ -248,6 +248,16 @@ html { scroll-behavior: smooth; }
  <div class="flex items-end gap-2"><span id="ocs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="ocs-top-badge" class="status-pill badge-info ml-2 mb-1">CARGANDO</span></div>
  </div>
  </a>
+
+ <a href="#pve-section" class="card-link block no-underline">
+ <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Virtualización</p>
+ <div class="bg-orange-50 p-1.5 rounded-xl text-orange-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div>
+ </div>
+ <div class="flex items-end gap-2"><span id="pve-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="pve-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+ </div>
+ </a>
  </div>
 
 
@@ -1448,9 +1458,36 @@ if (mplsTopStat) {
  group.innerHTML = header + vmsHtml;
  pveVmsGrid.appendChild(group);
  });
-            }
+ }
 
-            // 8. ALERTAS TERMINAL
+// TOP STAT PVE card
+var pveTopStat = document.getElementById('pve-top-stat');
+var pveTopBadge = document.getElementById('pve-top-badge');
+if (pveTopStat) {
+ if (pve && !pve.error) {
+  var nodosPve = pve.nodos || [];
+  var vmsPve = pve.vms || [];
+  var onlineNodes = nodosPve.filter(function(n) { return n.status === 'online'; }).length;
+  var runningVms = vmsPve.filter(function(v) { return v.status === 'running'; }).length;
+  pveTopStat.innerText = onlineNodes + '/' + nodosPve.length;
+  if (onlineNodes === nodosPve.length && nodosPve.length > 0) {
+   pveTopBadge.className = 'status-pill badge-ok ml-2 mb-1';
+   pveTopBadge.innerText = runningVms + ' VMs';
+  } else if (onlineNodes > 0) {
+   pveTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+   pveTopBadge.innerText = runningVms + ' VMs';
+  } else {
+   pveTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
+   pveTopBadge.innerText = 'DOWN';
+  }
+ } else {
+  pveTopStat.innerText = '--';
+  pveTopBadge.className = 'status-pill badge-err ml-2 mb-1';
+  pveTopBadge.innerText = 'S/D';
+ }
+}
+
+ // 8. ALERTAS TERMINAL
             const alertsCont = document.getElementById('alerts-container');
             alertsCont.innerHTML = '';
             const alerts = (data.estado_alertas && data.estado_alertas.detalle) || [];
