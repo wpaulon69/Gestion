@@ -690,19 +690,38 @@ Interfaces Firewall (OPNsense)
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 icon.classList.remove('animate-spin');
             }
-        }async function openNASFolder(path) {
-            if (!path || path === "N/A") return;
-            try {
-                // Usar el mismo host desde el que se sirve la página para llamadas al backend
-                const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                           ? 'localhost:8081' 
-                           : window.location.hostname + ':8081';
-                const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:8081' : ('http://' + host);
-                await fetch(baseUrl + '/api/open-folder?path=' + encodeURIComponent(path));
-            } catch (err) {
-                console.error("Error al abrir carpeta:", err);
-            }
-        }
+}function openNASFolder(path) {
+ if (!path || path === "N/A") return;
+ // Construir URL smb:// para Windows (file://// a veces bloqueado por navegadores)
+ // Ruta UNC: \\10.175.6.10\recurso → smb://10.175.6.10/recurso
+ var smbPath = path.replace(/\\\\/g, '/').replace(/\\/g, '/').replace(/^\//, '');
+ var smbUrl = 'smb://' + smbPath;
+ // Intentar abrir con smb:// (funciona en Windows con Explorer)
+ var opened = false;
+ try {
+  window.open(smbUrl, '_blank');
+  opened = true;
+ } catch(e) {}
+ // Si falló o como respaldo, copiar ruta UNC al portapapeles
+ if (navigator.clipboard) {
+  navigator.clipboard.writeText(path).then(function() {
+   if (!opened) {
+    alert('Ruta copiada al portapapeles:\n' + path + '\n\nPegala en Explorador de archivos (Ctrl+V)');
+   }
+  });
+ } else {
+  // Fallback para navegadores sin clipboard API
+  var ta = document.createElement('textarea');
+  ta.value = path;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  if (!opened) {
+   alert('Ruta copiada al portapapeles:\n' + path + '\n\nPegala en Explorador de archivos (Ctrl+V)');
+  }
+ }
+}
 
         function updateDashboard(data) {
             const meta = data.metadatos || {};
@@ -754,7 +773,7 @@ Interfaces Firewall (OPNsense)
                             </div>
                         </div>
                         <div class="flex gap-3">
-                            <button onclick="openNASFolder('${folderPath}')" title="Ver Grabaciones" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-all">
+                            <button onclick="openNASFolder('${folderPath}')" title="Abrir carpeta de grabaciones (copia ruta UNC)" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-all">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-width="2"/></svg>
                             </button>
                             <div class="flex flex-col items-center gap-1">
