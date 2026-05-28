@@ -145,16 +145,20 @@ html { scroll-behavior: smooth; }
  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Switches & Red Local</p>
  <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.5 9.5 0 0114.142 0M2.828 9.172a13.5 13.5 0 0118.344 0" stroke-width="2" /></svg></div>
  </div>
- <div class="flex justify-between items-end">
- <div class="flex flex-col">
- <span id="switch-top-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
- <span class="text-[8px] text-sub font-black uppercase mt-1">Switches</span>
- </div>
- <div class="flex flex-col text-right">
- <span id="client-wifi-stat" class="text-2xl font-extrabold text-indigo-500 leading-none">--</span>
- <span class="text-[8px] text-indigo-400 font-black uppercase mt-1">WiFi</span>
- </div>
- </div>
+      <div class="flex justify-between items-end">
+        <div class="flex flex-col">
+          <span id="switch-top-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
+          <span class="text-[8px] text-sub font-black uppercase mt-1">Switches</span>
+        </div>
+        <div class="flex flex-col text-right">
+          <span id="client-pc-stat" class="text-2xl font-extrabold text-emerald-500 leading-none">--</span>
+          <span class="text-[8px] text-emerald-400 font-black uppercase mt-1">Red 10</span>
+        </div>
+        <div class="flex flex-col text-right">
+          <span id="client-wifi-stat" class="text-2xl font-extrabold text-indigo-500 leading-none">--</span>
+          <span class="text-[8px] text-indigo-400 font-black uppercase mt-1">WiFi</span>
+        </div>
+      </div>
  </div>
  </a>
 
@@ -1101,6 +1105,7 @@ if (mplsTopStat) {
             });
             
 const resumenRes = data.resumen_clientes || {pc: 0, wifi: 0, total: 0};
+document.getElementById('client-pc-stat').innerText = resumenRes.pc;
 document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
 
 
