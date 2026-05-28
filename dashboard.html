@@ -692,34 +692,24 @@ Interfaces Firewall (OPNsense)
             }
 }function openNASFolder(path) {
  if (!path || path === "N/A") return;
- // Construir URL smb:// para Windows (file://// a veces bloqueado por navegadores)
- // Ruta UNC: \\10.175.6.10\recurso → smb://10.175.6.10/recurso
- var smbPath = path.replace(/\\\\/g, '/').replace(/\\/g, '/').replace(/^\//, '');
- var smbUrl = 'smb://' + smbPath;
- // Intentar abrir con smb:// (funciona en Windows con Explorer)
- var opened = false;
- try {
-  window.open(smbUrl, '_blank');
-  opened = true;
- } catch(e) {}
- // Si falló o como respaldo, copiar ruta UNC al portapapeles
- if (navigator.clipboard) {
+ // Copiar ruta UNC al portapapeles (Windows: pegar en Explorer con Ctrl+V)
+ var success = false;
+ if (navigator.clipboard && navigator.clipboard.writeText) {
   navigator.clipboard.writeText(path).then(function() {
-   if (!opened) {
-    alert('Ruta copiada al portapapeles:\n' + path + '\n\nPegala en Explorador de archivos (Ctrl+V)');
-   }
+   alert('Ruta copiada al portapapeles:\n\n' + path + '\n\nAbrí Explorador de archivos y pegá con Ctrl+V');
   });
- } else {
-  // Fallback para navegadores sin clipboard API
+  success = true;
+ }
+ if (!success) {
   var ta = document.createElement('textarea');
   ta.value = path;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
   document.body.appendChild(ta);
   ta.select();
   document.execCommand('copy');
   document.body.removeChild(ta);
-  if (!opened) {
-   alert('Ruta copiada al portapapeles:\n' + path + '\n\nPegala en Explorador de archivos (Ctrl+V)');
-  }
+  alert('Ruta copiada al portapapeles:\n\n' + path + '\n\nAbrí Explorador de archivos y pegá con Ctrl+V');
  }
 }
 
