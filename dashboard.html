@@ -222,20 +222,19 @@ html { scroll-behavior: smooth; }
  <a href="#firewall-section" class="card-link block no-underline">
  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-emerald-300 transition-all">
  <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall</p>
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall & Interfaces</p>
  <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
  </div>
- <div class="flex items-end gap-2"><span id="fw-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span class="text-[10px] text-emerald-500 font-bold pb-1">UP</span></div>
+ <div class="flex justify-between items-end">
+ <div class="flex flex-col">
+ <span id="fw-top-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
+ <span class="text-[8px] text-sub font-black uppercase mt-1">Estado</span>
  </div>
- </a>
-
- <a href="#firewall-section" class="card-link block no-underline">
- <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-emerald-300 transition-all">
- <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Interfaces FW</p>
- <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+ <div class="flex flex-col text-right">
+ <span id="fw-iface-stat" class="text-2xl font-extrabold text-emerald-500 leading-none">--</span>
+ <span class="text-[8px] text-emerald-400 font-black uppercase mt-1">Interfaces</span>
  </div>
- <div class="flex items-end gap-2"><span id="fw-iface-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="fw-iface-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+ </div>
  </div>
  </a>
 
@@ -1520,25 +1519,10 @@ if (pveTopStat) {
             }
 document.getElementById('fw-top-stat').innerText = `${upFw}/${interfaces.length}`;
 
-// TOP STAT Interfaces FW
+// TOP STAT Interfaces FW (misma card)
 var fwIfaceStat = document.getElementById('fw-iface-stat');
-var fwIfaceBadge = document.getElementById('fw-iface-badge');
 if (fwIfaceStat) {
  fwIfaceStat.innerText = upFw + '/' + interfaces.length;
- if (interfaces.length > 0 && upFw === interfaces.length) {
-  fwIfaceBadge.className = 'status-pill badge-ok ml-2 mb-1';
-  fwIfaceBadge.innerText = 'ALL UP';
- } else if (upFw > 0) {
-  fwIfaceBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
-  fwIfaceBadge.innerText = 'PARTIAL';
- } else if (interfaces.length > 0) {
-  fwIfaceBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
-  fwIfaceBadge.innerText = 'DOWN';
- } else {
-  fwIfaceStat.innerText = '--';
-  fwIfaceBadge.className = 'status-pill badge-err ml-2 mb-1';
-  fwIfaceBadge.innerText = 'S/D';
- }
 }
 
 document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.length}`;
