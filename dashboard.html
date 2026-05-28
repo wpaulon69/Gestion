@@ -128,31 +128,45 @@ html { scroll-behavior: smooth; }
             
             <!-- Quick Stats -->
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="glass-card p-4 rounded-3xl card-hover bg-gradient-to-br from-indigo-500 to-indigo-700 text-white border-none flex flex-col justify-between h-[110px]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[9px] font-extrabold opacity-80 uppercase tracking-widest leading-none">Cámaras</p>
-                        <div class="bg-white/20 p-1.5 rounded-xl"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2" /></svg></div>
-                    </div>
-                    <div class="flex items-end gap-2"><span id="cam-stat" class="text-3xl font-extrabold italic leading-none">--</span><span class="text-[10px] opacity-80 pb-1">Grabando</span></div>
-                </div>
-                
-                <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Conectividad Local</p>
-                        <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.5 9.5 0 0114.142 0M2.828 9.172a13.5 13.5 0 0118.344 0" stroke-width="2" /></svg></div>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <div class="flex flex-col">
-                            <span id="client-pc-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
-                            <span class="text-[8px] text-sub font-black uppercase mt-1">PC-LAN</span>
-                        </div>
-                        <div class="flex flex-col text-right">
-                            <span id="client-wifi-stat" class="text-2xl font-extrabold text-indigo-500 leading-none">--</span>
-                            <span class="text-[8px] text-indigo-400 font-black uppercase mt-1">Usuarios WiFi</span>
-                        </div>
-                    </div>
-                </div>
+ <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+ <a href="#camaras-section" class="card-link block no-underline">
+ <div class="glass-card p-4 rounded-3xl card-hover bg-gradient-to-br from-indigo-500 to-indigo-700 text-white border-none flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold opacity-80 uppercase tracking-widest leading-none">Cámaras</p>
+ <div class="bg-white/20 p-1.5 rounded-xl"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2" /></svg></div>
+ </div>
+ <div class="flex items-end gap-2"><span id="cam-stat" class="text-3xl font-extrabold italic leading-none">--</span><span class="text-[10px] opacity-80 pb-1">Grabando</span></div>
+ </div>
+ </a>
+
+ <a href="#pve-section" class="card-link block no-underline">
+ <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Conectividad Local</p>
+ <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.5 9.5 0 0114.142 0M2.828 9.172a13.5 13.5 0 0118.344 0" stroke-width="2" /></svg></div>
+ </div>
+ <div class="flex justify-between items-end">
+ <div class="flex flex-col">
+ <span id="client-pc-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
+ <span class="text-[8px] text-sub font-black uppercase mt-1">PC-LAN</span>
+ </div>
+ <div class="flex flex-col text-right">
+ <span id="client-wifi-stat" class="text-2xl font-extrabold text-indigo-500 leading-none">--</span>
+ <span class="text-[8px] text-indigo-400 font-black uppercase mt-1">Usuarios WiFi</span>
+ </div>
+ </div>
+ </div>
+ </a>
+
+ <a href="#mpls-section" class="card-link block no-underline">
+ <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-amber-300 transition-all">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">MPLS</p>
+ <div class="bg-amber-50 p-1.5 rounded-xl text-amber-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+ </div>
+ <div class="flex items-end gap-2"><span id="mpls-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="mpls-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+ </div>
+ </a>
 
 
  <a href="#relojes-section" class="card-link block no-underline">
@@ -237,8 +251,8 @@ html { scroll-behavior: smooth; }
  </div>
 
 
-            <!-- Cameras Grid -->
-            <section class="glass-card rounded-[2.5rem] p-8">
+ <!-- Cameras Grid -->
+ <section class="glass-card rounded-[2.5rem] p-8" id="camaras-section">
                 <div class="flex justify-between items-center mb-10">
                     <h2 class="text-2xl font-black text-title flex items-center gap-3 italic">
                         Videovigilancia
@@ -360,8 +374,8 @@ Interfaces Firewall (OPNsense)
 
             </section>
 
-            <!-- Virtualización Proxmox -->
-            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-orange-500">
+<!-- Virtualización Proxmox -->
+ <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-orange-500" id="pve-section">
                 <div class="flex justify-between items-center mb-8">
                     <div>
                         <h2 class="text-xl font-black text-title flex items-center gap-3">
@@ -888,9 +902,36 @@ if (mpls && mpls.estado) {
         });
     }
 } else {
-    mplsBadge.className = 'status-pill badge-err';
-    mplsBadge.innerText = 'S/D';
-    mplsContent.innerHTML = '<p class="text-sub text-xs italic py-4">Sin datos del enlace MPLS.</p>';
+ mplsBadge.className = 'status-pill badge-err';
+ mplsBadge.innerText = 'S/D';
+ mplsContent.innerHTML = '<p class="text-sub text-xs italic py-4">Sin datos del enlace MPLS.</p>';
+}
+
+// TOP STAT MPLS card
+var mplsTopStat = document.getElementById('mpls-top-stat');
+var mplsTopBadge = document.getElementById('mpls-top-badge');
+if (mplsTopStat) {
+ if (mpls && mpls.estado) {
+  if (mpls.estado === 'OK') {
+   mplsTopStat.innerText = mpls.latencia_ms + 'ms';
+   mplsTopBadge.className = 'status-pill badge-ok ml-2 mb-1';
+   mplsTopBadge.innerText = 'OK';
+  } else if (mpls.estado === 'ALERTA') {
+   mplsTopStat.innerText = mpls.latencia_ms + 'ms';
+   mplsTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
+   mplsTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+   mplsTopBadge.innerText = 'ALERTA';
+  } else {
+   mplsTopStat.innerText = mpls.estado;
+   mplsTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
+   mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
+   mplsTopBadge.innerText = 'DOWN';
+  }
+ } else {
+  mplsTopStat.innerText = '--';
+  mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1';
+  mplsTopBadge.innerText = 'S/D';
+ }
 }
 
 // 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
