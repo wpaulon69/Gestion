@@ -13,7 +13,7 @@
             document.documentElement.classList.remove('dark')
         }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/vendor/tailwind.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -29,12 +29,12 @@
             }
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/vendor/chart.umd.js"></script>
  <style type="text/tailwindcss">
 html { scroll-behavior: smooth; }
 .card-link { text-decoration: none; color: inherit; }
 .card-link:hover .glass-card { transform: translateY(-2px); }
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+@import url('/static/vendor/fonts.css');
         body { font-family: 'Plus Jakarta Sans', sans-serif; @apply bg-sub text-title dark:bg-slate-950 dark:text-slate-200 transition-colors duration-300; }
         
         @layer components {
@@ -169,6 +169,17 @@ html { scroll-behavior: smooth; }
  <div class="bg-amber-50 p-1.5 rounded-xl text-amber-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
  </div>
  <div class="flex items-end gap-2"><span id="mpls-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="mpls-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+ </div>
+ </a>
+
+
+ <a href="http://192.168.0.1" target="_blank" class="card-link block no-underline">
+ <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-sky-300 transition-all">
+ <div class="flex justify-between items-start">
+ <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Gateway WAN</p>
+ <div class="bg-sky-50 p-1.5 rounded-xl text-sky-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg></div>
+ </div>
+ <div class="flex items-end gap-2"><span id="gateway-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="gateway-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
  </div>
  </a>
 
@@ -553,8 +564,9 @@ Interfaces Firewall (OPNsense)
  </div>
  </div>
  </div>
- </section>
+ </div>
 
+ </section>
  </div>
 
  <!-- RIGHT SIDEBAR: OTHER DEVICES & ALERTS -->
@@ -569,7 +581,46 @@ Interfaces Firewall (OPNsense)
  <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Routers & Access Points</h3>
  <div id="wifi-routers-list" class="space-y-2"></div>
  </div>
- 
+
+ <!-- Gateway WAN (192.168.0.1) -->
+ <div id="gateway-section" class="mb-8">
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4">Gateway WAN / Acceso a Internet</h3>
+ <div id="gateway-card" class="glass-card rounded-[2rem] p-6 cursor-pointer transition-all hover:ring-2 hover:ring-cyan-300" onclick="window.open('http://192.168.0.1', '_blank')">
+     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+         <div class="flex items-center gap-4">
+             <div class="bg-cyan-50 p-3 rounded-xl">
+                 <svg class="h-6 w-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path>
+                 </svg>
+             </div>
+             <div>
+                 <p class="text-[10px] font-black text-sub uppercase tracking-widest text-slate-500">Gateway OPNsense</p>
+                 <p class="text-lg font-extrabold text-title">192.168.0.1</p>
+                 <p class="text-[10px] text-slate-500 font-medium">Click para acceder al panel de administración</p>
+             </div>
+         </div>
+         <div class="flex flex-col items-end md:items-end gap-1 text-right">
+             <span id="gateway-status-badge" class="status-pill badge-ok text-[10px] font-black px-3 py-1 rounded-full">Verificando...</span>
+             <div class="flex gap-4 text-right">
+                 <div>
+                     <p class="text-[9px] font-black text-sub uppercase tracking-widest text-slate-500">Latencia</p>
+                     <p id="gateway-latency" class="text-xl font-extrabold text-title">-- ms</p>
+                 </div>
+                 <div>
+                     <p class="text-[9px] font-black text-sub uppercase tracking-widest text-slate-500">Velocidad</p>
+                     <p id="gateway-speed" class="text-xl font-extrabold text-emerald-500">-- Mbps</p>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <div class="mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-6 text-[11px] text-slate-400">
+         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> IP: 192.168.0.1 (WAN)</span>
+         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Ping: 3 paquetes</span>
+         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Speedtest: speedtest-cli / curl fallback</span>
+     </div>
+ </div>
+ </div>
+
  <div id="caps-section">
  <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Huawei CAPS (Sucursales)</h3>
                         <div id="huawei-caps-list" class="space-y-2"></div>
@@ -582,8 +633,8 @@ Interfaces Firewall (OPNsense)
                 </div>
             </section>
 
-<!-- Event Stream -->
- <section class="glass-card rounded-[2.5rem] p-8" id="alertas-section">
+                        <!-- Event Stream -->
+                        <section class="glass-card rounded-[2.5rem] p-8" id="alertas-section">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-rose-400 italic font-mono tracking-tighter flex items-center gap-2">
                         Alertas Zabbix
@@ -615,6 +666,23 @@ Interfaces Firewall (OPNsense)
         </div>
 
     </main>
+
+    <!-- UNIFIED SEARCH (Full Width) -->
+    <section class="max-w-[1600px] mx-auto mt-10 px-4 lg:px-10">
+    <div class="glass-card rounded-[2.5rem] p-8">
+    <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4 text-indigo-500">Búsqueda Unificada — Inventario (OCS) + Red (Omada)</h3>
+    <div class="flex gap-3 flex-col sm:flex-row max-w-3xl mx-auto">
+    <input type="text" id="unified-search-input" placeholder="IP o Hostname (ej: 10.175.6.50 o PC-CONTABILIDAD)..." class="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+    <button id="unified-search-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-indigo-500/30 whitespace-nowrap">
+    Buscar Todo <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </button>
+    </div>
+    <div id="unified-search-results" class="mt-6 hidden">
+    <div id="unified-search-loading" class="text-center py-8 text-sub" style="display:none;">Buscando en OCS y Omada...</div>
+    <div id="unified-search-content"></div>
+    </div>
+    </div>
+    </section>
 
     <script>
         let loadChart = null;
@@ -944,19 +1012,98 @@ if (mplsTopStat) {
    mplsTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
    mplsTopBadge.innerText = 'ALERTA';
   } else {
-   mplsTopStat.innerText = mpls.estado;
-   mplsTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
-   mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
-   mplsTopBadge.innerText = 'DOWN';
-  }
- } else {
-  mplsTopStat.innerText = '--';
-  mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1';
-  mplsTopBadge.innerText = 'S/D';
- }
-}
+    mplsTopStat.innerText = mpls.estado;
+    mplsTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
+    mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
+    mplsTopBadge.innerText = 'DOWN';
+   }
+    } else {
+      mplsTopStat.innerText = '--';
+    mplsTopBadge.className = 'status-pill badge-err ml-2 mb-1';
+    mplsTopBadge.innerText = 'S/D';
+   }
 
-// 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
+  // TOP STAT Gateway card
+  var gatewayTopStat = document.getElementById('gateway-top-stat');
+  var gatewayTopBadge = document.getElementById('gateway-top-badge');
+  if (gatewayTopStat) {
+   var gateway = data.gateway || {};
+   if (gateway && gateway.alcanzable !== undefined) {
+    if (gateway.estado === 'OK') {
+     gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
+     gatewayTopStat.className = 'text-3xl font-extrabold text-emerald-500 leading-none';
+     gatewayTopBadge.className = 'status-pill badge-ok ml-2 mb-1';
+     gatewayTopBadge.innerText = 'OK';
+    } else if (gateway.estado === 'ALTO_LATENCIA') {
+     gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
+     gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
+     gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+     gatewayTopBadge.innerText = 'ALTA LATENCIA';
+    } else if (gateway.estado === 'LENTO') {
+     gatewayTopStat.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + 'Mbps' : '--';
+     gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
+     gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+     gatewayTopBadge.innerText = 'LENTO';
+    } else {
+     gatewayTopStat.innerText = 'DOWN';
+     gatewayTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
+     gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
+     gatewayTopBadge.innerText = 'CAÍDO';
+    }
+   } else {
+    gatewayTopStat.innerText = '--';
+    gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1';
+    gatewayTopBadge.innerText = 'S/D';
+   }
+  }
+  }
+    // Gateway Detail Section
+    var gatewaySection = document.getElementById('gateway-status-badge');
+    if (gatewaySection) {
+     var gateway = data.gateway || {};
+     if (gateway && gateway.alcanzable !== undefined) {
+      var gatewayBadge = gatewaySection;
+      var latencyEl = document.getElementById('gateway-latency');
+    var speedEl = document.getElementById('gateway-speed');
+  
+    if (gateway.estado === 'OK') {
+     gatewayBadge.className = 'status-pill badge-ok text-[10px] font-black px-3 py-1 rounded-full';
+     gatewayBadge.innerText = '✓ ONLINE';
+     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
+     latencyEl.className = 'text-xl font-extrabold text-emerald-500';
+     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
+     speedEl.className = 'text-xl font-extrabold text-emerald-500';
+    } else if (gateway.estado === 'ALTO_LATENCIA') {
+     gatewayBadge.className = 'status-pill badge-warn text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
+     gatewayBadge.innerText = '⚠ ALTA LATENCIA';
+     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
+     latencyEl.className = 'text-xl font-extrabold text-amber-500';
+     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
+     speedEl.className = 'text-xl font-extrabold text-emerald-500';
+    } else if (gateway.estado === 'LENTO') {
+     gatewayBadge.className = 'status-pill badge-warn text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
+     gatewayBadge.innerText = '⚠ LENTO';
+     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
+     latencyEl.className = 'text-xl font-extrabold text-emerald-500';
+     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
+     speedEl.className = 'text-xl font-extrabold text-amber-500';
+    } else {
+     gatewayBadge.className = 'status-pill badge-err text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
+     gatewayBadge.innerText = '✗ CAÍDO';
+     latencyEl.innerText = '-- ms';
+     latencyEl.className = 'text-xl font-extrabold text-rose-500';
+     speedEl.innerText = '-- Mbps';
+     speedEl.className = 'text-xl font-extrabold text-rose-500';
+    }
+   } else {
+    document.getElementById('gateway-status-badge').className = 'status-pill badge-err text-[10px] font-black px-3 py-1 rounded-full';
+    document.getElementById('gateway-status-badge').innerText = 'SIN DATOS';
+    document.getElementById('gateway-latency').innerText = '-- ms';
+    document.getElementById('gateway-speed').innerText = '-- Mbps';
+   }
+  }
+
+  // 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
  const nasGrid = document.getElementById('nas-volumes-grid');
  nasGrid.innerHTML = '';
  const nasVolumes = data.nas_health || [];
@@ -1499,7 +1646,6 @@ if (pveTopStat) {
  }
 }
 
- // 8. ALERTAS TERMINAL
             const alertsCont = document.getElementById('alerts-container');
             alertsCont.innerHTML = '';
             const alerts = (data.estado_alertas && data.estado_alertas.detalle) || [];
@@ -1572,12 +1718,11 @@ document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.lengt
                 topPbsBdg.innerText = "SECURE";
             }
 
-            if(switches.length > 0) renderChart(switches);
-        
+                            if(switches.length > 0) renderChart(switches);
 
-        // Global Glitch/Crisis Evaluation
-        const mainEl = document.querySelector('header > div:first-child > div:first-child');
-        if(pbsHasErrors || switches.some(s => s.status !== "OK")) {
+                        // Global Glitch/Crisis Evaluation
+                        const mainEl = document.querySelector('header > div:first-child > div:first-child');
+                        if(pbsHasErrors || switches.some(s => s.status !== "OK")) {
             mainEl.classList.add('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
             mainEl.classList.remove('bg-indigo-600', 'shadow-indigo-200');
             document.body.classList.add('border-t-4', 'border-rose-500');
@@ -1915,6 +2060,132 @@ document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.lengt
  if (e.key === 'Enter') searchOCS();
  });
  }
+
+ })();
+
+ // Unified Search (OCS + Omada)
+ async function searchUnified() {
+   const input = document.getElementById('unified-search-input');
+   const btn = document.getElementById('unified-search-btn');
+   const resultsDiv = document.getElementById('unified-search-results');
+   const loadingDiv = document.getElementById('unified-search-loading');
+   const contentDiv = document.getElementById('unified-search-content');
+  
+   const query = input.value.trim();
+   if (!query) return;
+  
+   btn.disabled = true;
+   btn.innerText = 'Buscando...';
+   resultsDiv.classList.remove('hidden');
+   loadingDiv.style.display = 'block';
+   contentDiv.innerHTML = '';
+  
+   try {
+     const resp = await fetch('/api/unified-search?q=' + encodeURIComponent(query));
+     const data = await resp.json();
+    
+     loadingDiv.style.display = 'none';
+    
+     if (data.enriched && data.enriched.length > 0) {
+       let html = '';
+      
+       for (const device of data.enriched) {
+         const isOmadaOnly = device.source === 'omada_only';
+         const omada = device.omada || {};
+         const hasOmadaInfo = omada && !omada.error;
+        
+         html += '<div class="glass-card rounded-2xl p-6 mb-4 border border-indigo-200 dark:border-indigo-800">';
+        
+         // Header con tipo de dispositivo
+         if (isOmadaOnly) {
+           html += '<div class="flex items-center gap-2 mb-4"><span class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[9px] font-bold rounded">SOLO OMADA (Dispositivo de red)</span></div>';
+         } else {
+           const tipoLabel = device.os && device.os.toLowerCase().includes('server') ? 'SERVIDOR' : 'PC / NOTEBOOK';
+           html += '<div class="flex items-center gap-2 mb-4"><span class="px-2 py-1 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 text-[9px] font-bold rounded">OCS INVENTORY: ' + tipoLabel + '</span></div>';
+         }
+        
+         // Grid principal
+         html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">';
+        
+         // Columna 1: Info OCS
+         if (!isOmadaOnly) {
+           html += '<div class="space-y-2">';
+           html += '<h4 class="text-[9px] font-black text-sub uppercase tracking-widest text-indigo-500">Inventario (OCS)</h4>';
+           html += '<div class="grid grid-cols-2 gap-2 text-[11px]">';
+           html += '<div><span class="text-sub">Hostname:</span> <span class="font-mono font-bold text-title">' + (device.hostname || device.name || '--') + '</span></div>';
+           html += '<div><span class="text-sub">IP:</span> <span class="font-mono text-title">' + (device.ip || '--') + '</span></div>';
+           html += '<div><span class="text-sub">OS:</span> <span class="text-title">' + (device.os || '--') + '</span></div>';
+           html += '<div><span class="text-sub">CPU:</span> <span class="text-title">' + (device.cpu || '--') + '</span></div>';
+           html += '<div><span class="text-sub">RAM:</span> <span class="text-title ' + ((device.ram_gb > 0 && device.ram_gb < 4) ? 'text-amber-500' : '') + '"> ' + (device.ram_gb ? device.ram_gb + ' GB' : '--') + '</span></div>';
+           const discoPct = device.disco_uso_pct || 0;
+           const discoColor = discoPct >= 90 ? 'text-rose-500' : (discoPct >= 75 ? 'text-amber-500' : 'text-emerald-500');
+           const discoStr = device.disco_total_gb ? discoPct + '% (' + device.disco_total_gb + ' GB)' : '--';
+           html += '<div><span class="text-sub">Disco:</span> <span class="text-title ' + discoColor + ' font-bold">' + discoStr + '</span></div>';
+           html += '<div><span class="text-sub">Último contacto:</span> <span class="font-mono text-title">' + (device.last_contact || device.ultimo_contacto || '--') + '</span></div>';
+           html += '<div><span class="text-sub">Ubicación:</span> <span class="text-title">' + (device.ubicacion || '--') + '</span></div>';
+           html += '</div></div>';
+         }
+        
+         // Columna 2: Info Omada (Red)
+         if (hasOmadaInfo) {
+           html += '<div class="space-y-2">';
+           html += '<h4 class="text-[9px] font-black text-sub uppercase tracking-widest text-emerald-500">Conexión de Red (Omada)</h4>';
+           html += '<div class="grid grid-cols-2 gap-2 text-[11px]">';
+           html += '<div><span class="text-sub">Switch:</span> <span class="font-bold text-title">' + (omada.switch_name || 'N/A') + '</span></div>';
+           html += '<div><span class="text-sub">Puerto:</span> <span class="font-mono font-bold text-title">' + (omada.standard_port || omada.port_number || 'N/A') + '</span></div>';
+           html += '<div><span class="text-sub">VLAN:</span> <span class="font-mono font-bold text-emerald-500">' + (omada.vlan || 'N/A') + ' (' + (omada.vlan_name || '') + ')' + '</span></div>';
+           html += '<div><span class="text-sub">Tipo:</span> <span class="text-title ' + (omada.connect_type === 'WiFi' ? 'text-blue-500' : 'text-emerald-500') + '">' + (omada.connect_type || 'N/A') + '</span></div>';
+           html += '<div><span class="text-sub">MAC Cliente:</span> <span class="font-mono text-title">' + (omada.client_mac || 'N/A') + '</span></div>';
+           html += '<div><span class="text-sub">Hostname (red):</span> <span class="text-title">' + (omada.client_hostname || 'N/A') + '</span></div>';
+           if (omada.switch_model && omada.switch_model !== 'N/A') {
+             html += '<div><span class="text-sub">Modelo Switch:</span> <span class="text-title">' + omada.switch_model + '</span></div>';
+           }
+           if (omada.switch_ip && omada.switch_ip !== 'N/A') {
+             html += '<div><span class="text-sub">IP Switch:</span> <span class="font-mono text-title">' + omada.switch_ip + '</span></div>';
+           }
+           if (omada.uptime) {
+             html += '<div><span class="text-sub">Uptime:</span> <span class="text-title">' + Math.floor(omada.uptime / 3600) + 'h ' + Math.floor((omada.uptime % 3600) / 60) + 'm' + '</span></div>';
+           }
+           html += '</div></div>';
+         } else if (!isOmadaOnly) {
+           html += '<div class="space-y-2">';
+           html += '<h4 class="text-[9px] font-black text-sub uppercase tracking-widest text-rose-500">Conexión de Red (Omada)</h4>';
+           html += '<div class="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-lg text-[11px] text-rose-600 dark:text-rose-400">';
+           html += omada.error ? 'Error: ' + omada.error : 'No encontrado en controlador Omada (posible: dispositivo cableado en switch no gestionado, WiFi en otro controlador, o IP no activa)';
+           html += '</div></div>';
+         }
+        
+         html += '</div>'; // close grid
+        
+         html += '</div>'; // close glass-card
+       }
+      
+       contentDiv.innerHTML = html;
+     } else {
+       contentDiv.innerHTML = '<div class="text-center py-8 text-sub">No se encontraron resultados para "' + query + '"</div>';
+     }
+    
+   } catch (e) {
+     loadingDiv.style.display = 'none';
+     contentDiv.innerHTML = '<div class="text-center py-8 text-rose-500">Error en la búsqueda: ' + e.message + '</div>';
+   }
+  
+   btn.disabled = false;
+   btn.innerText = 'Buscar Todo';
+ }
+
+ // Unified Search button event
+ (function() {
+   var searchBtn = document.getElementById('unified-search-btn');
+   if (searchBtn) {
+     searchBtn.addEventListener('click', searchUnified);
+   }
+   var searchInput = document.getElementById('unified-search-input');
+   if (searchInput) {
+     searchInput.addEventListener('keypress', function(e) {
+       if (e.key === 'Enter') searchUnified();
+     });
+   }
  })();
 
  // Initialize Auto-load

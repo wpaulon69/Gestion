@@ -1,12 +1,83 @@
 import asyncio
 import json
 import os
+import subprocess
+import time
 from datetime import datetime
-from modulos import zabbix, omada, opnsense, nas_camaras, pbs, pve, ocs
+from modulos import zabbix, omada, opnsense, pve, pbs, nas_camaras, ocs
 
 def cargar_configuracion():
     with open("config.json", "r", encoding='utf-8') as f:
         return json.load(f)
+
+
+def verificar_gateway(config, ip_gateway="192.168.0.1"):
+    """Verifica conectividad y latencia al gateway de internet (192.168.0.1)."""
+    resultado = {
+        "ip": ip_gateway,
+        "alcanzable": False,
+        "latencia_ms": None,
+        "velocidad_mbps": None,
+        "estado": "CAIDO"
+    }
+    
+    # 1. Ping simple (3 paquetes)
+    try:
+        ping_cmd = ["ping", "-c", "3", "-W", "2", ip_gateway]
+        proc = subprocess.run(ping_cmd, capture_output=True, text=True, timeout=10)
+        if proc.returncode == 0:
+            resultado["alcanzable"] = True
+            # Extraer latencia promedio del output del ping
+            for line in proc.stdout.split('\n'):
+                if 'rtt min/avg/max' in line or 'min/avg/max/mdev' in line:
+                    partes = line.split('=')[1].strip().split('/')
+                    if len(partes) >= 2:
+                        resultado["latencia_ms"] = round(float(partes[1]), 2)
+                    break
+    except Exception as e:
+        resultado["error_ping"] = str(e)
+    
+    # 2. Speed test simple (descarga de 10MB desde un servidor rápido)
+    if resultado["alcanzable"]:
+        try:
+            # Usar speedtest-cli si está disponible, si no hacer test simple
+            speed_cmd = ["speedtest-cli", "--simple", "--secure", "--timeout", "30"]
+            proc = subprocess.run(speed_cmd, capture_output=True, text=True, timeout=60)
+            if proc.returncode == 0:
+                for line in proc.stdout.split('\n'):
+                    if line.startswith('Download:'):
+                        partes = line.split()
+                        if len(partes) >= 2:
+                            resultado["velocidad_mbps"] = float(partes[1])
+        except FileNotFoundError:
+            # speedtest-cli no instalado, hacer test simple con curl/wget
+            try:
+                # Test simple: descargar 10MB de un CDN rápido
+                start = time.time()
+                test_url = "http://speed.hetzner.de/10MB.bin"
+                proc = subprocess.run(
+                    ["curl", "-s", "-o", "/dev/null", "-w", "%{speed_download}", "--max-time", "30", test_url],
+                    capture_output=True, text=True, timeout=35
+                )
+                if proc.returncode == 0 and proc.stdout:
+                    speed_bps = float(proc.stdout.strip())
+                    resultado["velocidad_mbps"] = round(speed_bps / 1_000_000, 2)
+            except Exception:
+                pass
+        except Exception:
+            pass
+    
+    # 3. Determinar estado
+    if not resultado["alcanzable"]:
+        resultado["estado"] = "CAIDO"
+    elif resultado["latencia_ms"] and resultado["latencia_ms"] > 50:
+        resultado["estado"] = "ALTO_LATENCIA"
+    elif resultado["velocidad_mbps"] and resultado["velocidad_mbps"] < 10:
+        resultado["estado"] = "LENTO"
+    else:
+        resultado["estado"] = "OK"
+    
+    return resultado
 
 async def main():
     print(f"[{datetime.now()}] [INICIO] Iniciando Auditoria Tecnica Unificada...")
@@ -62,6 +133,10 @@ async def main():
     nas_health = zabbix.obtener_ocupacion_nas(token, config)
     estado_mpls = zabbix.obtener_estado_mpls(token, config)
 
+    # 5b. Verificar gateway de internet (192.168.0.1)
+    print("[INFO] Verificando gateway de internet (192.168.0.1)...")
+    gateway_data = verificar_gateway(config, "192.168.0.1")
+
     switches = await switches_task
 
     # Extraer resumen de clientes si hay datos disponibles
@@ -85,6 +160,7 @@ async def main():
         "ocs": ocs_data,
         "trafico_wan": trafico_wan,
         "estado_mpls": estado_mpls,
+        "gateway": gateway_data,
         "nas_health": nas_health,
         "resumen_clientes": resumen_clientes,
         "dispositivos_wifi": [
@@ -112,6 +188,7 @@ async def main():
     print(f" -> PVE Nodos: {len(pve_data.get('nodos', []))} | VMs: {len(pve_data.get('vms', []))}")
     print(f" -> Trafico WAN (Rx/Tx): {round(trafico_wan['rx']/1000000, 2)} / {round(trafico_wan['tx']/1000000, 2)} Mbps")
     print(f" -> MPLS: {estado_mpls['estado']} | IP: {estado_mpls['ip']} | Latencia: {estado_mpls['latencia_ms']}ms | Loss: {estado_mpls['loss_pct']}%")
+    print(f" -> Gateway: {gateway_data['estado']} | IP: {gateway_data['ip']} | Latencia: {gateway_data.get('latencia_ms', 'N/A')}ms | Speed: {gateway_data.get('velocidad_mbps', 'N/A')} Mbps")
     print(f" -> Clientes Red: PC/Trabajo: {resumen_clientes['pc']} | WiFi: {resumen_clientes['wifi']}")
     print(f" -> Alertas Zabbix: {alertas['alertas_activas']}")
     if not ocs_data.get('error'):

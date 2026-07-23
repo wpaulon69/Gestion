@@ -26,7 +26,14 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         super().end_headers()
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.end_headers()
 
     def _run_audit(self):
         """Ejecuta auditar.py y devuelve el JSON del reporte generado."""
@@ -185,6 +192,19 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {'error': str(e)})
 
+        elif self.path.startswith('/api/unified-search'):
+            try:
+                query = parse_qs(urlparse(self.path).query)
+                q = query.get('q', [''])[0]
+                if not q:
+                    self._send_json(400, {'error': 'q parameter is required'})
+                    return
+                config = self._load_config()
+                result = self._unified_search(config, q)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
+
         elif self.path.startswith('/api/ocs-alerts'):
             try:
                 config = self._load_config()
@@ -222,6 +242,65 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
         else:
             # Servir archivos estaticos del dashboard
             super().do_GET()
+
+    def _unified_search(self, config, query):
+        """Búsqueda unificada: busca en OCS y enriquece con Omada si hay IP."""
+        import asyncio
+        import re
+        ip_pattern = r'^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+        is_ip = bool(re.match(ip_pattern, query))
+        
+        # 2. Buscar en OCS
+        # Si es IP, buscar por IP; si no, buscar por hostname
+        tipo_busqueda = 'ip' if is_ip else 'hostname'
+        ocs_result = ocs.buscar_equipos_ocs(config, query, tipo_busqueda)
+        
+        unified = {
+            'query': query,
+            'is_ip': is_ip,
+            'ocs': ocs_result,
+            'omada': None,
+            'enriched': []
+        }
+        
+        # 3. Si OCS encontró resultados, enriquecer cada uno con Omada
+        if isinstance(ocs_result, list) and len(ocs_result) > 0:
+            for device in ocs_result:
+                device_ip = device.get('ip', '')
+                enriched_device = dict(device)
+                
+                if device_ip and device_ip != '0.0.0.0':
+                    # Buscar en Omada por la IP del dispositivo
+                    try:
+                        omada_result = asyncio.run(self._buscar_omada_async(config, device_ip))
+                        enriched_device['omada'] = omada_result
+                    except Exception as e:
+                        enriched_device['omada'] = {'error': str(e)}
+                else:
+                    enriched_device['omada'] = {'error': 'Sin IP válida para buscar en Omada'}
+                
+                unified['enriched'].append(enriched_device)
+        
+        # 4. Si no hay resultados en OCS pero es una IP, buscar directamente en Omada
+        elif is_ip:
+            try:
+                omada_result = asyncio.run(self._buscar_omada_async(config, query))
+                unified['omada'] = omada_result
+                if 'error' not in omada_result:
+                    unified['enriched'].append({
+                        'ip': query,
+                        'source': 'omada_only',
+                        'omada': omada_result
+                    })
+            except Exception as e:
+                unified['omada'] = {'error': str(e)}
+        
+        return unified
+
+    async def _buscar_omada_async(self, config, target_ip):
+        """Wrapper async para buscar en Omada."""
+        from omada_port_lookup import _buscar
+        return await _buscar(config, target_ip)
 
     def do_POST(self):
         if self.path == '/api/run-audit':
