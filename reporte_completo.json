@@ -1,0 +1,2426 @@
+{
+    "metadatos": {
+        "fecha_auditoria": "23/07/2026 13:08:21",
+        "responsable": "Departamento de Informática SAMCo",
+        "sitio": "SAMCo Esperanza"
+    },
+    "camaras": [
+        {
+            "camara": "Camara Hall Central",
+            "ip": "10.175.6.210",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camHallCentral",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camHallCentral",
+                "archivo_actual": "hiv00003.pic",
+                "ultima_modificacion": "2026-07-23 13:05:41",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Estacionamiento Norte",
+            "ip": "10.175.6.216",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camEstacionamiento",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camEstacionamiento",
+                "archivo_actual": "hiv00028.mp4",
+                "ultima_modificacion": "2026-07-23 13:08:03",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Porton Entrada",
+            "ip": "10.175.6.211",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camPortonPral",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camPortonPral",
+                "archivo_actual": "hiv00005.pic",
+                "ultima_modificacion": "2026-07-23 13:05:01",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Consultorios Externos",
+            "ip": "10.175.6.217",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camConsultorioExt",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camConsultorioExt",
+                "archivo_actual": "hiv00014.mp4",
+                "ultima_modificacion": "2026-07-23 12:30:06",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Odonto Rx",
+            "ip": "10.175.6.212",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camOdontoRX",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camOdontoRX",
+                "archivo_actual": "hiv00238.mp4",
+                "ultima_modificacion": "2026-07-23 13:04:07",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara SUM",
+            "ip": "10.175.6.215",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camSUM",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camSUM",
+                "archivo_actual": "hiv00139.mp4",
+                "ultima_modificacion": "2026-07-23 12:58:42",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Taller",
+            "ip": "10.175.6.214",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camTaller",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camTaller",
+                "archivo_actual": "hiv00169.mp4",
+                "ultima_modificacion": "2026-07-23 13:00:46",
+                "grabando": true
+            }
+        },
+        {
+            "camara": "Camara Laboratorio",
+            "ip": "10.175.6.213",
+            "estado": "Online",
+            "estado_grabacion": {
+                "carpeta_en_nas": "camLaboratorio",
+                "existe_carpeta": true,
+                "ruta_completa_nas": "\\\\10.175.6.10\\camLaboratorio",
+                "archivo_actual": "hiv00185.mp4",
+                "ultima_modificacion": "2026-07-23 13:07:39",
+                "grabando": true
+            }
+        }
+    ],
+    "estado_alertas": {
+        "alertas_activas": 15,
+        "detalle": [
+            {
+                "host": "Zabbix server",
+                "evento": "High memory utilization (>90% for 5m)",
+                "severidad": "3"
+            },
+            {
+                "host": "W10Virtual",
+                "evento": "Zabbix agent is not available (or nodata for 30m)",
+                "severidad": "3"
+            },
+            {
+                "host": "w10Transitoria",
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "host": "router_CS_0141 - Sunchales - CS Nro 2 Mariano Moreno",
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "host": "router_CS_0142",
+                "evento": "Unavailable by ICMP ping",
+                "severidad": "4"
+            },
+            {
+                "host": "Cisco RV340",
+                "evento": "No SNMP data collection",
+                "severidad": "2"
+            },
+            {
+                "host": "Switch-186 TL-SG3428 Medio",
+                "evento": "Interface gigabitEthernet 1/0/10: Link down",
+                "severidad": "3"
+            },
+            {
+                "host": "OMV-Backups",
+                "evento": "Interface enp4s0: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "host": "OMV-Backups",
+                "evento": "Interface enp4s0: Link down",
+                "severidad": "3"
+            },
+            {
+                "host": "OMV-Backups",
+                "evento": "Interface bond0: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "host": "Switch-186 TL-SG3428 Medio",
+                "evento": "Interface gigabitEthernet 1/0/13: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "host": "Switch-186 TL-SG3428 Medio",
+                "evento": "Interface gigabitEthernet 1/0/18: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            },
+            {
+                "host": "OMV",
+                "evento": "Zabbix agent is not available (for 3m)",
+                "severidad": "3"
+            },
+            {
+                "host": "Switch-190 1600G Abajo",
+                "evento": "Interface gigabitEthernet 1/0/19: Link down",
+                "severidad": "3"
+            },
+            {
+                "host": "Switch-190 1600G Abajo",
+                "evento": "Interface gigabitEthernet 1/0/15: Ethernet has changed to lower speed than it was before",
+                "severidad": "1"
+            }
+        ]
+    },
+    "infraestructura_switches": [
+        {
+            "nombre": "10.175.6.220-Rack-Estadistica",
+            "modelo": "SG3428",
+            "mac": "F0-09-0D-17-93-A1",
+            "ip": "10.175.6.220",
+            "clientes": 4,
+            "cpu": "22%",
+            "mem": "36%",
+            "uptime": "29day(s) 1h 27m 58s",
+            "firmware": "2.30.0 Build 20231019 Rel.60485",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.186-rack-medio",
+            "modelo": "SG3428",
+            "mac": "1C-61-B4-B9-5C-FF",
+            "ip": "10.175.6.186",
+            "clientes": 182,
+            "cpu": "30%",
+            "mem": "36%",
+            "uptime": "232day(s) 3h 1m 30s",
+            "firmware": "2.30.0 Build 20231019 Rel.60485",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.235-Carlitos",
+            "modelo": "SG3428",
+            "mac": "78-20-51-42-C5-44",
+            "ip": "10.175.6.235",
+            "clientes": 17,
+            "cpu": "24%",
+            "mem": "38%",
+            "uptime": "102day(s) 20h 26m",
+            "firmware": "2.30.3 Build 20250121 Rel.50059",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.234-Pepe",
+            "modelo": "TL-SG3428",
+            "mac": "50-91-E3-DC-D8-F2",
+            "ip": "10.175.6.234",
+            "clientes": 82,
+            "cpu": "24%",
+            "mem": "36%",
+            "uptime": "102day(s) 20h 26m 16s",
+            "firmware": "2.0.11 Build 20230602 Rel.76586",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.190-rack-pediatria",
+            "modelo": "T1600G-28TS",
+            "mac": "68-FF-7B-E6-F0-85",
+            "ip": "10.175.6.190",
+            "clientes": 31,
+            "cpu": "8%",
+            "mem": "39%",
+            "uptime": "29day(s) 19h 30m 20s",
+            "firmware": "3.0.6 Build 20200805 Rel.55968",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "68-FF-7B-E6-F0-89",
+            "modelo": "T1600G-28TS",
+            "mac": "68-FF-7B-E6-F0-89",
+            "ip": "170.175.6.67",
+            "clientes": 0,
+            "cpu": "0%",
+            "mem": "0%",
+            "uptime": "29day(s) 19h 26m 51s",
+            "firmware": "3.0.6 Build 20200805 Rel.55968",
+            "upgrade_disponible": false,
+            "status": "ADOPTANDO",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.221-EAP613",
+            "modelo": "EAP613",
+            "mac": "6C-4C-BC-FC-BB-48",
+            "ip": "10.175.6.221",
+            "clientes": 0,
+            "cpu": "0%",
+            "mem": "0%",
+            "uptime": "0h",
+            "firmware": "1.6.0 Build 20250507 Rel. 66340",
+            "upgrade_disponible": false,
+            "status": "DOWN (0)",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        },
+        {
+            "nombre": "10.175.6.224-EAP603",
+            "modelo": "EAP603-Outdoor",
+            "mac": "20-E1-5D-B9-49-92",
+            "ip": "10.175.6.224",
+            "clientes": 6,
+            "cpu": "1%",
+            "mem": "31%",
+            "uptime": "27day(s) 1h 7m 22s",
+            "firmware": "1.0.2 Build 20251215 Rel. 66931",
+            "upgrade_disponible": false,
+            "status": "OK",
+            "resumen_clientes": {
+                "pc": 119,
+                "wifi": 133,
+                "total": 322
+            }
+        }
+    ],
+    "opnsense": {
+        "interfaces": [
+            {
+                "id": "re0",
+                "nombre": "WAN",
+                "status": "up",
+                "ip": "192.168.0.125/24",
+                "mac": "30:9c:23:ab:d3:31"
+            },
+            {
+                "id": "re1",
+                "nombre": "LAN",
+                "status": "up",
+                "ip": "10.175.6.203/23",
+                "mac": "d8:07:b6:90:97:d4"
+            },
+            {
+                "id": "lo0",
+                "nombre": "Bucle",
+                "status": "up",
+                "ip": "127.0.0.1/8",
+                "mac": "00:00:00:00:00:00"
+            },
+            {
+                "id": "vlan0.30",
+                "nombre": "wifi",
+                "status": "up",
+                "ip": "192.168.30.1/23",
+                "mac": "d8:07:b6:90:97:d4"
+            }
+        ]
+    },
+    "pbs": {
+        "datastores": [
+            {
+                "nombre": "Copia-3Tb",
+                "total_gb": 1796.42,
+                "usado_gb": 463.2,
+                "libre_gb": 1333.21,
+                "uso_porcentaje": 25.8
+            },
+            {
+                "nombre": "WD-1Tb",
+                "total_gb": 899.17,
+                "usado_gb": 279.1,
+                "libre_gb": 620.07,
+                "uso_porcentaje": 31.0
+            }
+        ],
+        "tareas_fallidas": [],
+        "ultima_tarea_sincro": null,
+        "historial_backups": {
+            "diarios_ultimos_7d": [
+                {
+                    "fecha": "2026-07-23",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-22",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-21",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-20",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-19",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-18",
+                    "estado": "OK"
+                },
+                {
+                    "fecha": "2026-07-17",
+                    "estado": "OK"
+                }
+            ],
+            "semanal_ultimo": {
+                "fecha": "2026-07-19",
+                "estado": "OK"
+            }
+        }
+    },
+    "pve": {
+        "nodos": [
+            {
+                "nombre": "dellr610",
+                "cpu_uso": 7.37,
+                "ram_total_gb": 31.33,
+                "ram_usada_gb": 24.28,
+                "ram_pct": 77.5,
+                "uptime": 21135749,
+                "disco_root_pct": 29.54,
+                "status": "online"
+            },
+            {
+                "nombre": "msi-i5",
+                "cpu_uso": 1.07,
+                "ram_total_gb": 31.12,
+                "ram_usada_gb": 13.56,
+                "ram_pct": 43.59,
+                "uptime": 1732249,
+                "disco_root_pct": 6.28,
+                "status": "online"
+            },
+            {
+                "nombre": "hpdl360",
+                "cpu_uso": 1.4,
+                "ram_total_gb": 31.26,
+                "ram_usada_gb": 19.63,
+                "ram_pct": 62.8,
+                "uptime": 21160557,
+                "disco_root_pct": 55.71,
+                "status": "online"
+            },
+            {
+                "nombre": "dellr610-2",
+                "cpu_uso": 5.52,
+                "ram_total_gb": 47.04,
+                "ram_usada_gb": 21.09,
+                "ram_pct": 44.84,
+                "uptime": 5967162,
+                "disco_root_pct": 16.59,
+                "status": "online"
+            }
+        ],
+        "vms": [
+            {
+                "vmid": 105,
+                "nombre": "ServerAplicaciones",
+                "estado": "running",
+                "cpu": 7.25,
+                "ram_gb": 3.0,
+                "uptime": 11145683,
+                "nodo": "dellr610"
+            },
+            {
+                "vmid": 100,
+                "nombre": "miHospital",
+                "estado": "running",
+                "cpu": 16.51,
+                "ram_gb": 2.0,
+                "uptime": 11149391,
+                "nodo": "dellr610"
+            },
+            {
+                "vmid": 119,
+                "nombre": "OCS",
+                "estado": "running",
+                "cpu": 2.3,
+                "ram_gb": 2.0,
+                "uptime": 5696261,
+                "nodo": "dellr610"
+            },
+            {
+                "vmid": 102,
+                "nombre": "Hermes",
+                "estado": "running",
+                "cpu": 1.94,
+                "ram_gb": 8.0,
+                "uptime": 1732204,
+                "nodo": "msi-i5"
+            },
+            {
+                "vmid": 124,
+                "nombre": "zabix",
+                "estado": "running",
+                "cpu": 1.28,
+                "ram_gb": 0.5,
+                "uptime": 1732200,
+                "nodo": "msi-i5",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 106,
+                "nombre": "OMVServer",
+                "estado": "running",
+                "cpu": 0,
+                "ram_gb": 4.03,
+                "uptime": 21135714,
+                "nodo": "hpdl360"
+            },
+            {
+                "vmid": 103,
+                "nombre": "MySql-Server",
+                "estado": "running",
+                "cpu": 0,
+                "ram_gb": 6.0,
+                "uptime": 21135719,
+                "nodo": "hpdl360"
+            },
+            {
+                "vmid": 111,
+                "nombre": "MySql-Back",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 6.0,
+                "uptime": 0,
+                "nodo": "hpdl360"
+            },
+            {
+                "vmid": 120,
+                "nombre": "Win11",
+                "estado": "running",
+                "cpu": 0,
+                "ram_gb": 4.0,
+                "uptime": 7525031,
+                "nodo": "hpdl360"
+            },
+            {
+                "vmid": 108,
+                "nombre": "MySql-Desarrollo",
+                "estado": "running",
+                "cpu": 0.41,
+                "ram_gb": 6.0,
+                "uptime": 5967060,
+                "nodo": "dellr610-2"
+            },
+            {
+                "vmid": 101,
+                "nombre": "W10Full",
+                "estado": "running",
+                "cpu": 3.76,
+                "ram_gb": 6.0,
+                "uptime": 1992349,
+                "nodo": "dellr610-2"
+            },
+            {
+                "vmid": 104,
+                "nombre": "WindowsXP",
+                "estado": "running",
+                "cpu": 2.89,
+                "ram_gb": 1.0,
+                "uptime": 5967072,
+                "nodo": "dellr610-2"
+            },
+            {
+                "vmid": 112,
+                "nombre": "patrimonio-web-2",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 0.5,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 200,
+                "nombre": "Dashboard",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 1.0,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 121,
+                "nombre": "cooperadora644",
+                "estado": "running",
+                "cpu": 0.07,
+                "ram_gb": 2.0,
+                "uptime": 5966867,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 117,
+                "nombre": "lista-espera-cullen",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 0.5,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 118,
+                "nombre": "lista-espera-reconq",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 0.5,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 109,
+                "nombre": "patrimonio-web",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 0.5,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 110,
+                "nombre": "personal-web-testing",
+                "estado": "running",
+                "cpu": 0.02,
+                "ram_gb": 2.0,
+                "uptime": 1823385,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 114,
+                "nombre": "lista-espera",
+                "estado": "stopped",
+                "cpu": 0,
+                "ram_gb": 0.5,
+                "uptime": 0,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 116,
+                "nombre": "lista-espera-2",
+                "estado": "running",
+                "cpu": 1.93,
+                "ram_gb": 0.5,
+                "uptime": 2417469,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 107,
+                "nombre": "personal-web",
+                "estado": "running",
+                "cpu": 0.07,
+                "ram_gb": 2.0,
+                "uptime": 1826809,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            },
+            {
+                "vmid": 115,
+                "nombre": "CT115",
+                "estado": "running",
+                "cpu": 0.24,
+                "ram_gb": 1.0,
+                "uptime": 5966938,
+                "nodo": "dellr610-2",
+                "tipo": "lxc"
+            }
+        ],
+        "resumen_recursos": {}
+    },
+    "ocs": {
+        "total_equipos": 44,
+        "equipos_activos": 40,
+        "equipos_inactivos": 4,
+        "equipos_sin_reportar": 4,
+        "antiguedad_promedio_anios": 0,
+        "por_os": {
+            "Windows 11": 21,
+            "Windows 10": 14,
+            "Linux (otro)": 4,
+            "Ubuntu 22.04": 1,
+            "Zorin OS": 4
+        },
+        "por_tipo": {
+            "PC/Notebook": 39,
+            "Desconocido": 5
+        },
+        "por_ubicacion": {
+            "Informática": 2,
+            "Facturación": 6,
+            "Fonoaudiología": 1,
+            "Admision": 3,
+            "Farmacia": 1,
+            "Personal": 1,
+            "Pediatría": 1,
+            "Estadística": 5,
+            "Guardia": 1,
+            "Administracion": 3,
+            "Compras": 2,
+            "Terapia Ocupacional": 1,
+            "Asistente Social": 2,
+            "Mamografia": 1,
+            "NA": 7,
+            "Vacunacion": 2,
+            "Internación-Clínica": 1,
+            "Samco Santo Domingo": 2,
+            "Informatica": 1,
+            "Maternidad": 1
+        },
+        "distribucion_os": {
+            "Windows 11": 21,
+            "Windows 10": 14,
+            "Linux (otro)": 4,
+            "Ubuntu 22.04": 1,
+            "Zorin OS": 4
+        },
+        "alertas_disco": [],
+        "alertas_ram": [
+            "Consult01-rehabilitacion (2.9GB)",
+            "Auxiliar (2.7GB)",
+            "tocupacional (3.6GB)",
+            "Asist-social (3.0GB)",
+            "angelatocupacional (3.5GB)",
+            "Vacunacion03 (3.6GB)",
+            "stodomingoPC1 (3.5GB)",
+            "stodomingo-PC2 (2.9GB)"
+        ],
+        "alertas_antiguedad": [],
+        "alertas_antivirus": [],
+        "alertas_updates": [],
+        "equipos_detalle": [
+            {
+                "hostname": "PC-Rodrigo",
+                "ip": "10.175.7.8",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Informática",
+                "ultimo_contacto": "2026-07-22 14:58:43",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 24.0,
+                "disco_uso_pct": 80.6,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 185.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Bioingenieria",
+                "ip": "10.175.7.5",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Informática",
+                "ultimo_contacto": "2026-07-21 15:01:58",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-3250 CPU @ 3.50GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 36.2,
+                "disco_total_gb": 270.0,
+                "disco_libre_gb": 172.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Facturacion04",
+                "ip": "10.175.7.33",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-23 06:02:18",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-3250 CPU @ 3.50GHz [2 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 41.3,
+                "disco_total_gb": 293.0,
+                "disco_libre_gb": 292.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "facturacion01-blas",
+                "ip": "10.175.7.31",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-21 09:28:57",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) CPU G630 @ 2.70GHz [2 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 53.6,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 51.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Facturacion06",
+                "ip": "10.175.7.55",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-21 06:53:41",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 13.0,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 828.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "PediatriaMedico",
+                "ip": "10.175.7.45",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-23 07:28:17",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-10100 CPU @ 3.60GHz [4 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 34.2,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 73.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Facturacion-Pauli",
+                "ip": "10.175.6.36",
+                "os": "Microsoft Windows 10 Pro N",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-20 11:00:06",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) CPU G620 @ 2.60GHz [2 core(s) x86_64]",
+                "ram_gb": 6.0,
+                "disco_uso_pct": 67.3,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 36.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Facturacion-Elsa",
+                "ip": "10.175.7.39",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Facturación",
+                "ultimo_contacto": "2026-07-21 11:23:16",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) Dual CPU E2160 @ 1.80GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 49.8,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 56.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Consult01-rehabilitacion",
+                "ip": "10.175.7.97",
+                "os": "Linux Mint 22.1",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Fonoaudiología",
+                "ultimo_contacto": "2026-07-23 08:10:02",
+                "activo": true,
+                "cpu": "CPU @ 2.5GHz",
+                "ram_gb": 2.9,
+                "disco_uso_pct": 11.1,
+                "disco_total_gb": 219.0,
+                "disco_libre_gb": 194.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "admision_izq",
+                "ip": "10.175.6.26",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Admision",
+                "ultimo_contacto": "2026-07-22 10:36:41",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) CPU G4600 @ 3.60GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 35.9,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 71.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Farmacia-Centro",
+                "ip": "10.175.7.65",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Farmacia",
+                "ultimo_contacto": "2026-07-23 08:02:27",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 8.7,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 869.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Personal03",
+                "ip": "10.175.6.142",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Personal",
+                "ultimo_contacto": "2026-07-23 08:21:31",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 11.4,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 843.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "PediatriaSec",
+                "ip": "10.175.7.51",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Pediatría",
+                "ultimo_contacto": "2026-07-23 06:56:32",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-3220 CPU @ 3.30GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 28.0,
+                "disco_total_gb": 223.0,
+                "disco_libre_gb": 161.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "esta-romina",
+                "ip": "10.175.7.21",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Estadística",
+                "ultimo_contacto": "2026-07-22 09:24:17",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-3240 CPU @ 3.40GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 67.8,
+                "disco_total_gb": 466.0,
+                "disco_libre_gb": 466.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Esta-Clari",
+                "ip": "10.175.7.22",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Estadística",
+                "ultimo_contacto": "2026-07-23 01:46:55",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) CPU G620 @ 2.60GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 55.8,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 49.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "esta-caro",
+                "ip": "10.175.7.24",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Estadística",
+                "ultimo_contacto": "2026-07-23 05:59:22",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-3220 CPU @ 3.30GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 27.8,
+                "disco_total_gb": 223.0,
+                "disco_libre_gb": 161.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Esta-Virginia",
+                "ip": "10.175.7.23",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Estadística",
+                "ultimo_contacto": "2026-07-16 11:11:48",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 6.9,
+                "disco_total_gb": 931.0,
+                "disco_libre_gb": 867.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Auxiliar",
+                "ip": "10.175.7.20",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Estadística",
+                "ultimo_contacto": "2026-07-23 09:32:23",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-4160 CPU @ 3.60GHz [2 core(s) x86_64]",
+                "ram_gb": 2.7,
+                "disco_uso_pct": 43.1,
+                "disco_total_gb": 119.0,
+                "disco_libre_gb": 68.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Guardia-medico",
+                "ip": "10.175.6.61",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Guardia",
+                "ultimo_contacto": "2026-07-23 03:55:32",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 6.7,
+                "disco_total_gb": 953.0,
+                "disco_libre_gb": 889.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Adminis-Nico",
+                "ip": "10.175.7.99",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Administracion",
+                "ultimo_contacto": "2026-07-20 11:48:57",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-2310 CPU @ 2.90GHz [4 core(s) x86_64]",
+                "ram_gb": 6.0,
+                "disco_uso_pct": 77.8,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 25.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Administracion-Paola",
+                "ip": "10.175.7.36",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Administracion",
+                "ultimo_contacto": "2026-07-21 11:23:33",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-6100 CPU @ 3.70GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 57.1,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 48.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Admini-Ivana",
+                "ip": "10.175.7.28",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Administracion",
+                "ultimo_contacto": "2026-07-22 22:23:21",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 18.9,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 772.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Compras-Ludmila",
+                "ip": "10.175.6.48",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Compras",
+                "ultimo_contacto": "2026-07-20 10:59:42",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-10105 CPU @ 3.70GHz [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 77.8,
+                "disco_total_gb": 195.0,
+                "disco_libre_gb": 195.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Compras-Emilia",
+                "ip": "10.175.6.50",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Compras",
+                "ultimo_contacto": "2026-07-21 07:44:53",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 11.6,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 841.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "tocupacional",
+                "ip": "10.175.7.70",
+                "os": "Linux Mint 22.1",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Terapia Ocupacional",
+                "ultimo_contacto": "2026-07-23 08:47:34",
+                "activo": true,
+                "cpu": "AMD Athlon(tm) II X2 250 Processor                   To Be Filled By O.E.M. CPU @ 3.0GHz",
+                "ram_gb": 3.6,
+                "disco_uso_pct": 18.9,
+                "disco_total_gb": 109.0,
+                "disco_libre_gb": 88.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Asis-Social",
+                "ip": "10.175.6.28",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Asistente Social",
+                "ultimo_contacto": "2026-07-22 12:03:35",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 27.2,
+                "disco_total_gb": 238.0,
+                "disco_libre_gb": 173.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Mamografia",
+                "ip": "10.175.6.84",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Mamografia",
+                "ultimo_contacto": "2026-07-08 09:07:07",
+                "activo": true,
+                "cpu": "Intel(R) Celeron(R) CPU G1840 @ 2.80GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 22.5,
+                "disco_total_gb": 223.0,
+                "disco_libre_gb": 172.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Asist-social",
+                "ip": "10.175.6.57",
+                "os": "Microsoft Windows 10 Enterprise LTSC",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Asistente Social",
+                "ultimo_contacto": "2026-07-15 08:29:40",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM)2 Duo CPU E7200 @ 2.53GHz [2 core(s) x86_64]",
+                "ram_gb": 3.0,
+                "disco_uso_pct": 28.7,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 79.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "angelatocupacional",
+                "ip": "10.175.7.71",
+                "os": "Linux Mint 22.2",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-07-21 13:25:50",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-4160 CPU @ 3.60GHz Fill By OEM CPU @ 3.6GHz",
+                "ram_gb": 3.5,
+                "disco_uso_pct": 8.0,
+                "disco_total_gb": 457.0,
+                "disco_libre_gb": 420.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Vacunacion03",
+                "ip": "10.175.7.115",
+                "os": "Linux Mint 22.1",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Vacunacion",
+                "ultimo_contacto": "2026-07-23 06:03:50",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 To Be Filled By O.E.M. CPU @ 3.2GHz",
+                "ram_gb": 3.6,
+                "disco_uso_pct": 11.2,
+                "disco_total_gb": 219.0,
+                "disco_libre_gb": 194.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Vacunacion-OptiPlex-3090",
+                "ip": "10.175.7.130",
+                "os": "Ubuntu 22.04",
+                "tipo": "Desconocido",
+                "ubicacion": "Vacunacion",
+                "ultimo_contacto": "2026-07-23 06:00:17",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz",
+                "ram_gb": 7.5,
+                "disco_uso_pct": 7.0,
+                "disco_total_gb": 937.0,
+                "disco_libre_gb": 872.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "admision-derech",
+                "ip": "10.175.6.24",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Admision",
+                "ultimo_contacto": "2026-07-21 08:16:31",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 23.2,
+                "disco_total_gb": 237.0,
+                "disco_libre_gb": 182.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "clinica-dcha",
+                "ip": "10.175.6.25",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Internación-Clínica",
+                "ultimo_contacto": "2026-07-23 05:14:40",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i3-6100 CPU @ 3.70GHz [2 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 26.1,
+                "disco_total_gb": 223.0,
+                "disco_libre_gb": 165.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "stodomingoPC1",
+                "ip": "10.175.7.124",
+                "os": "Zorin OS 18",
+                "tipo": "Desconocido",
+                "ubicacion": "Samco Santo Domingo",
+                "ultimo_contacto": "2026-01-08 07:31:34",
+                "activo": false,
+                "cpu": "Intel(R) Core(TM) i3-3240 CPU @ 3.40GHz To Be Filled By O.E.M. CPU @ 3.4GHz",
+                "ram_gb": 3.5,
+                "disco_uso_pct": 10.7,
+                "disco_total_gb": 219.0,
+                "disco_libre_gb": 195.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "admision_turnos",
+                "ip": "10.175.6.30",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Admision",
+                "ultimo_contacto": "2026-07-22 11:59:58",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 27.2,
+                "disco_total_gb": 237.0,
+                "disco_libre_gb": 173.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "stodomingo-PC2",
+                "ip": "10.175.7.124",
+                "os": "Zorin OS 18",
+                "tipo": "Desconocido",
+                "ubicacion": "Samco Santo Domingo",
+                "ultimo_contacto": "2026-01-12 10:02:56",
+                "activo": false,
+                "cpu": "Intel(R) Celeron(R) CPU E34   CPU @ 2.6GHz",
+                "ram_gb": 2.9,
+                "disco_uso_pct": 11.6,
+                "disco_total_gb": 219.0,
+                "disco_libre_gb": 193.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": true,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Dell-Walter",
+                "ip": "10.175.7.1",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "Informatica",
+                "ultimo_contacto": "2026-07-22 12:13:41",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-10505 CPU @ 3.20GHz [6 core(s) x86_64]",
+                "ram_gb": 32.0,
+                "disco_uso_pct": 68.0,
+                "disco_total_gb": 951.0,
+                "disco_libre_gb": 544.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Maternidad",
+                "ip": "10.175.6.23",
+                "os": "Zorin OS 18",
+                "tipo": "Desconocido",
+                "ubicacion": "Maternidad",
+                "ultimo_contacto": "2026-07-23 07:38:47",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 To Be Filled By O.E.M. CPU @ 4.0GHz",
+                "ram_gb": 7.5,
+                "disco_uso_pct": 12.8,
+                "disco_total_gb": 233.0,
+                "disco_libre_gb": 203.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "consultorio-laorilla",
+                "ip": "10.248.5.210",
+                "os": "Zorin OS 18",
+                "tipo": "Desconocido",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-03-16 10:51:31",
+                "activo": false,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 To Be Filled By O.E.M. CPU @ 3.3GHz",
+                "ram_gb": 7.5,
+                "disco_uso_pct": 10.6,
+                "disco_total_gb": 233.0,
+                "disco_libre_gb": 208.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "residenciaPC",
+                "ip": "10.175.7.88",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-06-18 10:57:57",
+                "activo": false,
+                "cpu": "Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz [4 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 23.4,
+                "disco_total_gb": 232.0,
+                "disco_libre_gb": 178.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Office-Cons-Ext",
+                "ip": "10.175.7.57",
+                "os": "Microsoft Windows 11 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-07-22 18:07:57",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 23.4,
+                "disco_total_gb": 237.0,
+                "disco_libre_gb": 182.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Consultorio07",
+                "ip": "10.175.6.112",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-07-22 08:40:00",
+                "activo": true,
+                "cpu": "Intel(R) Core(TM) i5-3470S CPU @ 2.90GHz [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 39.9,
+                "disco_total_gb": 111.0,
+                "disco_libre_gb": 67.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "esta-andres",
+                "ip": "10.175.7.25",
+                "os": "Microsoft Windows 11 Pro N",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-07-23 09:20:21",
+                "activo": true,
+                "cpu": "12th Gen Intel(R) Core(TM) i3-12100 [4 core(s) x86_64]",
+                "ram_gb": 8.0,
+                "disco_uso_pct": 21.6,
+                "disco_total_gb": 223.0,
+                "disco_libre_gb": 174.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            },
+            {
+                "hostname": "Odontologia",
+                "ip": "10.175.6.62",
+                "os": "Microsoft Windows 10 Pro",
+                "tipo": "PC/Notebook",
+                "ubicacion": "NA",
+                "ultimo_contacto": "2026-07-22 07:21:55",
+                "activo": true,
+                "cpu": "Intel(R) Pentium(R) CPU G620 @ 2.60GHz [2 core(s) x86_64]",
+                "ram_gb": 4.0,
+                "disco_uso_pct": 61.8,
+                "disco_total_gb": 119.0,
+                "disco_libre_gb": 45.0,
+                "fecha_compra": null,
+                "anios_antiguedad": 0,
+                "antivirus": "No reportado",
+                "ultima_actualizacion": null,
+                "alerta_disco": false,
+                "alerta_ram": false,
+                "alerta_antiguedad": false,
+                "alerta_antivirus": false,
+                "alerta_updates": false
+            }
+        ],
+        "portal_url": "http://10.175.7.17/ocsreports",
+        "error": null
+    },
+    "trafico_wan": {
+        "rx": 54895536.0,
+        "tx": 2498456.0
+    },
+    "estado_mpls": {
+        "estado": "OK",
+        "ip": "10.175.6.200",
+        "ping": true,
+        "latencia_ms": 0.76,
+        "loss_pct": 0.0,
+        "triggers_activos": 0,
+        "triggers_detalle": [],
+        "trends_latencia": [
+            {
+                "hora": "14:00",
+                "avg": 1.94,
+                "min": 0.56,
+                "max": 11.27
+            },
+            {
+                "hora": "15:00",
+                "avg": 1.2,
+                "min": 0.59,
+                "max": 8.18
+            },
+            {
+                "hora": "16:00",
+                "avg": 0.81,
+                "min": 0.56,
+                "max": 2.47
+            },
+            {
+                "hora": "17:00",
+                "avg": 1.17,
+                "min": 0.66,
+                "max": 12.47
+            },
+            {
+                "hora": "18:00",
+                "avg": 1.2,
+                "min": 0.62,
+                "max": 6.98
+            },
+            {
+                "hora": "19:00",
+                "avg": 1.29,
+                "min": 0.62,
+                "max": 11.27
+            },
+            {
+                "hora": "20:00",
+                "avg": 1.09,
+                "min": 0.6,
+                "max": 6.41
+            },
+            {
+                "hora": "21:00",
+                "avg": 1.15,
+                "min": 0.63,
+                "max": 10.66
+            },
+            {
+                "hora": "22:00",
+                "avg": 0.89,
+                "min": 0.66,
+                "max": 5.02
+            },
+            {
+                "hora": "23:00",
+                "avg": 0.77,
+                "min": 0.64,
+                "max": 0.9
+            },
+            {
+                "hora": "00:00",
+                "avg": 0.75,
+                "min": 0.66,
+                "max": 0.87
+            },
+            {
+                "hora": "01:00",
+                "avg": 0.78,
+                "min": 0.67,
+                "max": 1.35
+            },
+            {
+                "hora": "02:00",
+                "avg": 1.3,
+                "min": 0.66,
+                "max": 12.2
+            },
+            {
+                "hora": "03:00",
+                "avg": 0.78,
+                "min": 0.63,
+                "max": 1.59
+            },
+            {
+                "hora": "04:00",
+                "avg": 1.32,
+                "min": 0.63,
+                "max": 13.6
+            },
+            {
+                "hora": "05:00",
+                "avg": 1.12,
+                "min": 0.61,
+                "max": 10.14
+            },
+            {
+                "hora": "06:00",
+                "avg": 0.98,
+                "min": 0.67,
+                "max": 12.37
+            },
+            {
+                "hora": "07:00",
+                "avg": 0.91,
+                "min": 0.68,
+                "max": 9.58
+            },
+            {
+                "hora": "08:00",
+                "avg": 0.8,
+                "min": 0.7,
+                "max": 3.87
+            },
+            {
+                "hora": "09:00",
+                "avg": 1.3,
+                "min": 0.59,
+                "max": 9.13
+            },
+            {
+                "hora": "10:00",
+                "avg": 1.22,
+                "min": 0.63,
+                "max": 13.51
+            },
+            {
+                "hora": "11:00",
+                "avg": 1.4,
+                "min": 0.61,
+                "max": 8.74
+            },
+            {
+                "hora": "12:00",
+                "avg": 2.39,
+                "min": 0.6,
+                "max": 23.5
+            }
+        ],
+        "trends_loss": [
+            {
+                "hora": "14:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "15:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "16:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "17:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "18:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "19:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "20:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "21:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "22:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "23:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "00:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "01:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "02:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "03:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "04:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "05:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "06:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "07:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "08:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "09:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "10:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "11:00",
+                "avg": 0.0,
+                "max": 0.0
+            },
+            {
+                "hora": "12:00",
+                "avg": 0.0,
+                "max": 0.0
+            }
+        ]
+    },
+    "gateway": {
+        "ip": "192.168.0.1",
+        "alcanzable": true,
+        "latencia_ms": 1.74,
+        "velocidad_mbps": null,
+        "estado": "OK"
+    },
+    "nas_health": [
+        {
+            "nombre": "DS-Copia-3Tb",
+            "porcentaje": 25.78,
+            "host": "IBM-3400-PBS"
+        },
+        {
+            "nombre": "DS-WD-1Tb",
+            "porcentaje": 31.04,
+            "host": "IBM-3400-PBS"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 0.83,
+            "host": "IBM-3400-PBS"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "administracion",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "compras",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "estadistica",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "facturacion",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "nutricion",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "personal",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "promocion",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "publico",
+            "porcentaje": 0.0,
+            "host": "OMV"
+        },
+        {
+            "nombre": "BackupsVMs",
+            "porcentaje": 0.02,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 3.25,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "backpusSamco",
+            "porcentaje": 0.14,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camConsultorioExt",
+            "porcentaje": 91.53,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camEstacionamiento",
+            "porcentaje": 80.83,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camHallCentral",
+            "porcentaje": 95.76,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camLaboratorio",
+            "porcentaje": 91.68,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camOdontoRX",
+            "porcentaje": 91.56,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camPortonPral",
+            "porcentaje": 95.84,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camSUM",
+            "porcentaje": 91.65,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "camTaller",
+            "porcentaje": 91.59,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "reloj",
+            "porcentaje": 0.02,
+            "host": "OMV-Backups"
+        },
+        {
+            "nombre": "/ZFS-SSD",
+            "porcentaje": 0.0,
+            "host": "ProxmoxDellr610"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 31.15,
+            "host": "ProxmoxDellr610"
+        },
+        {
+            "nombre": "/ZFS-SSD",
+            "porcentaje": 0.0,
+            "host": "ProxmoxDellr610-2"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 17.48,
+            "host": "ProxmoxDellr610-2"
+        },
+        {
+            "nombre": "/ZFS-SSD",
+            "porcentaje": 0.0,
+            "host": "ProxmoxHP360"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 58.77,
+            "host": "ProxmoxHP360"
+        },
+        {
+            "nombre": "/ZFS-SSD",
+            "porcentaje": 0.0,
+            "host": "ProxmoxMSI-i5"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 6.62,
+            "host": "ProxmoxMSI-i5"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 23.29,
+            "host": "ServerAplicaciones"
+        },
+        {
+            "nombre": "Sistema (Root)",
+            "porcentaje": 17.55,
+            "host": "Zabbix server"
+        }
+    ],
+    "resumen_clientes": {
+        "pc": 119,
+        "wifi": 133,
+        "total": 322
+    },
+    "dispositivos_wifi": [
+        {
+            "nombre": "Router Laboratorio",
+            "ip": "10.175.6.191",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router 107",
+            "ip": "10.175.6.167",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Residencia",
+            "ip": "10.175.6.198",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Clinica",
+            "ip": "10.175.6.194",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Consultorios externos",
+            "ip": "10.175.6.193",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Maternidad",
+            "ip": "10.175.6.206",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Kinesiologia",
+            "ip": "10.175.6.185",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Pediatria",
+            "ip": "192.168.30.3",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Taller",
+            "ip": "10.175.6.187",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Farmacia",
+            "ip": "10.175.7.190",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router Guardia",
+            "ip": "10.175.6.204",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router SUM",
+            "ip": "10.175.6.205",
+            "tipo": "Router WiFi",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Router prueba",
+            "ip": "192.168.30.2",
+            "tipo": "Router WiFi",
+            "estado": "Offline"
+        },
+        {
+            "nombre": "router_CS_0047 - Esperanza - La Orilla",
+            "ip": "10.248.5.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0031 - Esperanza - Los Troncos",
+            "ip": "10.248.3.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0035 - Esperanza - Barrio Unidos",
+            "ip": "10.248.4.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0028 - Esperanza - Vecinal Barrio Norte",
+            "ip": "10.248.3.97",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0066 - Humboldt- Colonia Nueva",
+            "ip": "10.248.8.33",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0078 - Humboldt - Samco Humboldt",
+            "ip": "10.248.9.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0151 - Nuevo Torino",
+            "ip": "10.248.18.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0150 - Progreso",
+            "ip": "10.248.18.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0163 - Sarmiento",
+            "ip": "10.248.20.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0074 - Pilar",
+            "ip": "10.248.255.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0143 - Felicia - Samco Felicia",
+            "ip": "10.248.17.193",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0162 - Santo Domingo",
+            "ip": "10.248.20.33",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0054 - Sunchales - Samco Sunchales",
+            "ip": "10.248.6.161",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0068 - Franck - Telmo Albrecht",
+            "ip": "10.248.8.97",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        },
+        {
+            "nombre": "router_CS_0091 - Las Tunas",
+            "ip": "10.248.11.65",
+            "tipo": "Huawei CAPS",
+            "estado": "Online"
+        }
+    ],
+    "relojes_personal": [
+        {
+            "nombre": "Reloj - Samco Esperanza",
+            "ip": "10.175.7.11",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - La Orilla",
+            "ip": "10.248.5.194",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Unidos",
+            "ip": "10.248.4.70",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Barrio Norte",
+            "ip": "10.248.3.120",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Los Troncos",
+            "ip": "10.248.3.220",
+            "estado": "Online"
+        },
+        {
+            "nombre": "Reloj - Pilar",
+            "ip": "10.248.255.66",
+            "estado": "Online"
+        }
+    ]
+}
