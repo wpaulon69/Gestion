@@ -179,7 +179,10 @@ html { scroll-behavior: smooth; }
  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Gateway WAN</p>
  <div class="bg-sky-50 p-1.5 rounded-xl text-sky-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg></div>
  </div>
+ <div class="flex flex-col items-end gap-1">
  <div class="flex items-end gap-2"><span id="gateway-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="gateway-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+ <div class="flex items-end gap-2"><span id="gateway-top-speed" class="text-xl font-bold text-sub leading-none">--</span><span class="text-[8px] font-medium text-sub ml-1">Mbps</span></div>
+ </div>
  </div>
  </a>
 
@@ -1026,36 +1029,47 @@ if (mplsTopStat) {
   // TOP STAT Gateway card
   var gatewayTopStat = document.getElementById('gateway-top-stat');
   var gatewayTopBadge = document.getElementById('gateway-top-badge');
+  var gatewayTopSpeed = document.getElementById('gateway-top-speed');
   if (gatewayTopStat) {
    var gateway = data.gateway || {};
-   if (gateway && gateway.alcanzable !== undefined) {
-    if (gateway.estado === 'OK') {
-     gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
-     gatewayTopStat.className = 'text-3xl font-extrabold text-emerald-500 leading-none';
-     gatewayTopBadge.className = 'status-pill badge-ok ml-2 mb-1';
-     gatewayTopBadge.innerText = 'OK';
-    } else if (gateway.estado === 'ALTO_LATENCIA') {
-     gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
-     gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
-     gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
-     gatewayTopBadge.innerText = 'ALTA LATENCIA';
-    } else if (gateway.estado === 'LENTO') {
-     gatewayTopStat.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + 'Mbps' : '--';
-     gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
-     gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
-     gatewayTopBadge.innerText = 'LENTO';
-    } else {
-     gatewayTopStat.innerText = 'DOWN';
-     gatewayTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
-     gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
-     gatewayTopBadge.innerText = 'CAÍDO';
+     if (gateway && gateway.alcanzable !== undefined) {
+      if (gateway.estado === 'OK') {
+       gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
+       gatewayTopStat.className = 'text-3xl font-extrabold text-emerald-500 leading-none';
+       gatewayTopSpeed.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps : '--';
+       gatewayTopSpeed.className = 'text-xl font-bold text-emerald-500 leading-none';
+       gatewayTopBadge.className = 'status-pill badge-ok ml-2 mb-1';
+       gatewayTopBadge.innerText = 'OK';
+      } else if (gateway.estado === 'ALTO_LATENCIA') {
+       gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
+       gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
+       gatewayTopSpeed.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps : '--';
+       gatewayTopSpeed.className = 'text-xl font-bold text-emerald-500 leading-none';
+       gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+       gatewayTopBadge.innerText = 'ALTA LATENCIA';
+      } else if (gateway.estado === 'LENTO') {
+       gatewayTopStat.innerText = gateway.latencia_ms ? gateway.latencia_ms + 'ms' : '--';
+       gatewayTopStat.className = 'text-3xl font-extrabold text-amber-500 leading-none';
+       gatewayTopSpeed.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps : '--';
+       gatewayTopSpeed.className = 'text-xl font-bold text-amber-500 leading-none';
+       gatewayTopBadge.className = 'status-pill badge-warn ml-2 mb-1 animate-pulse';
+       gatewayTopBadge.innerText = 'LENTO';
+      } else {
+       gatewayTopStat.innerText = 'DOWN';
+       gatewayTopStat.className = 'text-3xl font-extrabold text-rose-600 leading-none';
+       gatewayTopSpeed.innerText = '--';
+       gatewayTopSpeed.className = 'text-xl font-bold text-rose-500 leading-none';
+       gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1 animate-pulse';
+       gatewayTopBadge.innerText = 'CAÍDO';
+      }
+     } else {
+      gatewayTopStat.innerText = '--';
+      gatewayTopSpeed.innerText = '--';
+      gatewayTopSpeed.className = 'text-xl font-bold text-sub leading-none';
+      gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1';
+      gatewayTopBadge.innerText = 'S/D';
+     }
     }
-   } else {
-    gatewayTopStat.innerText = '--';
-    gatewayTopBadge.className = 'status-pill badge-err ml-2 mb-1';
-    gatewayTopBadge.innerText = 'S/D';
-   }
-  }
   }
     // Gateway Detail Section
     var gatewaySection = document.getElementById('gateway-status-badge');

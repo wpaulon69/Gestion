@@ -39,33 +39,46 @@ def verificar_gateway(config, ip_gateway="192.168.0.1"):
     
     # 2. Speed test simple (descarga de 10MB desde un servidor rápido)
     if resultado["alcanzable"]:
-        try:
-            # Usar speedtest-cli si está disponible, si no hacer test simple
-            speed_cmd = ["speedtest-cli", "--simple", "--secure", "--timeout", "30"]
-            proc = subprocess.run(speed_cmd, capture_output=True, text=True, timeout=60)
-            if proc.returncode == 0:
-                for line in proc.stdout.split('\n'):
-                    if line.startswith('Download:'):
-                        partes = line.split()
-                        if len(partes) >= 2:
-                            resultado["velocidad_mbps"] = float(partes[1])
-        except FileNotFoundError:
-            # speedtest-cli no instalado, hacer test simple con curl/wget
+        speedtest_paths = [
+            "/usr/local/bin/speedtest-cli",      # pipx install
+            os.path.expanduser("~/.local/bin/speedtest-cli"),  # pip install --user
+            "/usr/bin/speedtest-cli",             # apt install
+            "/home/sectorial/.hermes/hermes-agent/venv/bin/speedtest-cli",  # Hermes venv
+            "speedtest-cli"                       # PATH fallback
+        ]
+        
+        for st_path in speedtest_paths:
             try:
-                # Test simple: descargar 10MB de un CDN rápido
-                start = time.time()
-                test_url = "http://speed.hetzner.de/10MB.bin"
-                proc = subprocess.run(
-                    ["curl", "-s", "-o", "/dev/null", "-w", "%{speed_download}", "--max-time", "30", test_url],
-                    capture_output=True, text=True, timeout=35
-                )
-                if proc.returncode == 0 and proc.stdout:
-                    speed_bps = float(proc.stdout.strip())
-                    resultado["velocidad_mbps"] = round(speed_bps / 1_000_000, 2)
-            except Exception:
-                pass
-        except Exception:
-            pass
+                speed_cmd = [st_path, "--simple", "--secure", "--timeout", "30"]
+                proc = subprocess.run(speed_cmd, capture_output=True, text=True, timeout=60)
+                if proc.returncode == 0:
+                    for line in proc.stdout.split('\n'):
+                        if line.startswith('Download:'):
+                            partes = line.split()
+                            if len(partes) >= 2:
+                                resultado["velocidad_mbps"] = float(partes[1])
+                                break
+                    if resultado["velocidad_mbps"]:
+                        break
+            except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+                continue
+        
+        # Fallback: curl a Hetzner CDN si speedtest-cli falla
+        if not resultado["velocidad_mbps"]:
+            curl_paths = ["/usr/bin/curl", "curl"]
+            test_url = "http://speed.hetzner.de/10MB.bin"
+            for curl_path in curl_paths:
+                try:
+                    proc = subprocess.run(
+                        [curl_path, "-s", "-o", "/dev/null", "-w", "%{speed_download}", "--max-time", "30", test_url],
+                        capture_output=True, text=True, timeout=35
+                    )
+                    if proc.returncode == 0 and proc.stdout:
+                        speed_bps = float(proc.stdout.strip())
+                        resultado["velocidad_mbps"] = round(speed_bps / 1_000_000, 2)
+                        break
+                except Exception:
+                    continue
     
     # 3. Determinar estado
     if not resultado["alcanzable"]:
