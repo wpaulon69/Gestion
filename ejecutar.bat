@@ -19,18 +19,19 @@ if %errorlevel% equ 0 (
     echo.
     echo [OK] Auditoria completada exitosamente.
     
-    :: 2. Sincronizar con Google Drive
-    echo [%time%] Sincronizando con Google Drive via rclone...
-    echo ------------------------------------------------------
-    rclone\rclone --config "rclone\rclone.conf" copy "output\reporte_completo.json" gdrive:Gestion -v
-    
-    if %errorlevel% equ 0 (
-        echo.
-        echo [%time%] --- PROCESO FINALIZADO EXITOSAMENTE ---
-    ) else (
-        echo.
-        echo [%time%] ADVERTENCIA: Fallo la subida a Drive. Verifique rclone.
-    )
+    :: 2. Sincronizar con Google Drive - DESACTIVADO
+    :: echo [%time%] Sincronizando con Google Drive via rclone...
+    :: echo ------------------------------------------------------
+    :: rclone\rclone --config "rclone\rclone.conf" copy "output\reporte_completo.json" gdrive:Gestion -v
+    :: 
+    :: if %errorlevel% equ 0 (
+    ::     echo.
+    ::     echo [%time%] --- PROCESO FINALIZADO EXITOSAMENTE ---
+    :: ) else (
+    ::     echo.
+    ::     echo [%time%] ADVERTENCIA: Fallo la subida a Drive. Verifique rclone.
+    :: )
+    echo [%time%] --- PROCESO FINALIZADO EXITOSAMENTE (sin sync a Drive) ---
 ) else (
     color 0C
     echo.
