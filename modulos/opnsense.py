@@ -4,17 +4,37 @@ import urllib3
 # Deshabilitar advertencias de certificados no válidos
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+def obtener_version_opnsense(config):
+    """Obtiene la versión de OPNsense desde la API."""
+    url = f"https://{config['opnsense']['ip']}/api/core/firmware/status"
+    try:
+        response = requests.get(
+            url,
+            auth=(config['opnsense']['api_key'], config['opnsense']['api_secret']),
+            verify=False,
+            timeout=5
+        )
+        if response.status_code == 200:
+            data = response.json()
+            # OPNsense devuelve version en product.CORE_VERSION o product.product_version
+            product = data.get('product', {})
+            version = product.get('CORE_VERSION') or product.get('product_version') or product.get('version') or 'desconocida'
+            return {"version": version}
+        return {"version": "error HTTP " + str(response.status_code)}
+    except Exception as e:
+        return {"version": "error: " + str(e)}
+
 def obtener_estado_interfaces(config):
     """Obtiene el resumen de interfaces desde la API de OPNsense."""
     url = f"https://{config['opnsense']['ip']}/api/interfaces/overview/interfacesInfo"
     try:
         response = requests.get(
-            url, 
-            auth=(config['opnsense']['api_key'], config['opnsense']['api_secret']), 
-            verify=False, 
+            url,
+            auth=(config['opnsense']['api_key'], config['opnsense']['api_secret']),
+            verify=False,
             timeout=5
         )
-        
+
         if response.status_code == 200:
             # Verificar que la respuesta sea JSON antes de parsear
             content_type = response.headers.get('content-type', '')
@@ -26,7 +46,7 @@ def obtener_estado_interfaces(config):
             else:
                 # Si no es JSON, intentar interpretar como texto o devolver error
                 return {"error": f"Respuesta inesperada (content-type: {content_type}): {response.text[:200]}"}
-            
+
             # La API de OPNsense devuelve un objeto con 'rows' que contiene las interfaces
             interfaces_limpias = []
             if 'rows' in data:

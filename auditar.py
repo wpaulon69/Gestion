@@ -10,6 +10,47 @@ def cargar_configuracion():
     with open("config.json", "r", encoding='utf-8') as f:
         return json.load(f)
 
+def obtener_versiones(config):
+    """Obtiene las versiones de todos los sistemas monitoreados."""
+    versiones = {}
+    
+    # OPNsense
+    try:
+        opnsense_version = opnsense.obtener_version_opnsense(config)
+        versiones["opnsense"] = opnsense_version.get("version", "desconocida")
+    except Exception as e:
+        versiones["opnsense"] = f"error: {e}"
+    
+    # OCS Inventory
+    try:
+        ocs_version = ocs.obtener_version_ocs(config)
+        versiones["ocs"] = ocs_version.get("version", "desconocida")
+    except Exception as e:
+        versiones["ocs"] = f"error: {e}"
+    
+    # Proxmox VE
+    try:
+        pve_version = pve.obtener_version_pve(config)
+        versiones["pve"] = pve_version.get("version", "desconocida")
+    except Exception as e:
+        versiones["pve"] = f"error: {e}"
+    
+    # Proxmox Backup Server
+    try:
+        pbs_version = pbs.obtener_version_pbs(config)
+        versiones["pbs"] = pbs_version.get("version", "desconocida")
+    except Exception as e:
+        versiones["pbs"] = f"error: {e}"
+    
+    # Zabbix
+    try:
+        zabbix_version = zabbix.obtener_version_zabbix(config)
+        versiones["zabbix"] = zabbix_version.get("version", "desconocida")
+    except Exception as e:
+        versiones["zabbix"] = f"error: {e}"
+    
+    return versiones
+
 
 def verificar_gateway(config, ip_gateway="192.168.0.1"):
     """Verifica conectividad y latencia al gateway de internet (192.168.0.1)."""
@@ -158,12 +199,16 @@ async def main():
         resumen_clientes = switches[0]["resumen_clientes"]
 
     # 6. Consolidacion Final
+    # Obtener versiones de sistemas
+    versiones = obtener_versiones(config)
+    
     reporte = {
         "metadatos": {
             "fecha_auditoria": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "responsable": config["responsable"],
             "sitio": config["sitio"]
         },
+        "versiones": versiones,
         "camaras": lista_camaras,
         "estado_alertas": alertas,
         "infraestructura_switches": switches,

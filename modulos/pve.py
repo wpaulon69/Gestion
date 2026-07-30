@@ -4,6 +4,30 @@ import urllib3
 # Deshabilitar advertencias de certificados no válidos
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
+def obtener_version_pve(config):
+    """Obtiene la versión de Proxmox VE desde la API."""
+    pve_config = config.get("pve")
+    if not pve_config:
+        return {"error": "Configuración de PVE no encontrada"}
+    
+    base_url = f"https://{pve_config['ip']}:{pve_config.get('port', 8006)}"
+    headers = {
+        "Authorization": f"PVEAPIToken={pve_config['token_id']}={pve_config['token_secret']}"
+    }
+    
+    try:
+        url = f"{base_url}/api2/json/version"
+        res = requests.get(url, headers=headers, verify=False, timeout=5)
+        if res.status_code == 200:
+            data = res.json().get("data", {})
+            version = data.get("version") or data.get("release") or data.get("version_raw")
+            return {"version": version} if version else {"error": "No se encontró versión"}
+        return {"error": f"HTTP {res.status_code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 def obtener_datos_pve(config):
     """Consulta la API de Proxmox VE para obtener el estado del hardware y las máquinas virtuales."""
     

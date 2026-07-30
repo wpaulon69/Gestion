@@ -1,5 +1,28 @@
 import requests
 
+def obtener_version_zabbix(config):
+    """Obtiene la versión de Zabbix Server desde la API."""
+    zabbix_config = config.get("zabbix")
+    if not zabbix_config:
+        return {"error": "Configuración de Zabbix no encontrada"}
+    
+    url = zabbix_config["url"]
+    
+    # apiinfo.version no requiere autenticación
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "apiinfo.version",
+        "params": {},
+        "id": 1
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=5).json()
+        version = response.get("result")
+        return {"version": version} if version else {"error": "No se encontró versión"}
+    except Exception as e:
+        return {"error": str(e)}
+
 def autenticar(config):
     """Autenticación en Zabbix para obtener token de sesión."""
     payload = {

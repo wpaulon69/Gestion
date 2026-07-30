@@ -223,6 +223,17 @@ class HermesHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {'error': str(e)})
 
+        elif self.path == '/api/report':
+            try:
+                with open(REPORT_PATH, 'r', encoding='utf-8') as f:
+                    report_data = json.load(f)
+                self._send_json(200, report_data)
+            except FileNotFoundError:
+                self._send_json(404, {'error': 'Report file not found'})
+            except json.JSONDecodeError:
+                self._send_json(500, {'error': 'Error decoding report JSON'})
+            except Exception as e:
+                self._send_json(500, {'error': str(e)})
         elif self.path.startswith('/api/ocs-device'):
             try:
                 query = parse_qs(urlparse(self.path).query)

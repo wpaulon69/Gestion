@@ -5,6 +5,30 @@ import time
 # Deshabilitar advertencias de certificados no válidos
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
+def obtener_version_pbs(config):
+    """Obtiene la versión de Proxmox Backup Server desde la API."""
+    pbs_config = config.get("pbs")
+    if not pbs_config:
+        return {"error": "Configuración de PBS no encontrada"}
+
+    base_url = f"https://{pbs_config['ip']}:{pbs_config.get('port', 8007)}"
+    headers = {
+        "Authorization": f"PBSAPIToken {pbs_config['token_id']}:{pbs_config['token_secret']}"
+    }
+
+    try:
+        url = f"{base_url}/api2/json/version"
+        res = requests.get(url, headers=headers, verify=False, timeout=5)
+        if res.status_code == 200:
+            data = res.json().get("data", {})
+            version = data.get("version") or data.get("release") or data.get("version_raw")
+            return {"version": version} if version else {"error": "No se encontró versión"}
+        return {"error": f"HTTP {res.status_code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 def obtener_datos_pbs(config):
     """Consulta la API de Proxmox Backup Server para obtener el estado de los datastores y las tareas recientes."""
     

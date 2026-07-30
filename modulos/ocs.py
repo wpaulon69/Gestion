@@ -5,6 +5,50 @@ from datetime import datetime, timedelta
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
+def obtener_version_ocs(config):
+    """Obtiene la versión de OCS Inventory desde la API."""
+    ocs_config = config.get("ocs")
+    if not ocs_config:
+        return {"error": "Configuración de OCS no encontrada"}
+
+    base_url = ocs_config.get("url", "").rstrip("/")
+    session = requests.Session()
+    session.verify = ocs_config.get("verify_ssl", False)
+    session.auth = (ocs_config.get("user", ""), ocs_config.get("password", ""))
+    timeout = ocs_config.get("timeout", 15)
+
+    try:
+        # OCS tiene info de versión en /v1/ o en el endpoint raíz
+        r = session.get(base_url + "/v1/", timeout=timeout)
+        if r.status_code == 200:
+            data = r.json()
+            # Buscar versión en varias ubicaciones posibles
+            version = None
+            if isinstance(data, dict):
+                version = data.get("version") or data.get("ocs_version") or data.get("server_version")
+                if "server" in data and isinstance(data["server"], dict):
+                    version = version or data["server"].get("version")
+            if version:
+                return {"version": version}
+        # Fallback: intentar con endpoint de información del servidor
+        r = session.get(base_url + "/v1/server_info", timeout=timeout)
+        if r.status_code == 200:
+            data = r.json()
+            if isinstance(data, dict):
+                version = data.get("version") or data.get("server_version")
+                if version:
+                    return {"version": version}
+        # Fallback final: usar versión conocida del config
+        known_version = ocs_config.get("version_conocida")
+        if known_version:
+            return {"version": known_version}
+        return {"version": "desconocida"}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        session.close()
+
+
 def _crear_session(config):
     ocs_config = config.get("ocs")
     base_url = ocs_config.get("url", "").rstrip("/")
