@@ -187,7 +187,10 @@ html { scroll-behavior: smooth; }
  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-rose-300 transition-all">
  <div class="flex justify-between items-start">
  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Alertas</p>
+ <div class="flex items-center gap-2">
  <div class="bg-rose-50 p-1.5 rounded-xl text-rose-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" /></svg></div>
+ <span id="zabbix-top-version" class="text-[9px] font-mono text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-1.5 py-0.5 rounded">v--</span>
+ </div>
  </div>
  <div class="flex items-end gap-2"><span id="alert-stat" class="text-3xl font-extrabold text-rose-600 leading-none">--</span><span id="alert-summary-badge" class="status-pill badge-ok ml-2 mb-1">Clean</span></div>
  </div>
@@ -214,65 +217,80 @@ html { scroll-behavior: smooth; }
  </a>
 
  <a href="#pbs-section" class="card-link block no-underline">
- <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all">
- <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Backups PBS</p>
- <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg></div>
- </div>
- <div class="flex items-end gap-2"><span id="pbs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="pbs-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
- </div>
+  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all">
+  <div class="flex justify-between items-start">
+  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Backups PBS</p>
+  <div class="flex items-center gap-2">
+  <div class="bg-indigo-50 p-1.5 rounded-xl text-indigo-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2"></path></svg></div>
+  <span id="pbs-top-version" class="text-[9px] font-mono text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded">v--</span>
+  </div>
+  </div>
+  <div class="flex items-end gap-2"><span id="pbs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="pbs-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
+  </div>
  </a>
 
  <a href="#firewall-section" class="card-link block no-underline">
- <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-emerald-300 transition-all">
- <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall & Interfaces</p>
- <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
- </div>
- <div class="flex justify-between items-end">
- <div class="flex flex-col">
- <span id="fw-top-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
- <span class="text-[8px] text-sub font-black uppercase mt-1">Estado</span>
- </div>
- <div class="flex flex-col text-right">
- <span id="fw-iface-stat" class="text-2xl font-extrabold text-emerald-500 leading-none">--</span>
- <span class="text-[8px] text-emerald-400 font-black uppercase mt-1">Interfaces</span>
- </div>
- </div>
- </div>
+  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-emerald-300 transition-all">
+  <div class="flex justify-between items-start">
+  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Firewall & Interfaces</p>
+  <div class="flex items-center gap-2">
+  <div class="bg-emerald-50 p-1.5 rounded-xl text-emerald-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
+  <span id="opnsense-top-version" class="text-[9px] font-mono text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded">v--</span>
+  </div>
+  </div>
+  <div class="flex justify-between items-end">
+  <div class="flex flex-col">
+  <span id="fw-top-stat" class="text-2xl font-extrabold text-title leading-none">--</span>
+  <span class="text-[8px] text-sub font-black uppercase mt-1">Estado</span>
+  </div>
+  <div class="flex flex-col text-right">
+  <span id="fw-iface-stat" class="text-2xl font-extrabold text-emerald-500 leading-none">--</span>
+  <span class="text-[8px] text-emerald-400 font-black uppercase mt-1">Interfaces</span>
+  </div>
+  </div>
+  </div>
  </a>
 
  <a href="#gateway-section" class="card-link block no-underline">
- <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-cyan-300 transition-all">
- <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Gateway WAN</p>
- <div class="bg-cyan-50 p-1.5 rounded-xl text-cyan-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path></svg></div>
- </div>
- <div class="flex items-end justify-between gap-2">
- <span id="gateway-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span>
- <div class="flex flex-col items-end gap-1">
- <span id="gateway-top-badge" class="status-pill badge-ok ml-2 mb-1 text-[10px] font-black px-3 py-1 rounded-full">Verificando...</span>
- <span id="gateway-top-speed" class="text-xl font-bold text-emerald-500 leading-none">-- Mbps</span>
- </div>
- </div>
- </div>
+  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-cyan-300 transition-all">
+  <div class="flex justify-between items-start">
+  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Gateway WAN</p>
+  <div class="flex items-center gap-2">
+  <div class="bg-cyan-50 p-1.5 rounded-xl text-cyan-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path></svg></div>
+  <span id="opnsense-gw-version" class="text-[9px] font-mono text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-1.5 py-0.5 rounded">v--</span>
+  </div>
+  </div>
+  <div class="flex items-end justify-between gap-2">
+  <span id="gateway-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span>
+  <div class="flex flex-col items-end gap-1">
+  <span id="gateway-top-badge" class="status-pill badge-ok ml-2 mb-1 text-[10px] font-black px-3 py-1 rounded-full">Verificando...</span>
+  <span id="gateway-top-speed" class="text-xl font-bold text-emerald-500 leading-none">-- Mbps</span>
+  </div>
+  </div>
+  </div>
  </a>
 
  <a href="#ocs-section" class="card-link block no-underline">
- <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all">
- <div class="flex justify-between items-start">
- <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">OCS Inventory</p>
- <div class="bg-violet-50 p-1.5 rounded-xl text-violet-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
- </div>
- <div class="flex items-end gap-2"><span id="ocs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="ocs-top-badge" class="status-pill badge-info ml-2 mb-1">CARGANDO</span></div>
- </div>
+  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all">
+  <div class="flex justify-between items-start">
+  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">OCS Inventory</p>
+  <div class="flex items-center gap-2">
+  <div class="bg-violet-50 p-1.5 rounded-xl text-violet-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+  <span id="ocs-top-version" class="text-[9px] font-mono text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-1.5 py-0.5 rounded">v--</span>
+  </div>
+  </div>
+  <div class="flex items-end gap-2"><span id="ocs-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="ocs-top-badge" class="status-pill badge-info ml-2 mb-1">CARGANDO</span></div>
+  </div>
  </a>
 
  <a href="#pve-section" class="card-link block no-underline">
  <div class="glass-card p-4 rounded-3xl card-hover flex flex-col justify-between h-[110px] cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all">
  <div class="flex justify-between items-start">
  <p class="text-[9px] font-extrabold text-sub uppercase tracking-widest leading-none">Virtualización</p>
+ <div class="flex items-center gap-2">
  <div class="bg-orange-50 p-1.5 rounded-xl text-orange-500"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div>
+ <span id="pve-top-version" class="text-[10px] font-mono text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded">v--</span>
+ </div>
  </div>
  <div class="flex items-end gap-2"><span id="pve-top-stat" class="text-3xl font-extrabold text-title leading-none">--</span><span id="pve-top-badge" class="status-pill badge-ok ml-2 mb-1">OK</span></div>
  </div>
@@ -820,6 +838,14 @@ Enlace MPLS - MAN Provincial
                 if (v.opnsense && document.getElementById('opnsense-version')) document.getElementById('opnsense-version').innerText = 'v' + v.opnsense;
                 if (v.ocs && document.getElementById('ocs-version')) document.getElementById('ocs-version').innerText = 'v' + v.ocs;
                 if (v.zabbix && document.getElementById('zabbix-version')) document.getElementById('zabbix-version').innerText = 'v' + v.zabbix;
+
+                // Top stat cards versions
+                if (v.pve && document.getElementById('pve-top-version')) document.getElementById('pve-top-version').innerText = 'v' + v.pve;
+                if (v.pbs && document.getElementById('pbs-top-version')) document.getElementById('pbs-top-version').innerText = 'v' + v.pbs;
+                if (v.opnsense && document.getElementById('opnsense-top-version')) document.getElementById('opnsense-top-version').innerText = 'v' + v.opnsense;
+                if (v.opnsense && document.getElementById('opnsense-gw-version')) document.getElementById('opnsense-gw-version').innerText = 'v' + v.opnsense;
+                if (v.ocs && document.getElementById('ocs-top-version')) document.getElementById('ocs-top-version').innerText = 'v' + v.ocs;
+                if (v.zabbix && document.getElementById('zabbix-top-version')) document.getElementById('zabbix-top-version').innerText = 'v' + v.zabbix;
             }
 
             // 1. CAMARAS
