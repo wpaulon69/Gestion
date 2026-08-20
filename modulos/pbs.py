@@ -83,6 +83,14 @@ def obtener_datos_pbs(config):
         else:
             resultado["error_datastores"] = f"HTTP {res_ds.status_code}"
 
+        # 3. Validar datastores esperados
+        datastores_esperados = pbs_config.get("datastores_esperados", [])
+        if datastores_esperados:
+            datastores_encontrados = [ds["nombre"] for ds in resultado["datastores"]]
+            faltantes = [ds for ds in datastores_esperados if ds not in datastores_encontrados]
+            if faltantes:
+                resultado["error_datastores"] = f"Datastores esperados no configurados en PBS: {', '.join(faltantes)}"
+
         # 2. Consultar Tareas (Tasks) enfocado a Backups
         url_tasks = f"{base_url}/api2/json/nodes/localhost/tasks"
         # Traemos 1000 tareas para tener buen historial de días
@@ -117,12 +125,15 @@ def obtener_datos_pbs(config):
                         target_dict[date_str] = []
                     target_dict[date_str].append(status)
             
+            # Estados que NO son error (backup terminó correctamente aunque PBS no marcó "OK")
+            estados_validos = {"OK", "running", "backup ended but finished state is not set."}
+            
             # Evaluar diarios (últimos 7 días con actividad)
             fechas_diarios = sorted(list(diarios_agrupados.keys()), reverse=True)[:7]
             for fd in fechas_diarios:
                 estados = diarios_agrupados[fd]
-                # Si hay algo que no es OK y no es running, es fallo
-                tiene_fallos = any(s != "OK" and s != "running" for s in estados)
+                # Si hay algo que no es un estado válido, es fallo
+                tiene_fallos = any(s not in estados_validos for s in estados)
                 resultado["historial_backups"]["diarios_ultimos_7d"].append({
                     "fecha": fd,
                     "estado": "ERR" if tiene_fallos else "OK"
@@ -133,7 +144,7 @@ def obtener_datos_pbs(config):
             if fechas_semanales:
                 fs = fechas_semanales[0]
                 estados_sem = semanales_agrupados[fs]
-                tiene_fallos = any(s != "OK" and s != "running" for s in estados_sem)
+                tiene_fallos = any(s not in estados_validos for s in estados_sem)
                 resultado["historial_backups"]["semanal_ultimo"] = {
                     "fecha": fs,
                     "estado": "ERR" if tiene_fallos else "OK"

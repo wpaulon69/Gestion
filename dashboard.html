@@ -121,10 +121,10 @@ html { scroll-behavior: smooth; }
 
     </header>
 
-    <main class="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8">
+    <main class="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-10">
 
         <!-- MIDDLE COLUMN: MAIN CONTENT -->
-        <div class="xl:col-span-8 space-y-8">
+        <div class="xl:col-span-8 space-y-10">
             
             <!-- Quick Stats -->
             
@@ -415,6 +415,18 @@ Enlace MPLS - MAN Provincial
                         
                     </div>
                 </div>
+                
+                <!-- Banner de alerta STALE (backups sin ejecutarse) -->
+                <div id="pbs-alert-banner" class="mt-6 hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                    <div class="flex items-start gap-3">
+                        <svg class="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2"/></svg>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">BACKUPS STALE — SIN EJECUTARSE</p>
+                            <p id="pbs-alert-text" class="text-sm text-amber-800 font-medium"></p>
+                        </div>
+                        <a href="https://10.175.6.2:8007" target="_blank" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200 text-[10px] font-black uppercase rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap">Revisar PBS <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+                    </div>
+                </div>
 
                 <div id="pbs-errors-container" class="mt-6 hidden">
                     <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3 border-b border-rose-100 pb-2">Otras Tareas Fallidas Recientes</p>
@@ -450,8 +462,8 @@ Enlace MPLS - MAN Provincial
             </section>
 
             <!-- NAS Health Section (New) -->
-            <section class="glass-card rounded-[2.5rem] p-6 border-l-8 border-l-amber-500">
-                <div class="flex justify-between items-center mb-4">
+            <section class="glass-card rounded-[2.5rem] p-8 border-l-8 border-l-amber-500">
+                <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-xl font-black text-title flex items-center gap-3">
                             <svg class="h-6 w-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm0 4h16m-11 5h1m4 0h1" stroke-width="2" /></svg>
@@ -597,72 +609,34 @@ Enlace MPLS - MAN Provincial
  </div>
 
  <!-- RIGHT SIDEBAR: OTHER DEVICES & ALERTS -->
-        <div class="xl:col-span-4 space-y-8">
+        <div class="xl:col-span-4 space-y-12">
             
  <!-- Remote Endpoints (WiFi & Relojes) -->
- <section class="glass-card rounded-[2.5rem] p-8" id="dispositivos-section">
-                <h2 class="text-xl font-black text-title mb-6">Dispositivos Conectados</h2>
+ <!-- Remote Endpoints (WiFi & Relojes) -->
+ <section class="glass-card rounded-[2.5rem] p-10" id="dispositivos-section">
+                 <h2 class="text-xl font-black text-title mb-8">Dispositivos Conectados</h2>
                 
- <div class="space-y-6">
+ <div class="space-y-10">
  <div id="routers-section">
- <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Routers & Access Points</h3>
- <div id="wifi-routers-list" class="space-y-2"></div>
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4">Routers & Access Points</h3>
+ <div id="wifi-routers-list" class="space-y-3"></div>
  </div>
-
- <!-- Gateway WAN (192.168.0.1) -->
- <div id="gateway-section" class="mb-8">
- <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4">Gateway WAN / Acceso a Internet</h3>
- <div id="gateway-card" class="glass-card rounded-[2rem] p-6 cursor-pointer transition-all hover:ring-2 hover:ring-cyan-300" onclick="window.open('http://192.168.0.1', '_blank')">
-     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-         <div class="flex items-center gap-4">
-             <div class="bg-cyan-50 p-3 rounded-xl">
-                 <svg class="h-6 w-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path>
-                 </svg>
-             </div>
-             <div>
-                 <p class="text-[10px] font-black text-sub uppercase tracking-widest text-slate-500">Gateway OPNsense</p>
-                 <p class="text-lg font-extrabold text-title">192.168.0.1</p>
-                 <p class="text-[10px] text-slate-500 font-medium">Click para acceder al panel de administración</p>
-             </div>
-         </div>
-         <div class="flex flex-col items-end md:items-end gap-1 text-right">
-             <span id="gateway-status-badge" class="status-pill badge-ok text-[10px] font-black px-3 py-1 rounded-full">Verificando...</span>
-             <div class="flex gap-4 text-right">
-                 <div>
-                     <p class="text-[9px] font-black text-sub uppercase tracking-widest text-slate-500">Latencia</p>
-                     <p id="gateway-latency" class="text-xl font-extrabold text-title">-- ms</p>
-                 </div>
-                 <div>
-                     <p class="text-[9px] font-black text-sub uppercase tracking-widest text-slate-500">Velocidad</p>
-                     <p id="gateway-speed" class="text-xl font-extrabold text-emerald-500">-- Mbps</p>
-                 </div>
-             </div>
-         </div>
-     </div>
-     <div class="mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-6 text-[11px] text-slate-400">
-         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> IP: 192.168.0.1 (WAN)</span>
-         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Ping: 3 paquetes</span>
-         <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Speedtest: speedtest-cli / curl fallback</span>
-     </div>
- </div>
- </div>
-
+            
  <div id="caps-section">
- <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Huawei CAPS (Sucursales)</h3>
-                        <div id="huawei-caps-list" class="space-y-2"></div>
-                    </div>
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4">Huawei CAPS (Sucursales)</h3>
+                         <div id="huawei-caps-list" class="space-y-3"></div>
+                     </div>
 
  <div id="relojes-section">
- <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-3">Relojes de Personal</h3>
-                        <div id="relojes-list" class="grid grid-cols-2 gap-3"></div>
-                    </div>
-                </div>
-            </section>
+ <h3 class="text-[10px] font-black text-sub uppercase tracking-widest mb-4">Relojes de Personal</h3>
+                         <div id="relojes-list" class="grid grid-cols-2 gap-4"></div>
+                     </div>
+                 </div>
+             </section>
 
                         <!-- Event Stream -->
-                        <section class="glass-card rounded-[2.5rem] p-8" id="alertas-section">
-                <div class="flex items-center justify-between mb-4">
+                        <section class="glass-card rounded-[2.5rem] p-10" id="alertas-section">
+                <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-bold text-rose-400 italic font-mono tracking-tighter flex items-center gap-2">
                         Alertas Zabbix
                         <span id="zabbix-version" class="text-[10px] font-mono text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded">v--</span>
@@ -673,21 +647,21 @@ Enlace MPLS - MAN Provincial
                     </div>
                 </div>
                 
-                <div class="flex gap-2 mb-6" id="alerts-filters">
+                <div class="flex gap-2 mb-8" id="alerts-filters">
                     <button data-filter="all" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold transition-colors ring-1 ring-white/20 active-filter">Todos</button>
                     <button data-filter="critical" class="px-3 py-1 bg-white/5 hover:bg-rose-500/20 text-white rounded-lg text-[10px] font-bold transition-colors">Critical</button>
                     <button data-filter="warn" class="px-3 py-1 bg-white/5 hover:bg-amber-500/20 text-white rounded-lg text-[10px] font-bold transition-colors">Warning</button>
                 </div>
                 
-                <div id="alerts-container" class="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar font-mono text-[11px]">
+                <div id="alerts-container" class="space-y-5 max-h-[450px] overflow-y-auto custom-scrollbar font-mono text-[11px]">
                     <p class="text-slate-600 italic py-10 opacity-50">Esperando stream de datos...</p>
                 </div>
             </section>
 
             <!-- User Dist Chart -->
-            <section class="glass-card rounded-[2.5rem] p-8 text-center">
-                <h2 class="text-xl font-black text-title mb-8 tracking-tight">Carga de Usuarios WiFi</h2>
-                <div class="h-[250px] relative">
+            <section class="glass-card rounded-[2.5rem] p-10 text-center">
+                <h2 class="text-xl font-black text-title mb-10 tracking-tight">Carga de Usuarios WiFi</h2>
+                <div class="h-[300px] relative">
                     <canvas id="loadChart"></canvas>
                 </div>
             </section>
@@ -1113,52 +1087,7 @@ if (mplsTopStat) {
       gatewayTopBadge.innerText = 'S/D';
      }
     }
-  }
-    // Gateway Detail Section
-    var gatewaySection = document.getElementById('gateway-status-badge');
-    if (gatewaySection) {
-     var gateway = data.gateway || {};
-     if (gateway && gateway.alcanzable !== undefined) {
-      var gatewayBadge = gatewaySection;
-      var latencyEl = document.getElementById('gateway-latency');
-    var speedEl = document.getElementById('gateway-speed');
-  
-    if (gateway.estado === 'OK') {
-     gatewayBadge.className = 'status-pill badge-ok text-[10px] font-black px-3 py-1 rounded-full';
-     gatewayBadge.innerText = '✓ ONLINE';
-     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
-     latencyEl.className = 'text-xl font-extrabold text-emerald-500';
-     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
-     speedEl.className = 'text-xl font-extrabold text-emerald-500';
-    } else if (gateway.estado === 'ALTO_LATENCIA') {
-     gatewayBadge.className = 'status-pill badge-warn text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
-     gatewayBadge.innerText = '⚠ ALTA LATENCIA';
-     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
-     latencyEl.className = 'text-xl font-extrabold text-amber-500';
-     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
-     speedEl.className = 'text-xl font-extrabold text-emerald-500';
-    } else if (gateway.estado === 'LENTO') {
-     gatewayBadge.className = 'status-pill badge-warn text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
-     gatewayBadge.innerText = '⚠ LENTO';
-     latencyEl.innerText = gateway.latencia_ms ? gateway.latencia_ms + ' ms' : '-- ms';
-     latencyEl.className = 'text-xl font-extrabold text-emerald-500';
-     speedEl.innerText = gateway.velocidad_mbps ? gateway.velocidad_mbps + ' Mbps' : '-- Mbps';
-     speedEl.className = 'text-xl font-extrabold text-amber-500';
-    } else {
-     gatewayBadge.className = 'status-pill badge-err text-[10px] font-black px-3 py-1 rounded-full animate-pulse';
-     gatewayBadge.innerText = '✗ CAÍDO';
-     latencyEl.innerText = '-- ms';
-     latencyEl.className = 'text-xl font-extrabold text-rose-500';
-     speedEl.innerText = '-- Mbps';
-     speedEl.className = 'text-xl font-extrabold text-rose-500';
-    }
-   } else {
-    document.getElementById('gateway-status-badge').className = 'status-pill badge-err text-[10px] font-black px-3 py-1 rounded-full';
-    document.getElementById('gateway-status-badge').innerText = 'SIN DATOS';
-    document.getElementById('gateway-latency').innerText = '-- ms';
-    document.getElementById('gateway-speed').innerText = '-- Mbps';
-   }
-  }
+      }
 
   // 2.2 NAS Health - Volúmenes (excluyendo cámaras que rotan)
  const nasGrid = document.getElementById('nas-volumes-grid');
@@ -1319,8 +1248,10 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
             wifiList.innerHTML = '';
             capsList.innerHTML = '';
             const wifiDisps = data.dispositivos_wifi || [];
+            // Filtrar el gateway (192.168.0.1) que ya se muestra en Gateway WAN
+            const filteredWifi = wifiDisps.filter(d => d.ip !== "192.168.0.1");
             // Ordenar: caídos primero
-            const sortedWifi = [...wifiDisps].sort((a, b) => {
+            const sortedWifi = [...filteredWifi].sort((a, b) => {
                 const aOff = a.estado !== "Online" ? 0 : 1;
                 const bOff = b.estado !== "Online" ? 0 : 1;
                 return aOff - bOff;
@@ -1459,42 +1390,98 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                 
                 
                 // Historial de Backups (Diarios / Semanales)
-                const hist = pbs.historial_backups || {};
-                const diagrid = document.getElementById('pbs-diarios-grid');
-                const semgrid = document.getElementById('pbs-semanal-grid');
+                                const hist = pbs.historial_backups || {};
+                                const diagrid = document.getElementById('pbs-diarios-grid');
+                                const semgrid = document.getElementById('pbs-semanal-grid');
                 
-                diagrid.innerHTML = '';
-                semgrid.innerHTML = '';
+                                diagrid.innerHTML = '';
+                                semgrid.innerHTML = '';
                 
-                const boxClass = (estado) => estado === 'OK' 
-                    ? 'flex-1 h-8 bg-emerald-400 rounded-lg shadow-sm border border-emerald-500/20 cursor-help transition-all hover:-translate-y-1' 
-                    : 'flex-1 h-8 bg-rose-500 rounded-lg shadow-sm border border-rose-600/20 cursor-help transition-all hover:-translate-y-1 animate-pulse';
+                                const boxClass = (estado) => estado === 'OK' 
+                                    ? 'flex-1 h-8 bg-emerald-400 rounded-lg shadow-sm border border-emerald-500/20 cursor-help transition-all hover:-translate-y-1' 
+                                    : 'flex-1 h-8 bg-rose-500 rounded-lg shadow-sm border border-rose-600/20 cursor-help transition-all hover:-translate-y-1 animate-pulse';
                 
-                const diarios = hist.diarios_ultimos_7d || [];
-                // Lo invertimos para q el más actual quede a la derecha
-                [...diarios].reverse().forEach(d => {
-                    const b = document.createElement('div');
-                    b.className = boxClass(d.estado);
-                    b.title = `${d.fecha} - ${d.estado}`;
-                    diagrid.appendChild(b);
-                    if(d.estado !== 'OK') pbsHasErrors = true;
-                });
+                                const diarios = hist.diarios_ultimos_7d || [];
+                                // Lo invertimos para q el más actual quede a la derecha
+                                [...diarios].reverse().forEach(d => {
+                                    const b = document.createElement('div');
+                                    b.className = boxClass(d.estado);
+                                    b.title = `${d.fecha} - ${d.estado}`;
+                                    diagrid.appendChild(b);
+                                    if(d.estado !== 'OK') pbsHasErrors = true;
+                                });
                 
-                if(diarios.length === 0) diagrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial diario</span>';
-
-                const sem = hist.semanal_ultimo;
-                if(sem) {
-                    const bs = document.createElement('div');
-                    // Lo hacemos cuadrar con el estilo pero más ancho (ocupa todo)
-                    bs.className = "w-full h-8 rounded-lg shadow-sm cursor-help flex items-center justify-center text-[10px] font-black text-white " + (sem.estado === 'OK' ? "bg-emerald-400 border border-emerald-500/20" : "bg-rose-500 border border-rose-600/20 animate-pulse");
-                    bs.innerText = sem.estado === 'OK' ? `EJECUTADO OK (${sem.fecha})` : `FALLÓ (${sem.fecha})`;
-                    semgrid.appendChild(bs);
-                    if(sem.estado !== 'OK') pbsHasErrors = true;
-                } else {
-                    semgrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial semanal</span>';
-                }
-
-                // Errores adicionales (tareas sueltas fallidas)
+                                if(diarios.length === 0) diagrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial diario</span>';
+                
+                                const sem = hist.semanal_ultimo;
+                                if(sem) {
+                                    const bs = document.createElement('div');
+                                    bs.className = "w-full h-8 rounded-lg shadow-sm cursor-help flex items-center justify-center text-[10px] font-black text-white " + (sem.estado === 'OK' ? "bg-emerald-400 border border-emerald-500/20" : "bg-rose-500 border border-rose-600/20 animate-pulse");
+                                    bs.innerText = sem.estado === 'OK' ? `EJECUTADO OK (${sem.fecha})` : `FALLÓ (${sem.fecha})`;
+                                    semgrid.appendChild(bs);
+                                    if(sem.estado !== 'OK') pbsHasErrors = true;
+                                } else {
+                                    semgrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial semanal</span>';
+                                }
+                
+                                // NUEVO: Detectar backups STALE (sin ejecutarse en tiempo esperado)
+                                // Diarios: no debe pasar más de 2 días sin backup OK
+                                // Semanal: no debe pasar más de 10 días sin backup OK
+                                let pbsStale = false;
+                                let staleMsg = '';
+                                const hoy = new Date();
+                
+                                // Buscar último backup diario OK
+                                let ultimoDiarioOk = null;
+                                for (const d of diarios) {
+                                    if (d.estado === 'OK') {
+                                        ultimoDiarioOk = new Date(d.fecha + 'T23:59:59');
+                                        break;
+                                    }
+                                }
+                                if (ultimoDiarioOk) {
+                                    const diasSinDiario = Math.floor((hoy - ultimoDiarioOk) / (1000 * 60 * 60 * 24));
+                                    if (diasSinDiario > 2) {
+                                        pbsStale = true;
+                                        staleMsg = `Sin backup diario desde hace ${diasSinDiario} días (último OK: ${ultimoDiarioOk.toLocaleDateString('es-AR')})`;
+                                    }
+                                } else if (diarios.length > 0) {
+                                    // Hay historial pero todo ERR
+                                    pbsStale = true;
+                                    staleMsg = 'Historial diario solo muestra fallos';
+                                } else {
+                                    // No hay historial diario en absoluto
+                                    pbsStale = true;
+                                    staleMsg = 'Sin historial de backups diarios';
+                                }
+                
+                                // Semanal
+                                if (sem && sem.estado === 'OK') {
+                                    const ultSemanalOk = new Date(sem.fecha + 'T23:59:59');
+                                    const diasSinSemanal = Math.floor((hoy - ultSemanalOk) / (1000 * 60 * 60 * 24));
+                                    if (diasSinSemanal > 10) {
+                                        pbsStale = true;
+                                        staleMsg += (staleMsg ? ' | ' : '') + `Sin backup semanal desde hace ${diasSinSemanal} días`;
+                                    }
+                                } else if (sem) {
+                                    pbsStale = true;
+                                    staleMsg += (staleMsg ? ' | ' : '') + 'Último semanal falló';
+                                }
+                
+                                // Guardar flag global para top stats
+                                window.pbsStale = pbsStale;
+                                window.pbsStaleMsg = staleMsg;
+                
+                                // Mostrar banner de alerta STALE en la sección PBS
+                                const pbsAlertBanner = document.getElementById('pbs-alert-banner');
+                                if (pbsStale) {
+                                    pbsAlertBanner.classList.remove('hidden');
+                                    document.getElementById('pbs-alert-text').innerText = staleMsg;
+                                } else {
+                                    pbsAlertBanner.classList.add('hidden');
+                                }
+                
+                                // Errores adicionales (tareas sueltas fallidas)
 
                 const errores = pbs.tareas_fallidas || [];
                 if (errores.length > 0) {
@@ -1515,6 +1502,9 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                 if(pbsHasErrors && datastores.length > 0) {
                     pbsStatus.className = "status-pill badge-err animate-pulse";
                     pbsStatus.innerText = "ACTION REQ";
+                } else if(window.pbsStale) {
+                    pbsStatus.className = "status-pill bg-amber-500 text-white animate-pulse";
+                    pbsStatus.innerText = "STALE";
                 }
             }
 
@@ -1744,18 +1734,19 @@ if (fwIfaceStat) {
 
 document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.length}`;
             
- // TOP STATS Routers & CAPS (separados)
- var onRouters = 0, totalRouters = 0;
- var onCaps = 0, totalCaps = 0;
- wifiDisps.forEach(function(d) {
- if (d.tipo === "Huawei CAPS") {
- totalCaps++;
- if (d.estado === "Online") onCaps++;
- } else {
- totalRouters++;
- if (d.estado === "Online") onRouters++;
- }
- });
+ // TOP STATS Routers & CAPS (separados) - Excluir gateway 192.168.0.1
+             var onRouters = 0, totalRouters = 0;
+             var onCaps = 0, totalCaps = 0;
+             wifiDisps.forEach(function(d) {
+                 if (d.ip === "192.168.0.1") return; // Gateway ya tiene su propia sección
+                 if (d.tipo === "Huawei CAPS") {
+                     totalCaps++;
+                     if (d.estado === "Online") onCaps++;
+                 } else {
+                     totalRouters++;
+                     if (d.estado === "Online") onRouters++;
+                 }
+             });
  document.getElementById('router-top-stat').innerText = onRouters + '/' + totalRouters;
  var capsTopEl = document.getElementById('caps-top-stat');
  if (capsTopEl) capsTopEl.innerText = onCaps + '/' + totalCaps;
@@ -1768,6 +1759,11 @@ document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.lengt
                 topPbsVal.className = "text-3xl font-extrabold text-rose-600 leading-none";
                 topPbsBdg.className = "status-pill badge-err ml-2 mb-1 animate-pulse";
                 topPbsBdg.innerText = "ACTION";
+            } else if(window.pbsStale) {
+                topPbsVal.innerText = "STALE";
+                topPbsVal.className = "text-3xl font-extrabold text-amber-600 leading-none";
+                topPbsBdg.className = "status-pill bg-amber-500 text-white ml-2 mb-1 animate-pulse";
+                topPbsBdg.innerText = "SIN BACKUPS";
             } else {
                 topPbsVal.innerText = "OK";
                 topPbsVal.className = "text-3xl font-extrabold text-title leading-none";
@@ -1778,16 +1774,16 @@ document.getElementById('switch-top-stat').innerText = `${okSw}/${switches.lengt
                             if(switches.length > 0) renderChart(switches);
 
                         // Global Glitch/Crisis Evaluation
-                        const mainEl = document.querySelector('header > div:first-child > div:first-child');
-                        if(pbsHasErrors || switches.some(s => s.status !== "OK")) {
-            mainEl.classList.add('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
-            mainEl.classList.remove('bg-indigo-600', 'shadow-indigo-200');
-            document.body.classList.add('border-t-4', 'border-rose-500');
-        } else {
-            mainEl.classList.remove('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
-            mainEl.classList.add('bg-indigo-600', 'shadow-indigo-200');
- document.body.classList.remove('border-t-4', 'border-rose-500');
- }
+                                                const mainEl = document.querySelector('header > div:first-child > div:first-child');
+                                                if(pbsHasErrors || window.pbsStale || switches.some(s => s.status !== "OK")) {
+                                    mainEl.classList.add('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
+                                    mainEl.classList.remove('bg-indigo-600', 'shadow-indigo-200');
+                                    document.body.classList.add('border-t-4', 'border-rose-500');
+                                } else {
+                                    mainEl.classList.remove('animate-pulse', 'bg-rose-500', 'shadow-rose-500');
+                                    mainEl.classList.add('bg-indigo-600', 'shadow-indigo-200');
+                         document.body.classList.remove('border-t-4', 'border-rose-500');
+                        }
 
  // 9. OCS INVENTORY (carga via API directa, no del reporte)
  loadOCSData();

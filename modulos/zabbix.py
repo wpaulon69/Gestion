@@ -306,6 +306,22 @@ def obtener_ocupacion_nas(token, config):
             black_list = ['/var/snap', 'subvol-', 'loop', 'squashfs', '/dev/', '/run']
             if any(x in full_path for x in black_list):
                 continue
+
+            # Filtro NAS: excluir subcarpetas de cámaras y items obsoletos
+            # full_path viene como "/mnt/datastore/camaras-6tb/camConsultorioExt" etc.
+            nas_exclude = [
+                '/mnt/datastore/camaras-6tb/cam',  # subcarpetas por cámara
+                'OMV-Backups',
+                'rotan',
+            ]
+            if any(x in full_path for x in nas_exclude):
+                continue
+
+            # Excluir host OMV-Backups completo (ya no existe)
+            hosts = item.get('hosts', [])
+            host_name = hosts[0]['name'] if hosts else 'Desconocido'
+            if host_name == 'OMV-Backups':
+                continue
             
             # Ignorar paths técnicos UUID (ya tenemos los /export equivalentes)
             if full_path.startswith('/srv/dev-disk-by-uuid'):
