@@ -74,8 +74,20 @@ def obtener_datos_pve(config):
                     if total_root > 0:
                         pct_root = round((used_root / total_root) * 100, 2)
                     
+                    # Obtener versión del nodo
+                    node_version = "unknown"
+                    try:
+                        url_ver = f"{base_url}/api2/json/nodes/{node_name}/version"
+                        res_ver = requests.get(url_ver, headers=headers, verify=False, timeout=10)
+                        if res_ver.status_code == 200:
+                            ver_data = res_ver.json().get("data", {})
+                            node_version = ver_data.get("version") or ver_data.get("release") or "unknown"
+                    except Exception:
+                        pass
+                    
                     node_info = {
                         "nombre": node_name,
+                        "version": node_version,
                         "cpu_uso": round(st.get("cpu", 0) * 100, 2),
                         "ram_total_gb": round(st.get("memory", {}).get("total", 0) / (1024**3), 2),
                         "ram_usada_gb": round(st.get("memory", {}).get("used", 0) / (1024**3), 2),
