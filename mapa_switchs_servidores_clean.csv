@@ -1,0 +1,29 @@
+Puerto,Dispositivo,IP,Tipo,LAG,Observaciones,Perfil
+1,hpdl360 (Proxmox),10.175.6.20,Hypervisor,LAG-SRV-HPDL360,"NIC 1 - bond0 LACP - desde Pepe P11",Trunk_a_principal
+2,hpdl360 (Proxmox),10.175.6.20,Hypervisor,LAG-SRV-HPDL360,"NIC 2 - bond0 LACP - desde Pepe P11",Trunk_a_principal
+3,dellr610 (Proxmox),10.175.6.4,Hypervisor,LAG-SRV-DELLR610,"NIC 1 - bond0 LACP - desde Rack-Medio P5",Trunk_a_principal
+4,dellr610 (Proxmox),10.175.6.4,Hypervisor,LAG-SRV-DELLR610,"NIC 2 - bond0 LACP - desde Rack-Medio P5",Trunk_a_principal
+5,IBM x3400 PBS,10.175.6.2,Backup Server,LAG-SRV-PBS,"NIC 1 - YA CONECTADO - LACP",Trunk_a_principal
+6,IBM x3400 PBS,10.175.6.2,Backup Server,LAG-SRV-PBS,"NIC 2 - YA CONECTADO - LACP",Trunk_a_principal
+7,dellr610-2 (Proxmox),10.175.6.14,Hypervisor,LAG-SRV-DELLR610-2,"NIC 1 - bond0 LACP - desde Rack-Medio P7",Trunk_a_principal
+8,dellr610-2 (Proxmox),10.175.6.14,Hypervisor,LAG-SRV-DELLR610-2,"NIC 2 - bond0 LACP - desde Rack-Medio P7",Trunk_a_principal
+9,msi-i5 (Proxmox),10.175.6.6,Hypervisor,LAG-SRV-MSI,"NIC 1 - bond0 LACP (enp1s0)",Trunk_a_principal
+10,msi-i5 (Proxmox),10.175.6.6,Hypervisor,LAG-SRV-MSI,"NIC 2 - bond0 LACP (enp3s0)",Trunk_a_principal
+11,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+12,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+13,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+14,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+15,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+16,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+17,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+18,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+19,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+20,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+21,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+22,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+23,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+24,LIBRE,,,,Para futuro Proxmox / NAS / Backup,
+25 (SFP+),Principal (Uplink 10G),10.175.6.236,Switch Core,Trunk 10G,"Fibra 10G - Profile Trunk_a_principal",Trunk_a_principal
+26 (SFP+),LIBRE,,,,Para uplink 10G redundante / Storage 10G,
+27 (SFP+),LIBRE,,,,Para uplink 10G redundante / Storage 10G,
+28 (SFP+),LIBRE,,,,Para uplink 10G redundante / Storage 10G,

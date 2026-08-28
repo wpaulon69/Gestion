@@ -1369,16 +1369,36 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                 pbsDsGrid.innerHTML = `<p class="text-xs text-sub italic px-4 py-2 col-span-2">Sin datastores visibles.</p>`;
                             }
                             datastores.forEach(ds => {
-                                const estado = ds.estado || 'ok'; // 'ok', 'degraded', 'unavailable'
-                                const isDegraded = estado !== 'ok';
-                                const uso = ds.uso_porcentaje ?? null; // null si degraded
+                                const estado = ds.estado || 'ok'; // 'ok', 'degraded', 'missing'
+                                const isOk = estado === 'ok';
+                                const isDegraded = estado === 'degraded';
+                                const isMissing = estado === 'missing';
+                                const uso = ds.uso_porcentaje ?? null; // null si degraded/missing
                                 const isFull = uso !== null && uso > 85;
-                                if (isFull) pbsHasErrors = true;
-                                if (isDegraded) pbsHasDegraded = true;
+
+                                if (isFull || isDegraded || isMissing) pbsHasErrors = true;
+                                if (isDegraded || isMissing) pbsHasDegraded = true;
 
                                 const div = document.createElement('div');
                     
-                                if (isDegraded) {
+                                if (isMissing) {
+                                    div.className = "bg-sub border border-rose-400 rounded-2xl p-5 relative overflow-hidden";
+                                    div.innerHTML = `
+                                        <div class="flex justify-between items-end mb-3">
+                                            <div>
+                                                <h4 class="text-sm font-black text-title tracking-tight flex items-center gap-2">
+                                                    ${ds.nombre}
+                                                    <span class="status-pill badge-err text-[9px] animate-pulse">FALTANTE</span>
+                                                </h4>
+                                                <p class="text-[10px] font-mono font-bold text-sub">${ds.error || 'Datastore esperado pero no encontrado'}</p>
+                                            </div>
+                                            <span class="text-lg font-black italic text-rose-500">--%</span>
+                                        </div>
+                                        <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                                            <div class="h-full bg-rose-500 animate-pulse" style="width: 100%"></div>
+                                        </div>
+                                    `;
+                                } else if (isDegraded) {
                                     div.className = "bg-sub border border-amber-300 rounded-2xl p-5 relative overflow-hidden";
                                     div.innerHTML = `
                                         <div class="flex justify-between items-end mb-3">
@@ -1395,7 +1415,7 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                             <div class="h-full bg-amber-400 animate-pulse" style="width: 100%"></div>
                                         </div>
                                     `;
-                                } else {
+                                } else { // isOk
                                     div.className = "bg-sub border border-sub rounded-2xl p-5 relative overflow-hidden";
                                     div.innerHTML = `
                                         <div class="flex justify-between items-end mb-3">
@@ -1434,7 +1454,7 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                 diagrid.innerHTML = '';
                                 semgrid.innerHTML = '';
                 
-                                const boxClass = (estado) => estado === 'OK' 
+                                const boxClass = (estado) => estado === 'ok' 
                                     ? 'flex-1 h-8 bg-emerald-400 rounded-lg shadow-sm border border-emerald-500/20 cursor-help transition-all hover:-translate-y-1' 
                                     : 'flex-1 h-8 bg-rose-500 rounded-lg shadow-sm border border-rose-600/20 cursor-help transition-all hover:-translate-y-1 animate-pulse';
                 
@@ -1445,7 +1465,7 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                     b.className = boxClass(d.estado);
                                     b.title = `${d.fecha} - ${d.estado}`;
                                     diagrid.appendChild(b);
-                                    if(d.estado !== 'OK') pbsHasErrors = true;
+                                    if(d.estado !== 'ok') pbsHasErrors = true;
                                 });
                 
                                 if(diarios.length === 0) diagrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial diario</span>';
@@ -1453,10 +1473,10 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                 const sem = hist.semanal_ultimo;
                                 if(sem) {
                                     const bs = document.createElement('div');
-                                    bs.className = "w-full h-8 rounded-lg shadow-sm cursor-help flex items-center justify-center text-[10px] font-black text-white " + (sem.estado === 'OK' ? "bg-emerald-400 border border-emerald-500/20" : "bg-rose-500 border border-rose-600/20 animate-pulse");
-                                    bs.innerText = sem.estado === 'OK' ? `EJECUTADO OK (${sem.fecha})` : `FALLÓ (${sem.fecha})`;
+                                    bs.className = "w-full h-8 rounded-lg shadow-sm cursor-help flex items-center justify-center text-[10px] font-black text-white " + (sem.estado === 'ok' ? "bg-emerald-400 border border-emerald-500/20" : "bg-rose-500 border border-rose-600/20 animate-pulse");
+                                    bs.innerText = sem.estado === 'ok' ? `EJECUTADO OK (${sem.fecha})` : `FALLÓ (${sem.fecha})`;
                                     semgrid.appendChild(bs);
-                                    if(sem.estado !== 'OK') pbsHasErrors = true;
+                                    if(sem.estado !== 'ok') pbsHasErrors = true;
                                 } else {
                                     semgrid.innerHTML = '<span class="text-xs text-sub italic">No hay historial semanal</span>';
                                 }
@@ -1471,7 +1491,7 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                 // Buscar último backup diario OK
                                 let ultimoDiarioOk = null;
                                 for (const d of diarios) {
-                                    if (d.estado === 'OK') {
+                                    if (d.estado === 'ok') {
                                         ultimoDiarioOk = new Date(d.fecha + 'T23:59:59');
                                         break;
                                     }
@@ -1493,7 +1513,7 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
                                 }
                 
                                 // Semanal
-                                if (sem && sem.estado === 'OK') {
+                                if (sem && sem.estado === 'ok') {
                                     const ultSemanalOk = new Date(sem.fecha + 'T23:59:59');
                                     const diasSinSemanal = Math.floor((hoy - ultSemanalOk) / (1000 * 60 * 60 * 24));
                                     if (diasSinSemanal > 10) {

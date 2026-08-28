@@ -9,7 +9,7 @@ def obtener_version_pbs(config):
     """Obtiene la versión del Proxmox Backup Server."""
     pbs_config = config.get("pbs")
     if not pbs_config:
-        return "config missing"
+        return {"error": "Configuración de PBS no encontrada"}
     
     base_url = f"https://{pbs_config['ip']}:{pbs_config.get('port', 8007)}"
     headers = {
@@ -22,10 +22,11 @@ def obtener_version_pbs(config):
         res = requests.get(url, headers=headers, verify=False, timeout=5)
         if res.status_code == 200:
             data = res.json().get("data", {})
-            return data.get("version", "unknown")
-        return f"HTTP {res.status_code}"
+            version = data.get("version", "unknown")
+            return {"version": version}
+        return {"error": f"HTTP {res.status_code}"}
     except Exception as e:
-        return str(e)
+        return {"error": str(e)}
 
 def obtener_datos_pbs(config):
     """Consulta la API de Proxmox Backup Server para obtener el estado de los datastores y las tareas recientes."""
@@ -59,37 +60,39 @@ def obtener_datos_pbs(config):
                 url_st = f"{base_url}/api2/json/admin/datastore/{ds['store']}/status"
                 res_st = requests.get(url_st, headers=headers, verify=False, timeout=5)
                 
+                estado = "degraded" # Default si algo falla
+                uso_porcentaje = None
+                total_gb = None
+                usado_gb = None
+                libre_gb = None
+                error_msg = None
+
                 if res_st.status_code == 200:
                     status_info = res_st.json().get("data", {})
-                    # PBS retorna bytes
-                    total_bytes = status_info.get("total", 0)
-                    used_bytes = status_info.get("used", 0)
-                    free_bytes = status_info.get("avail", 0)
+                    total_bytes = status_info.get("total")
+                    used_bytes = status_info.get("used")
+                    free_bytes = status_info.get("avail")
                     
-                    uso_porcentaje = 0
-                    if total_bytes > 0:
-                        uso_porcentaje = round((used_bytes / total_bytes) * 100, 1)
-
-                    resultado["datastores"].append({
-                        "nombre": ds["store"],
-                        "total_gb": round(total_bytes / (1024**3), 2),
-                        "usado_gb": round(used_bytes / (1024**3), 2),
-                        "libre_gb": round(free_bytes / (1024**3), 2),
-                        "uso_porcentaje": uso_porcentaje,
-                        "estado": "OK",
-                    })
+                    if total_bytes is not None and used_bytes is not None:
+                        uso_porcentaje = round((used_bytes / total_bytes) * 100, 2)
+                        total_gb = round(total_bytes / (1024**3), 2)
+                        usado_gb = round(used_bytes / (1024**3), 2)
+                        libre_gb = round(free_bytes / (1024**3), 2)
+                        estado = "ok" # Si hay info de uso y total, es OK
+                    else:
+                        error_msg = "Sin información de uso o total."
                 else:
-                    # Datastore existe pero no se puede obtener status (problema de montaje, etc.)
-                    # Lo incluimos como degradado para que el dashboard lo muestre sin romper todo
-                    resultado["datastores"].append({
-                        "nombre": ds["store"],
-                        "total_gb": 0,
-                        "usado_gb": 0,
-                        "libre_gb": 0,
-                        "uso_porcentaje": None,
-                        "estado": "degraded",
-                        "error": f"HTTP {res_st.status_code} - No se pudo obtener estado (posible problema de montaje)"
-                    })
+                    error_msg = f"HTTP {res_st.status_code} - No se pudo obtener estado (posible problema de montaje)"
+
+                resultado["datastores"].append({
+                    "nombre": ds["store"],
+                    "estado": estado, # Siempre en minúsculas
+                    "uso_porcentaje": uso_porcentaje,
+                    "total_gb": total_gb,
+                    "usado_gb": usado_gb,
+                    "libre_gb": libre_gb,
+                    "error": error_msg
+                })
         else:
             resultado["error"] = f"HTTP {res_ds.status_code} al listar datastores"
 
@@ -99,13 +102,12 @@ def obtener_datos_pbs(config):
             datastores_encontrados = [ds["nombre"] for ds in resultado["datastores"]]
             faltantes = [ds for ds in datastores_esperados if ds not in datastores_encontrados]
             if faltantes:
-                # En lugar de error global, agregamos info a cada datastore faltante
                 for ds_name in faltantes:
                     resultado["datastores"].append({
                         "nombre": ds_name,
-                        "total_gb": 0,
-                        "usado_gb": 0,
-                        "libre_gb": 0,
+                        "total_gb": None,
+                        "usado_gb": None,
+                        "libre_gb": None,
                         "uso_porcentaje": None,
                         "estado": "missing",
                         "error": "Datastore esperado pero no encontrado en PBS"
@@ -149,11 +151,11 @@ def obtener_datos_pbs(config):
             fechas_diarios = sorted(list(diarios_agrupados.keys()), reverse=True)[:7]
             for fd in fechas_diarios:
                 estados = diarios_agrupados[fd]
-                # Si hay algo que no es OK y no es running, es fallo
-                tiene_fallos = any(s != "OK" and s != "running" for s in estados)
+                # Si hay algo que no es ok y no es running, es fallo
+                tiene_fallos = any(s.lower() != "ok" and s.lower() != "running" for s in estados)
                 resultado["historial_backups"]["diarios_ultimos_7d"].append({
                     "fecha": fd,
-                    "estado": "ERR" if tiene_fallos else "OK"
+                    "estado": "err" if tiene_fallos else "ok"
                 })
                 
             # Evaluar semanal (último fin de semana con actividad)
@@ -161,10 +163,10 @@ def obtener_datos_pbs(config):
             if fechas_semanales:
                 fs = fechas_semanales[0]
                 estados_sem = semanales_agrupados[fs]
-                tiene_fallos = any(s != "OK" and s != "running" for s in estados_sem)
+                tiene_fallos = any(s.lower() != "ok" and s.lower() != "running" for s in estados_sem)
                 resultado["historial_backups"]["semanal_ultimo"] = {
                     "fecha": fs,
-                    "estado": "ERR" if tiene_fallos else "OK"
+                    "estado": "err" if tiene_fallos else "ok"
                 }
                 
         else:

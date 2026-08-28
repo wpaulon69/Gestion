@@ -1,0 +1,30 @@
+Dirección IP,Estado,Nombre Escáner,Tipo Escáner,Fabricante,MAC,Nombre Listado,Tipo Listado,Departamento,Responsable,Observaciones,VLAN,Switch,Puerto,LAG,Perfil
+10.175.6.225,Activo,SG3428X,Switch,TP-Link,,Servidores,Switch Core,Sala Servidores,Walter,"Switch agregación Proxmox + PBS - Uplink 10G a Principal P25",,Servidores,,
+,,,,,,,,,,,,Servidores,1,hpdl360 NIC 1,LAG-SRV-HPDL360-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,2,hpdl360 NIC 2,LAG-SRV-HPDL360-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,3,hpdl360 NIC 3,LAG-SRV-HPDL360-B,Trunk_a_principal
+,,,,,,,,,,,,Servidores,4,hpdl360 NIC 4,LAG-SRV-HPDL360-B,Trunk_a_principal
+10.175.6.2,Activo,IBM x3400,Servidor,IBM,,PBS,Backup Server,Sala Servidores,Walter,"PBS - 2 NICs en LACP",,Servidores,5,PBS NIC 1,LAG-SRV-PBS,Trunk_a_principal
+,,,,,,,,,,,,Servidores,6,PBS NIC 2,LAG-SRV-PBS,Trunk_a_principal
+10.175.6.6,Activo,MSI i5,Servidor,MSI,,msi-i5,Proxmox Node,Sala Servidores,Walter,"Proxmox - bond0 enp1s0+enp3s0",,Servidores,7,msi-i5 enp1s0,LAG-SRV-MSI,Trunk_a_principal
+,,,,,,,,,,,,Servidores,8,msi-i5 enp3s0,LAG-SRV-MSI,Trunk_a_principal
+10.175.6.4,Activo,Dell R610,Servidor,Dell,,dellr610,Proxmox Node,Sala Servidores,Walter,"Proxmox - 4 NICs en 2 LAGs",,Servidores,9,dellr610 NIC 1,LAG-SRV-DELLR610-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,10,dellr610 NIC 2,LAG-SRV-DELLR610-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,11,dellr610 NIC 3,LAG-SRV-DELLR610-B,Trunk_a_principal
+,,,,,,,,,,,,Servidores,12,dellr610 NIC 4,LAG-SRV-DELLR610-B,Trunk_a_principal
+10.175.6.14,Activo,Dell R610-2,Servidor,Dell,,dellr610-2,Proxmox Node,Sala Servidores,Walter,"Proxmox - 4 NICs en 2 LAGs",,Servidores,13,dellr610-2 NIC 1,LAG-SRV-DELLR610-2-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,14,dellr610-2 NIC 2,LAG-SRV-DELLR610-2-A,Trunk_a_principal
+,,,,,,,,,,,,Servidores,15,dellr610-2 NIC 3,LAG-SRV-DELLR610-2-B,Trunk_a_principal
+,,,,,,,,,,,,Servidores,16,dellr610-2 NIC 4,LAG-SRV-DELLR610-2-B,Trunk_a_principal
+,,,,,,,,,,,,Servidores,17,LIBRE,,,
+,,,,,,,,,,,,Servidores,18,LIBRE,,,
+,,,,,,,,,,,,Servidores,19,LIBRE,,,
+,,,,,,,,,,,,Servidores,20,LIBRE,,,
+,,,,,,,,,,,,Servidores,21,LIBRE,,,
+,,,,,,,,,,,,Servidores,22,LIBRE,,,
+,,,,,,,,,,,,Servidores,23,LIBRE,,,
+,,,,,,,,,,,,Servidores,24,LIBRE,,,
+10.175.6.236,Activo,SG3428X,Switch,TP-Link,,Principal,Switch Core,Rack Comunicaciones,Walter,"Uplink 10G fibra a Servidores",,Servidores,25,Principal P25 SFP+ 10G,,Trunk_a_principal
+,,,,,,,,,,,,Servidores,26,LIBRE SFP+,,,
+,,,,,,,,,,,,Servidores,27,LIBRE SFP+,,,
+,,,,,,,,,,,,Servidores,28,LIBRE SFP+,,,

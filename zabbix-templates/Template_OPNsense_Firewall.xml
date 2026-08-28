@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.0</version>
+    <date>2026-06-17T15:00:00Z</date>
+    <groups>
+        <group>
+            <name>Templates/Network devices</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template OPNsense Firewall</template>
+            <name>Template OPNsense Firewall</name>
+            <description>Template para monitorear firewalls OPNsense con Zabbix Agent (o SNMP).</description>
+            <groups>
+                <group>
+                    <name>Templates/Network devices</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Interfaces</name>
+                </application>
+                <application>
+                    <name>System</name>
+                </application>
+                <application>
+                    <name>ICMP</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Uptime del Firewall</name>
+                    <key>system.uptime</key>
+                    <delay>1m</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <value_type>3</value_type>
+                    <units>s</units>
+                    <applications>
+                        <application>
+                            <name>System</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <name>{HOST.NAME} ha reiniciado (Uptime bajo)</name>
+                            <expression>{ITEM.LASTVALUE()}&lt;300</expression>
+                            <priority>4</priority>
+                            <description>El firewall {HOST.NAME} ha reiniciado recientemente. Uptime actual: {ITEM.LASTVALUE()}s.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Carga de CPU (1 min)</name>
+                    <key>system.cpu.load[percpu,avg1]</key>
+                    <delay>1m</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <value_type>0</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>System</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <name>Carga de CPU alta en {HOST.NAME}</name>
+                            <expression>{ITEM.LASTVALUE()}>80</expression>
+                            <priority>3</priority>
+                            <description>La carga de CPU en {HOST.NAME} está por encima del 80% en el último minuto.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>ICMP Ping</name>
+                    <key>icmpping</key>
+                    <delay>30s</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <value_type>3</value_type>
+                    <applications>
+                        <application>
+                            <name>ICMP</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <name>{HOST.NAME} no responde al ICMP ping</name>
+                            <expression>{ITEM.LASTVALUE()}=0</expression>
+                            <priority>3</priority>
+                            <description>El host no está respondiendo a las solicitudes de ping ICMP.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>ICMP Latencia</name>
+                    <key>icmppingsec</key>
+                    <delay>30s</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <value_type>0</value_type>
+                    <units>s</units>
+                    <applications>
+                        <application>
+                            <name>ICMP</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <name>Alta latencia ICMP en {HOST.NAME}</name>
+                            <expression>{ITEM.LASTVALUE()}>0.1</expression>
+                            <priority>2</priority>
+                            <description>La latencia del ping ICMP a {HOST.NAME} es superior a 100ms.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>ICMP Pérdida de Paquetes</name>
+                    <key>icmppingloss</key>
+                    <delay>30s</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <value_type>0</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>ICMP</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <name>Pérdida de paquetes ICMP alta en {HOST.NAME}</name>
+                            <expression>{ITEM.LASTVALUE()}>20</expression>
+                            <priority>3</priority>
+                            <description>Se está experimentando una pérdida de paquetes ICMP superior al 20% a {HOST.NAME}.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Descubrimiento de Interfaces de Red</name>
+                    <key>net.if.discovery</key>
+                    <delay>1h</delay>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Tráfico de entrada en interfaz {#IFNAME}</name>
+                            <key>net.if.in[{#IFNAME}]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>365d</trends>
+                            <value_type>0</value_type>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Interfaces</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Tráfico de salida en interfaz {#IFNAME}</name>
+                            <key>net.if.out[{#IFNAME}]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>365d</trends>
+                            <value_type>0</value_type>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Interfaces</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+    </templates>
+    <macros>
+        <macro>
+            <macro>{$SNMP_COMMUNITY}</macro>
+            <value>public</value>
+        </macro>
+    </macros>
+</zabbix_export>
