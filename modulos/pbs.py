@@ -5,29 +5,27 @@ import time
 # Deshabilitar advertencias de certificados no válidos
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
 def obtener_version_pbs(config):
-    """Obtiene la versión de Proxmox Backup Server desde la API."""
+    """Obtiene la versión del Proxmox Backup Server."""
     pbs_config = config.get("pbs")
     if not pbs_config:
-        return {"error": "Configuración de PBS no encontrada"}
-
+        return "config missing"
+    
     base_url = f"https://{pbs_config['ip']}:{pbs_config.get('port', 8007)}"
     headers = {
         "Authorization": f"PBSAPIToken {pbs_config['token_id']}:{pbs_config['token_secret']}"
     }
-
+    
     try:
+        # Endpoint /api2/json/version devuelve la versión
         url = f"{base_url}/api2/json/version"
         res = requests.get(url, headers=headers, verify=False, timeout=5)
         if res.status_code == 200:
             data = res.json().get("data", {})
-            version = data.get("version") or data.get("release") or data.get("version_raw")
-            return {"version": version} if version else {"error": "No se encontró versión"}
-        return {"error": f"HTTP {res.status_code}"}
+            return data.get("version", "unknown")
+        return f"HTTP {res.status_code}"
     except Exception as e:
-        return {"error": str(e)}
-
+        return str(e)
 
 def obtener_datos_pbs(config):
     """Consulta la API de Proxmox Backup Server para obtener el estado de los datastores y las tareas recientes."""
@@ -78,18 +76,40 @@ def obtener_datos_pbs(config):
                         "usado_gb": round(used_bytes / (1024**3), 2),
                         "libre_gb": round(free_bytes / (1024**3), 2),
                         "uso_porcentaje": uso_porcentaje,
-                        # Para status_info, hay error_count o cosas similares a veces, lo ignoramos de momento
+                        "estado": "OK",
+                    })
+                else:
+                    # Datastore existe pero no se puede obtener status (problema de montaje, etc.)
+                    # Lo incluimos como degradado para que el dashboard lo muestre sin romper todo
+                    resultado["datastores"].append({
+                        "nombre": ds["store"],
+                        "total_gb": 0,
+                        "usado_gb": 0,
+                        "libre_gb": 0,
+                        "uso_porcentaje": None,
+                        "estado": "degraded",
+                        "error": f"HTTP {res_st.status_code} - No se pudo obtener estado (posible problema de montaje)"
                     })
         else:
-            resultado["error_datastores"] = f"HTTP {res_ds.status_code}"
+            resultado["error"] = f"HTTP {res_ds.status_code} al listar datastores"
 
-        # 3. Validar datastores esperados
+        # Validar datastores esperados: solo advertimos cuáles faltan, no rompemos el PBS
         datastores_esperados = pbs_config.get("datastores_esperados", [])
         if datastores_esperados:
             datastores_encontrados = [ds["nombre"] for ds in resultado["datastores"]]
             faltantes = [ds for ds in datastores_esperados if ds not in datastores_encontrados]
             if faltantes:
-                resultado["error_datastores"] = f"Datastores esperados no configurados en PBS: {', '.join(faltantes)}"
+                # En lugar de error global, agregamos info a cada datastore faltante
+                for ds_name in faltantes:
+                    resultado["datastores"].append({
+                        "nombre": ds_name,
+                        "total_gb": 0,
+                        "usado_gb": 0,
+                        "libre_gb": 0,
+                        "uso_porcentaje": None,
+                        "estado": "missing",
+                        "error": "Datastore esperado pero no encontrado en PBS"
+                    })
 
         # 2. Consultar Tareas (Tasks) enfocado a Backups
         url_tasks = f"{base_url}/api2/json/nodes/localhost/tasks"
@@ -125,15 +145,12 @@ def obtener_datos_pbs(config):
                         target_dict[date_str] = []
                     target_dict[date_str].append(status)
             
-            # Estados que NO son error (backup terminó correctamente aunque PBS no marcó "OK")
-            estados_validos = {"OK", "running", "backup ended but finished state is not set."}
-            
             # Evaluar diarios (últimos 7 días con actividad)
             fechas_diarios = sorted(list(diarios_agrupados.keys()), reverse=True)[:7]
             for fd in fechas_diarios:
                 estados = diarios_agrupados[fd]
-                # Si hay algo que no es un estado válido, es fallo
-                tiene_fallos = any(s not in estados_validos for s in estados)
+                # Si hay algo que no es OK y no es running, es fallo
+                tiene_fallos = any(s != "OK" and s != "running" for s in estados)
                 resultado["historial_backups"]["diarios_ultimos_7d"].append({
                     "fecha": fd,
                     "estado": "ERR" if tiene_fallos else "OK"
@@ -144,7 +161,7 @@ def obtener_datos_pbs(config):
             if fechas_semanales:
                 fs = fechas_semanales[0]
                 estados_sem = semanales_agrupados[fs]
-                tiene_fallos = any(s not in estados_validos for s in estados_sem)
+                tiene_fallos = any(s != "OK" and s != "running" for s in estados_sem)
                 resultado["historial_backups"]["semanal_ultimo"] = {
                     "fecha": fs,
                     "estado": "ERR" if tiene_fallos else "OK"

@@ -1344,49 +1344,86 @@ document.getElementById('client-wifi-stat').innerText = resumenRes.wifi;
 
             // 6. BACKUPS PBS
             const pbs = data.pbs || {};
-            const pbsDsGrid = document.getElementById('pbs-datastores-grid');
-            const pbsErrorsCont = document.getElementById('pbs-errors-container');
-            const pbsErrorsList = document.getElementById('pbs-errors-list');
-            const pbsSync = document.getElementById('pbs-last-sync');
-            const pbsStatus = document.getElementById('pbs-status-badge');
-            
-            pbsDsGrid.innerHTML = '';
-            pbsErrorsList.innerHTML = '';
-            
-            let pbsHasErrors = false;
-            
-            if (pbs.error || pbs.error_datastores) {
-                pbsStatus.className = "status-pill badge-err";
-                pbsStatus.innerText = "ERROR API";
-                pbsHasErrors = true;
-                pbsDsGrid.innerHTML = `<p class="text-xs text-rose-500 italic px-4 py-2 bg-rose-50 rounded-xl col-span-2">No se pudo conectar a PBS o permisos insuficientes (${pbs.error || pbs.error_datastores}).</p>`;
-            } else {
-                // Datastores
-                const datastores = pbs.datastores || [];
-                if (datastores.length === 0) {
-                     pbsDsGrid.innerHTML = `<p class="text-xs text-sub italic px-4 py-2 col-span-2">Sin datastores visibles.</p>`;
-                }
-                datastores.forEach(ds => {
-                    const uso = ds.uso_porcentaje || 0;
-                    const isFull = uso > 85;
-                    if(isFull) pbsHasErrors = true;
+                        const pbsDsGrid = document.getElementById('pbs-datastores-grid');
+                        const pbsErrorsCont = document.getElementById('pbs-errors-container');
+                        const pbsErrorsList = document.getElementById('pbs-errors-list');
+                        const pbsSync = document.getElementById('pbs-last-sync');
+                        const pbsStatus = document.getElementById('pbs-status-badge');
+
+                        pbsDsGrid.innerHTML = '';
+                        pbsErrorsList.innerHTML = '';
+
+                        let pbsHasErrors = false;
+                        let pbsHasDegraded = false;
+
+                        if (pbs.error) {
+                            // Error real de conexión/autenticación
+                            pbsStatus.className = "status-pill badge-err";
+                            pbsStatus.innerText = "ERROR CONEXIÓN";
+                            pbsHasErrors = true;
+                            pbsDsGrid.innerHTML = `<p class="text-xs text-rose-500 italic px-4 py-2 bg-rose-50 rounded-xl col-span-2">Error conectando a PBS: ${pbs.error}</p>`;
+                        } else {
+                            // Datastores - renderizamos todos, incluyendo degraded
+                            const datastores = pbs.datastores || [];
+                            if (datastores.length === 0) {
+                                pbsDsGrid.innerHTML = `<p class="text-xs text-sub italic px-4 py-2 col-span-2">Sin datastores visibles.</p>`;
+                            }
+                            datastores.forEach(ds => {
+                                const estado = ds.estado || 'ok'; // 'ok', 'degraded', 'unavailable'
+                                const isDegraded = estado !== 'ok';
+                                const uso = ds.uso_porcentaje ?? null; // null si degraded
+                                const isFull = uso !== null && uso > 85;
+                                if (isFull) pbsHasErrors = true;
+                                if (isDegraded) pbsHasDegraded = true;
+
+                                const div = document.createElement('div');
                     
-                    const div = document.createElement('div');
-                    div.className = "bg-sub border border-sub rounded-2xl p-5 relative overflow-hidden";
-                    div.innerHTML = `
-                        <div class="flex justify-between items-end mb-3">
-                            <div>
-                                <h4 class="text-sm font-black text-title tracking-tight">${ds.nombre}</h4>
-                                <p class="text-[10px] font-mono font-bold text-sub">${ds.usado_gb}GB / ${ds.total_gb}GB</p>
-                            </div>
-                            <span class="text-lg font-black italic ${isFull ? 'text-rose-500' : 'text-indigo-500'}">${uso}%</span>
-                        </div>
-                        <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                            <div class="h-full ${isFull ? 'bg-rose-500' : 'bg-indigo-500'}" style="width: ${uso}%"></div>
-                        </div>
-                    `;
-                    pbsDsGrid.appendChild(div);
-                });
+                                if (isDegraded) {
+                                    div.className = "bg-sub border border-amber-300 rounded-2xl p-5 relative overflow-hidden";
+                                    div.innerHTML = `
+                                        <div class="flex justify-between items-end mb-3">
+                                            <div>
+                                                <h4 class="text-sm font-black text-title tracking-tight flex items-center gap-2">
+                                                    ${ds.nombre}
+                                                    <span class="status-pill badge-warn text-[9px] animate-pulse">DEGRADADO</span>
+                                                </h4>
+                                                <p class="text-[10px] font-mono font-bold text-sub">${ds.error || 'Sin acceso a status (problema de montaje)'}</p>
+                                            </div>
+                                            <span class="text-lg font-black italic text-amber-500">--%</span>
+                                        </div>
+                                        <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                                            <div class="h-full bg-amber-400 animate-pulse" style="width: 100%"></div>
+                                        </div>
+                                    `;
+                                } else {
+                                    div.className = "bg-sub border border-sub rounded-2xl p-5 relative overflow-hidden";
+                                    div.innerHTML = `
+                                        <div class="flex justify-between items-end mb-3">
+                                            <div>
+                                                <h4 class="text-sm font-black text-title tracking-tight">${ds.nombre}</h4>
+                                                <p class="text-[10px] font-mono font-bold text-sub">${ds.usado_gb}GB / ${ds.total_gb}GB</p>
+                                            </div>
+                                            <span class="text-lg font-black italic ${isFull ? 'text-rose-500' : 'text-indigo-500'}">${uso}%</span>
+                                        </div>
+                                        <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                                            <div class="h-full ${isFull ? 'bg-rose-500' : 'bg-indigo-500'}" style="width: ${uso}%"></div>
+                                        </div>
+                                    `;
+                                }
+                                pbsDsGrid.appendChild(div);
+                            });
+
+                            // Badge global PBS: OK / DEGRADADO / ERROR
+                            if (pbsHasErrors) {
+                                pbsStatus.className = "status-pill badge-err";
+                                pbsStatus.innerText = "ALERTA";
+                            } else if (pbsHasDegraded) {
+                                pbsStatus.className = "status-pill badge-warn";
+                                pbsStatus.innerText = "DEGRADADO";
+                            } else {
+                                pbsStatus.className = "status-pill badge-ok";
+                                pbsStatus.innerText = "OK";
+                            }
                 
                 
                 // Historial de Backups (Diarios / Semanales)
